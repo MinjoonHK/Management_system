@@ -30,8 +30,8 @@ const AddTimeSheet = ({ open, onClose }) => {
     try {
       const decoded: decodedToken = jwtDecode(localStorage.getItem("jwt"));
       const UserID = decoded.ID;
-      const Start = RangePicker[0];
-      const End = RangePicker[1];
+      const Start: String = RangePicker[0].toISOString();
+      const End: String = RangePicker[1].toISOString();
       const res = await axios.post("/dashboard/timesheet", {
         UserID,
         Title,

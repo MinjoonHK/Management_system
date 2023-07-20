@@ -16,14 +16,14 @@ interface Event {
 export default function TimeSheet() {
   const [calCurrDate, setCalCurrDate] = useState(new Date());
   const [open, setOpen] = useState(false);
-  const [dataList, setDataList] = useState([]);
+  const [events, setEvents] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const result = await data();
         console.log(result);
-        setDataList(result);
+        setEvents(result);
       } catch (error) {
         console.error(error);
       }
@@ -59,7 +59,7 @@ export default function TimeSheet() {
     <div>
       <Calendar
         localizer={localizer}
-        events={dataList}
+        events={events}
         startAccessor="start"
         endAccessor="end"
         style={{ height: "70vh" }}

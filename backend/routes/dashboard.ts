@@ -245,6 +245,7 @@ dashboardRouter.post(
 );
 
 dashboardRouter.post("/timesheet", async (req: Request, res: Response) => {
+  console.log(req.body);
   const { Title, Start, End, UserID } = req.body;
   console.log(req.body);
   let form = new TimeSheetForm();
@@ -301,15 +302,12 @@ dashboardRouter.get("/schedule", async (req, res) => {
 });
 
 dashboardRouter.get("/timesheet", async (req, res) => {
-  console.log(req.query);
   const token = req.query.Token as string;
-  console.log(token);
   const decodedToken = jwtDecode(token) as unknown as { ID?: number };
   const ID = decodedToken.ID;
   if (ID)
     try {
       const result = await getTimeSheet(ID);
-      console.log(result);
       res.json(result);
     } catch (error) {
       console.error(error);
