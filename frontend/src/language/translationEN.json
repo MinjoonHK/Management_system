@@ -1,0 +1,20 @@
+{
+    "languageLabel" : "Language",
+     "GoodMorning!": "Good Morning!",
+     "GoodAfterNoon!": "Good Afternoon!",
+     "GoodEvening!": "Good Evening!",
+     "AddDevice": "Add Device +",
+     "WorkOrder":"Work Order",
+     "Navigator":"Navigator",
+     "DeviceInfo":"Device Information",
+     "GanttChart":"Gantt Chart",
+     "TimeSheet":"Time Sheet",
+     "Settings":"Settings",
+     "DarkMode":"Dark Mode",
+     "Contact":"Contact",
+     "BudgetManagement": "Budget Management",
+     "MaterialInfo": "Material Information",
+     "GoodMorning": "Good Morning!",
+     "GoodAfterNoon": "Good Afternoon!",
+     "GoodEvening": "Good Evening!"
+}

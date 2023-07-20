@@ -1,0 +1,16 @@
+{
+    "languageLabel" : "语言",
+     "WorkOrder":"工作列表",
+     "DeviceInfo":"工具信息",
+     "Navigator":"列表",
+     "GanttChart":"甘特图",
+     "TimeSheet":"时间表",
+     "Settings":"设置",
+     "DarkMode":"深色模式",
+    "Contact":"联系",
+     "BudgetManagement": "预算管理",
+    "MaterialInfo": "数量信息",
+     "GoodMorning": "早上好!",
+     "GoodAfterNoon": "下午好!",
+     "GoodEvening": "晚上好!"
+}
