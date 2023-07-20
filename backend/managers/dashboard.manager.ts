@@ -178,6 +178,36 @@ export async function getPerformanceInfo(Location: string) {
   }
 }
 
+export async function addTimesheetManager(
+  Title: string,
+  Start: string,
+  End: string,
+  userID: number
+) {
+  try {
+    const [rows, fields] = await pool.execute(
+      "INSERT INTO timesheet ( Title, Start, End, user_ID) VALUES( ?, ?, ?,?);",
+      [Title, Start, End, userID]
+    );
+    return rows.insertId;
+  } catch (err) {
+    console.error(new Date(), "addTimeSheetManager", err);
+    return null;
+  }
+}
+
+export async function getTimeSheet(ID: number) {
+  try {
+    const resultQuery =
+      "SELECT Start,End, Title  FROM timesheet WHERE user_ID = ?";
+    let [result] = await pool.query(resultQuery, [ID]);
+    return result;
+  } catch (err) {
+    console.error(new Date(), "getTimeSheet", err);
+    return null;
+  }
+}
+
 export async function addworkorder(
   ID: number,
   DatePicker: string,

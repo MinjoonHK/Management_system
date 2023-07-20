@@ -56,7 +56,6 @@ const Dashboard: React.FC = () => {
   }, [Location]);
   useEffect(() => {
     let lastPage = localStorage.getItem("lastPage");
-    console.log("navigate", lastPage);
     if (lastPage && lastPage != "") {
       navigate(lastPage);
     }

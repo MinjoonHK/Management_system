@@ -15,6 +15,7 @@ import { useState } from "react";
 import Swal from "sweetalert2";
 import dayjs from "dayjs";
 import TimeLine from "./timeSheetTimeLine";
+import { decodedToken } from "../../../data/Interfaces/decodedToken";
 const { RangePicker } = DatePicker;
 const AddTimeSheet = ({ open, onClose }) => {
   const [componentSize, setComponentSize] = useState<SizeType | "default">(
@@ -25,9 +26,25 @@ const AddTimeSheet = ({ open, onClose }) => {
   const onFormLayoutChange = ({ size }: { size: SizeType }) => {
     setComponentSize(size);
   };
-  const onFinish = async ({ name, startDate, endDate, RangePicker }) => {
+  const onFinish = async ({ Title, RangePicker }) => {
     try {
-      console.log(RangePicker[0].format("YYYY.MM.DD"));
+      const decoded: decodedToken = jwtDecode(localStorage.getItem("jwt"));
+      const UserID = decoded.ID;
+      const Start = RangePicker[0];
+      const End = RangePicker[1];
+      const res = await axios.post("/dashboard/timesheet", {
+        UserID,
+        Title,
+        Start,
+        End,
+      });
+      if (res.status === 200) {
+        Swal.fire(
+          `Great Job!`,
+          `You have successfully added new Work Order!`,
+          "success"
+        );
+      }
     } catch (err) {
       console.log(err);
     }
@@ -95,7 +112,7 @@ const AddTimeSheet = ({ open, onClose }) => {
                 >
                   <Form.Item
                     label="Name"
-                    name="name"
+                    name="Title"
                     rules={[
                       {
                         required: true,

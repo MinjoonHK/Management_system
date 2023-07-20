@@ -17,11 +17,14 @@ import {
   updateworkorder,
   addScheduleManager,
   getSchedule,
+  getTimeSheet,
+  addTimesheetManager,
 } from "../managers/dashboard.manager";
 import jwtDecode from "jwt-decode";
 import { workorderform } from "../models/forms/workorder.form";
 import { updateWorkOrder } from "../models/forms/updateworkorder.form";
 import { AddScheduleForm } from "../models/forms/addSchedule.form";
+import { TimeSheetForm } from "../models/forms/timeSheet.form";
 
 const dashboardRouter = express.Router();
 
@@ -241,6 +244,33 @@ dashboardRouter.post(
   }
 );
 
+dashboardRouter.post("/timesheet", async (req: Request, res: Response) => {
+  const { Title, Start, End, UserID } = req.body;
+  console.log(req.body);
+  let form = new TimeSheetForm();
+  form.Title = Title;
+  form.Start = Start;
+  form.End = End;
+  form.UserID = UserID;
+  const errors = await validate(form);
+  if (errors.length > 0) {
+    //if there is error
+    res.status(400).json({
+      success: false,
+      error: "validation_error",
+      message: errors,
+    });
+    return;
+  }
+  let result = await addTimesheetManager(Title, Start, End, UserID);
+  console.log(result);
+  if (result) {
+    res.status(200).send("registration successful");
+  } else {
+    res.status(400).json("registration failed");
+  }
+});
+
 dashboardRouter.get("/userinformation", async (req, res) => {
   const token = req.query.Token as string;
   const decodedToken = jwtDecode(token) as unknown as { ID?: number };
@@ -262,6 +292,23 @@ dashboardRouter.get("/schedule", async (req, res) => {
   if (ID)
     try {
       const result = await getSchedule(ID);
+      console.log(result);
+      res.json(result);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+});
+
+dashboardRouter.get("/timesheet", async (req, res) => {
+  console.log(req.query);
+  const token = req.query.Token as string;
+  console.log(token);
+  const decodedToken = jwtDecode(token) as unknown as { ID?: number };
+  const ID = decodedToken.ID;
+  if (ID)
+    try {
+      const result = await getTimeSheet(ID);
       console.log(result);
       res.json(result);
     } catch (error) {
