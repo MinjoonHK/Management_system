@@ -6,7 +6,7 @@ interface DataType {
   End: Date;
   Title: string;
 }
-export const data = async (): Promise<DataType[]> => {
+export const CalendarList = async (): Promise<DataType[]> => {
   const Token = localStorage.getItem("jwt");
   const response = await axios.get<DataType[]>("/dashboard/timesheet", {
     params: { Token },

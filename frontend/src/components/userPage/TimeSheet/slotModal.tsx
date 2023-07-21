@@ -6,7 +6,7 @@ import {
   Modal,
   Tabs,
   DatePicker,
-  TimePicker,
+  Timeline,
 } from "antd";
 import { SizeType } from "antd/es/config-provider/SizeContext";
 import axios from "axios";
@@ -14,10 +14,9 @@ import jwtDecode from "jwt-decode";
 import { useState } from "react";
 import Swal from "sweetalert2";
 import dayjs from "dayjs";
-import TimeLine from "./timeSheetTimeLine";
 import { decodedToken } from "../../../data/Interfaces/decodedToken";
 const { RangePicker } = DatePicker;
-const AddTimeSheet = ({ open, onClose }) => {
+const SlotModal = ({ open, onClose, events, start }) => {
   const [componentSize, setComponentSize] = useState<SizeType | "default">(
     "default"
   );
@@ -71,18 +70,30 @@ const AddTimeSheet = ({ open, onClose }) => {
       bodyStyle={{ height: "100%" }}
     >
       <Tabs
-        defaultActiveKey="1"
+        defaultActiveKey="AddSchedule"
         type="card"
         size={size}
         items={[
           {
             label: <div style={{ color: "black" }}>Current Schedule</div>,
-            key: "1",
-            children: <div>1</div>,
+            key: "CurrentSchedule",
+            children: (
+              // <Timeline mode={"left"}>
+              //   {events.map((e) => (
+              //     <Timeline.Item>
+              //       <span style={{ margin: "5%" }}>
+              //         {new Date(e.Start).toLocaleDateString()}
+              //       </span>
+              //       <span>{e.Title}</span>
+              //     </Timeline.Item>
+              //   ))}
+              // </Timeline>
+              <div>Hello</div>
+            ),
           },
           {
             label: <div style={{ color: "black" }}>Add Schedule</div>,
-            key: "2",
+            key: "AddSchedule",
             children: (
               <Card
                 title={
@@ -106,7 +117,7 @@ const AddTimeSheet = ({ open, onClose }) => {
                   fields={[
                     {
                       name: ["RangePicker"],
-                      // value: [selectedValue, null],
+                      value: [dayjs(start), null],
                     },
                   ]}
                 >
@@ -162,4 +173,4 @@ const AddTimeSheet = ({ open, onClose }) => {
   );
 };
 
-export default AddTimeSheet;
+export default SlotModal;

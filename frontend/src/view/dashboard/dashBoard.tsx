@@ -195,13 +195,13 @@ const Dashboard: React.FC = () => {
         </Header>
         <Content
           style={{
-            margin: "24px 16px 0",
+            margin: "24px 16px 0", //margin between header and body content
             overflow: "initial",
           }}
         >
           <div
             style={{
-              padding: 24,
+              padding: 20,
               textAlign: "center",
               background: colorBgContainer,
             }}

@@ -16,5 +16,7 @@
      "MaterialInfo": "Material Information",
      "GoodMorning": "Good Morning!",
      "GoodAfterNoon": "Good Afternoon!",
-     "GoodEvening": "Good Evening!"
+     "GoodEvening": "Good Evening!",
+     "MyCalendars":"My Calendars",
+     "SharedCalendars":"Shared Calendars"
 }

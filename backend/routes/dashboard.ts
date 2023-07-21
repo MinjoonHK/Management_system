@@ -315,4 +315,18 @@ dashboardRouter.get("/timesheet", async (req, res) => {
     }
 });
 
+dashboardRouter.get("/calendarlist", async (req, res) => {
+  const token = req.query.Token as string;
+  const decodedToken = jwtDecode(token) as unknown as { ID?: number };
+  const ID = decodedToken.ID;
+  if (ID)
+    try {
+      const result = await getTimeSheet(ID);
+      res.json(result);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+});
+
 export default dashboardRouter;

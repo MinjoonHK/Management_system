@@ -12,6 +12,8 @@
      "MaterialInfo": "數量資訊",
      "GoodMorning": "早上好!",
      "GoodAfterNoon": "下午好!",
-     "GoodEvening": "晚上好!"
+     "GoodEvening": "晚上好!",
+      "MyCalendars":"내 달력목록",
+     "SharedCalendars":"다른 달력목록"
 
 }

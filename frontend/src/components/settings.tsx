@@ -23,14 +23,17 @@ function Settings() {
       }}
     >
       <div>
-        <span>
-          <b>{t("languageLabel")}:</b>
+        <span style={{ fontWeight: "bold" }}>{t("languageLabel")}:</span>
+        <span
+          style={{
+            marginLeft: "2%",
+          }}
+        >
+          <Button onClick={() => changeLanguage("en")}>English</Button>
+          <Button onClick={() => changeLanguage("ko")}>한국어</Button>
+          <Button onClick={() => changeLanguage("cn")}>中文（简体）</Button>
+          <Button onClick={() => changeLanguage("tcn")}>中文（繁體)</Button>
         </span>
-        <span style={{ marginLeft: "2%" }}></span>
-        <Button onClick={() => changeLanguage("en")}>English</Button>
-        <Button onClick={() => changeLanguage("ko")}>한국어</Button>
-        <Button onClick={() => changeLanguage("cn")}>中文（简体）</Button>
-        <Button onClick={() => changeLanguage("tcn")}>中文（繁體)</Button>
       </div>
       <div>
         <b>{t("DarkMode")}</b>

@@ -13,5 +13,7 @@
      "MaterialInfo": "수량 정보",
      "GoodMorning": "좋은 아침이에요!",
      "GoodAfterNoon": "기분좋은 오후에요!",
-     "GoodEvening": "벌써 저녘이네요!"
+     "GoodEvening": "벌써 저녘이네요!",
+     "MyCalendars":"내 달력목록",
+     "OtherCalendars":"공유한 달력"
 }
