@@ -3,6 +3,7 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   DownOutlined,
+  BellOutlined,
 } from "@ant-design/icons";
 import { Layout, Menu, theme, Button, Dropdown, Space } from "antd";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
@@ -25,7 +26,7 @@ import WorkOrderDetail from "../../components/workOrderDetail";
 import GanttChart from "../../components/userPage/ganttChart/userGanttChart";
 import TimeSheet from "../../components/userPage/TimeSheet/userTimeSheet";
 import { t } from "i18next";
-import UserContact from "../../components/userPage/userContatctList";
+import UserProject from "../../components/userPage/projectList/userProjectList";
 import BudgetManagement from "../../components/userPage/userBudget";
 import MaterialInfo from "../../components/userPage/userMaterialInfo";
 const { Header, Content, Footer, Sider } = Layout;
@@ -75,13 +76,13 @@ const Dashboard: React.FC = () => {
       setFirstName(greetingName);
       setUserRole(decoded.Role);
     }
-    if (hour < 12) {
-      setGreeting(t("GoodMorning"));
-    } else if (hour < 18) {
-      setGreeting(t("GoodAfterNoon"));
-    } else {
-      setGreeting(t("GoodEvening"));
-    }
+    // if (hour < 12) {
+    //   setGreeting(t("GoodMorning"));
+    // } else if (hour < 18) {
+    //   setGreeting(t("GoodAfterNoon"));
+    // } else {
+    //   setGreeting(t("GoodEvening"));
+    // }
   }, []);
 
   const [collapsed, setCollapsed] = useState(false);
@@ -179,6 +180,7 @@ const Dashboard: React.FC = () => {
                   marginRight: "16px",
                 }}
               >
+                <BellOutlined />
                 {greeting}
               </span>
 
@@ -260,7 +262,7 @@ const Dashboard: React.FC = () => {
                   element={<AdminProfile />}
                 ></Route>
                 <Route path="/ganttchart" element={<GanttChart />}></Route>
-                <Route path="/contact" element={<UserContact />}></Route>
+                <Route path="/project" element={<UserProject />}></Route>
                 <Route path="/timesheet" element={<TimeSheet />}></Route>
               </Routes>
             )}

@@ -5,6 +5,7 @@ interface DataType {
   ID: number;
   End: Date;
   Title: string;
+  CalendarID: number;
 }
 export const data = async (): Promise<DataType[]> => {
   const Token = localStorage.getItem("jwt");

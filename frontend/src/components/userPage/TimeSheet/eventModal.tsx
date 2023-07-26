@@ -1,4 +1,4 @@
-import { Card, Timeline, Modal } from "antd";
+import { Card, Timeline, Modal, Button } from "antd";
 
 export default function EventModal({ open, onClose, evtTitle }) {
   return (
@@ -11,17 +11,25 @@ export default function EventModal({ open, onClose, evtTitle }) {
       width={500}
       onOk={onClose}
       bodyStyle={{ height: "100%" }}
+      footer={[
+        <Button type="default" key="Cancel" onClick={onClose}>
+          Cancel
+        </Button>,
+        <Button type="primary" danger key="Delete" style={{ color: "white" }}>
+          Delete
+        </Button>,
+      ]}
     >
       <Card
         title={
-          <div>
+          <div style={{ fontSize: "20px", fontWeight: "bold" }}>
             {evtTitle.start &&
               new Date(evtTitle.start).toISOString().slice(0, 10)}
-            ~{evtTitle.End && new Date(evtTitle.end).toISOString().slice(0, 10)}
+            ~{evtTitle.end && new Date(evtTitle.end).toISOString().slice(0, 10)}
           </div>
         }
       >
-        {evtTitle.Title}
+        <div style={{ fontSize: "15px" }}>{evtTitle.title}</div>
       </Card>
     </Modal>
   );

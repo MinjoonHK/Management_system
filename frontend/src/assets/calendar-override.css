@@ -1,0 +1,14 @@
+.rbc-toolbar-label{
+    font-weight: bold;
+}
+.ant-picker-calendar-mode-switch{
+    display: none;
+}
+
+.ant-btn-sm{
+    height:24;
+}
+/* 
+.ant-checkbox-checked .ant-checkbox-inner{
+    background-color: red;
+} */

@@ -17,14 +17,21 @@ import {
   updateworkorder,
   addScheduleManager,
   getSchedule,
-  getTimeSheet,
   addTimesheetManager,
+  getCalendarList,
+  getTimeSheet,
+  addCalendarListManager,
+  deleteCalenderListManager,
+  updateCalendarColor,
+  addProjectList,
+  getProjectList,
 } from "../managers/dashboard.manager";
-import jwtDecode from "jwt-decode";
 import { workorderform } from "../models/forms/workorder.form";
 import { updateWorkOrder } from "../models/forms/updateworkorder.form";
 import { AddScheduleForm } from "../models/forms/addSchedule.form";
 import { TimeSheetForm } from "../models/forms/timeSheet.form";
+import { CalendarListForm } from "../models/forms/calendarlist.form";
+import { addProjectForm } from "../models/forms/addProject.form";
 
 const dashboardRouter = express.Router();
 
@@ -59,6 +66,17 @@ dashboardRouter.get("/performance", async (req, res) => {
   }
 });
 
+dashboardRouter.get("/projectList", async (req, res) => {
+  const ID = req.userId;
+  try {
+    const result = await getProjectList(ID!);
+    res.json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
 dashboardRouter.get("/userlist", async (req, res) => {
   try {
     const result = await getUserList();
@@ -69,6 +87,7 @@ dashboardRouter.get("/userlist", async (req, res) => {
   }
 });
 
+/** Need to be modified */
 dashboardRouter.post("/deactivateuser", async (req, res) => {
   const ID = req.body.params.DeactivateUserList;
   let form = new DeleteUser();
@@ -88,6 +107,34 @@ dashboardRouter.post("/deactivateuser", async (req, res) => {
     res.status(200).send("Successfully deleted user");
   } else {
     res.status(400).json("Failed to delete user");
+  }
+});
+
+/** Need to be modified */
+dashboardRouter.post("/projectList", async (req, res) => {
+  const { ProjectName, Start, TeamMembers } = req.body;
+  const ID = req.userId;
+  let form = new addProjectForm();
+  form.ProjectName = ProjectName;
+  form.Start = Start;
+  form.TeamMembers = TeamMembers;
+  const errors = await validate(form);
+  if (errors.length > 0) {
+    //if there is error
+    res.status(400).json({
+      success: false,
+      error: "validation_error",
+      message: errors,
+    });
+    return;
+  }
+  let result = await addProjectList(ProjectName, Start, ID!, TeamMembers);
+  if (result) {
+    res.json({ message: "successfully added", result: result });
+  } else {
+    res
+      .status(400)
+      .json({ message: "failed to add the project", result: result });
   }
 });
 
@@ -150,7 +197,6 @@ dashboardRouter.post(
   async (req: Request, res: Response) => {
     const { ID, DatePicker, ordersummary, Email, Company, Name, Contact } =
       req.body;
-    console.log(req.body);
     let form = new workorderform();
     form.ID = ID;
     form.DatePicker = DatePicker;
@@ -218,7 +264,6 @@ dashboardRouter.post(
   "/ganttchart/addschedule",
   async (req: Request, res: Response) => {
     const { name, startDate, endDate, userID } = req.body;
-    console.log(req.body);
     let form = new AddScheduleForm();
     form.name = name;
     form.startDate = startDate;
@@ -245,14 +290,13 @@ dashboardRouter.post(
 );
 
 dashboardRouter.post("/timesheet", async (req: Request, res: Response) => {
-  console.log(req.body);
-  const { Title, Start, End, UserID } = req.body;
-  console.log(req.body);
+  const { Title, Start, End, UserID, CalendarID } = req.body;
   let form = new TimeSheetForm();
   form.Title = Title;
   form.Start = Start;
   form.End = End;
   form.UserID = UserID;
+  form.CalendarID = CalendarID;
   const errors = await validate(form);
   if (errors.length > 0) {
     //if there is error
@@ -263,65 +307,124 @@ dashboardRouter.post("/timesheet", async (req: Request, res: Response) => {
     });
     return;
   }
-  let result = await addTimesheetManager(Title, Start, End, UserID);
-  console.log(result);
+  let result = await addTimesheetManager(Title, Start, End, UserID, CalendarID);
   if (result) {
-    res.status(200).send("registration successful");
+    res.json(result);
   } else {
     res.status(400).json("registration failed");
   }
 });
 
 dashboardRouter.get("/userinformation", async (req, res) => {
-  const token = req.query.Token as string;
-  const decodedToken = jwtDecode(token) as unknown as { ID?: number };
-  const ID = decodedToken.ID;
-  if (ID)
-    try {
-      const result = await getUserProfile(ID);
-      res.json(result);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Internal Server Error" });
-    }
+  const ID = req.userId;
+  try {
+    const result = await getUserProfile(ID!);
+    res.json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 });
 
 dashboardRouter.get("/schedule", async (req, res) => {
-  const token = req.query.Token as string;
-  const decodedToken = jwtDecode(token) as unknown as { ID?: number };
-  const ID = decodedToken.ID;
-  if (ID)
-    try {
-      const result = await getSchedule(ID);
-      console.log(result);
-      res.json(result);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Internal Server Error" });
-    }
+  const ID = req.userId;
+  try {
+    const result = await getSchedule(ID!);
+    console.log(result);
+    res.json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 });
 
 dashboardRouter.get("/timesheet", async (req, res) => {
-  const token = req.query.Token as string;
-  const decodedToken = jwtDecode(token) as unknown as { ID?: number };
-  const ID = decodedToken.ID;
-  if (ID)
-    try {
-      const result = await getTimeSheet(ID);
-      res.json(result);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Internal Server Error" });
-    }
+  const ID = req.userId;
+  try {
+    const result = await getTimeSheet(ID!);
+    res.json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 });
 
+dashboardRouter.post("/calendarlist", async (req: Request, res: Response) => {
+  const { Name, Color } = req.body;
+  const ID = req.userId;
+  let form = new CalendarListForm();
+  form.Name = Name;
+  form.Color = Color;
+  const errors = await validate(form);
+  if (errors.length > 0) {
+    //if there is error
+    res.status(400).json({
+      success: false,
+      error: "validation_error",
+      message: errors,
+    });
+    return;
+  }
+  let result = await addCalendarListManager(ID!, Name, Color);
+  if (result) {
+    res.json({ status: true });
+  } else {
+    res.status(400).json("Maximum Number reached!");
+  }
+});
+
+dashboardRouter.post("/updatecalendar", async (req: Request, res: Response) => {
+  const { Name, Color } = req.body;
+  const ID = req.userId;
+  let form = new CalendarListForm();
+  form.Name = Name;
+  form.Color = Color;
+  const errors = await validate(form);
+  if (errors.length > 0) {
+    //if there is error
+    res.status(400).json({
+      success: false,
+      error: "validation_error",
+      message: errors,
+    });
+    return;
+  }
+  let result = await updateCalendarColor(ID!, Name, Color);
+  if (result) {
+    res.status(200).json("Successfully updated the color");
+  } else {
+    res.status(400).json("Failed to update the color");
+  }
+});
+
+dashboardRouter.post(
+  "/dashboard/deleteCalendar",
+  async (req: Request, res: Response) => {
+    console.log(req.query);
+    const { CalendarID } = req.body;
+    const ID = req.userId;
+    let result = await deleteCalenderListManager(ID!, CalendarID);
+    if (result) {
+      res.json({ status: true });
+    } else {
+      res.status(400).json("Internal Error Occurred!");
+    }
+    res.json("test");
+  }
+);
+
 dashboardRouter.get("/calendarlist", async (req, res) => {
-  const token = req.query.Token as string;
-  const decodedToken = jwtDecode(token) as unknown as { ID?: number };
-  const ID = decodedToken.ID;
+  const startDate = req.query.start as string;
+  const endDate = req.query.end as string;
+
+  const ID = req.userId;
   if (ID)
     try {
-      const result = await getTimeSheet(ID);
+      const result = await getCalendarList(
+        ID,
+        new Date(startDate),
+        new Date(endDate)
+      );
       res.json(result);
     } catch (error) {
       console.error(error);

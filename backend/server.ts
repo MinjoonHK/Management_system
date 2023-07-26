@@ -5,7 +5,13 @@ import cors from "cors";
 import { validationIsLogggedIn } from "./middlewares/checkIsLoggedIn";
 import authenticationRouter from "./routes/authentication";
 import dashboardRouter from "./routes/dashboard";
-
+declare global {
+  namespace Express {
+    interface Request {
+      userId?: number;
+    }
+  }
+}
 const app: Express = express();
 
 dotenv.config(); // Read .env File

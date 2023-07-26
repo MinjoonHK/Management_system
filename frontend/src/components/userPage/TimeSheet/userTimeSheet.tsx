@@ -1,18 +1,32 @@
 import moment from "moment";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Calendar, momentLocalizer, Views, SlotInfo } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import SlotModal from "./slotModal";
-import { data } from "../../../data/timeSheetData";
 import EventModal from "./eventModal";
-import { Calendar as AntdCalendar, Button, Card, theme } from "antd";
+import {
+  Calendar as AntdCalendar,
+  Card,
+  theme,
+  Checkbox,
+  Popover,
+  Button,
+  ColorPicker,
+} from "antd";
 import dayjs, { Dayjs } from "dayjs";
-import "./calendar-override.css";
+import "../../../assets/calendar-override.css";
 import { t } from "i18next";
-import { PlusSquareOutlined, MinusSquareOutlined } from "@ant-design/icons";
-import AddCalendar from "./addCalendarModal";
+import { PlusSquareOutlined, DeleteOutlined } from "@ant-design/icons";
 import AddMyCalendar from "./addMyCalendarModal";
 import { CalendarList } from "../../../data/calendarList";
+import DeleteModal from "./deleteModal";
+import AddProjectCalendar from "./addProjectCalendarModal";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faShare, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
+import "../../../assets/calendarList.css";
+import { ColorList } from "../../../data/colorList";
+import axios from "axios";
+import { Color } from "antd/es/color-picker";
 const localizer = momentLocalizer(moment);
 
 interface Event {
@@ -25,41 +39,64 @@ export default function TimeSheet() {
   const [calCurrDate, setCalCurrDate] = useState(new Date());
   const [open, setOpen] = useState(false);
   const [openDetail, setOpenDetail] = useState(false);
-  const [events, setEvents] = useState([]);
-  const [view, setView] = useState(Views.WEEK);
+  const [view, setView] = useState(Views.Month);
   const [select, setSelect] = useState(new Date());
   const [antdSelect, setAntdSelect] = useState(() => dayjs());
   const [antdValue, setAntdValue] = useState(() => dayjs());
   const [evtTitle, setEvtTitle] = useState({});
-  const [openAddCalendar, setOpenAddCalendar] = useState(false);
+  const [openAddProjectCalendar, setOpenAddProjectCalendar] = useState(false);
   const [openAddMyCalendar, setOpenAddMyCalendar] = useState(false);
-  const [currentCalendar, setCurrentCalendar] = useState();
-  const [myCalendarList, setMyCalendarList] = useState();
+  const [myCalendarList, setMyCalendarList] = useState([]);
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [selectedCalendar, setSelectedCalendar] = useState("");
 
+  const fetchData = async (date: Date) => {
+    try {
+      const calendarList = await CalendarList(
+        dayjs(date).startOf("month"),
+        dayjs(date).endOf("month")
+      );
+      setMyCalendarList(calendarList);
+    } catch (error) {
+      console.error(error);
+    }
+  };
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const result = await data();
-        const calendarList = await CalendarList();
-        setEvents(result);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchData();
+    fetchData(new Date());
   }, []);
-
+  function contrastingColor(color) {
+    return luma(color) >= 165 ? "000" : "fff";
+  }
+  function luma(color) {
+    // color can be a hx string or an array of RGB values 0-255
+    var rgb = typeof color === "string" ? hexToRGBArray(color) : color;
+    return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]; // SMPTE C, Rec. 709 weightings
+  }
+  function hexToRGBArray(color) {
+    if (color.length === 3)
+      color =
+        color.charAt(0) +
+        color.charAt(0) +
+        color.charAt(1) +
+        color.charAt(1) +
+        color.charAt(2) +
+        color.charAt(2);
+    else if (color.length !== 6) throw "Invalid hex color: " + color;
+    var rgb = [];
+    for (var i = 0; i <= 2; i++) rgb[i] = parseInt(color.substr(i * 2, 2), 16);
+    return rgb;
+  }
   /** Returning the Current Date Value */
   const onNavigate = (newDate: Date) => {
     setCalCurrDate(newDate);
     setAntdValue(dayjs(newDate));
+    fetchData(newDate);
   };
 
   /** Action when the slot box has selected */
   const handleSelectSlot = (SlotInfo: SlotInfo) => {
     setSelect(SlotInfo.start);
-    console.log(`${SlotInfo.start.getHours()}:${SlotInfo.start.getMinutes()}`);
+    // console.log(`${SlotInfo.start.getHours()}:${SlotInfo.start.getMinutes()}`);
     setOpen(true);
   };
   /** Action when Event cell has been clicked */
@@ -81,8 +118,45 @@ export default function TimeSheet() {
     setView(Views.DAY);
   };
 
+  const projectCalendarActions = (e: any) => {
+    return (
+      <div>
+        <div>
+          <Button style={{ width: "100%" }}>
+            <FontAwesomeIcon icon={faShare} style={{ marginRight: "15%" }} />
+            Share to other
+          </Button>
+        </div>
+        <div>
+          <Button style={{ width: "100%", marginTop: "1%" }}>
+            <DeleteOutlined /> Delete Selected Calendar
+          </Button>
+        </div>
+        <div>
+          <ColorPicker
+            presets={[ColorList]}
+            defaultValue={e.Color}
+            onChange={async (value: Color, hex: string) => {
+              const res = await axios.post("/dashboard/updatecalendar", {
+                Name: e.Name,
+                Color: hex,
+              });
+              if (res.data === "Successfully updated the color") {
+                try {
+                  fetchData(calCurrDate);
+                } catch (error) {
+                  console.log("CalendarList Error", error);
+                }
+              }
+            }}
+          />
+        </div>
+      </div>
+    );
+  };
+
   const handleAddCalendar = () => {
-    setOpenAddCalendar(true);
+    setOpenAddProjectCalendar(true);
   };
 
   const handleAddMyCalendar = () => {
@@ -136,22 +210,52 @@ export default function TimeSheet() {
               }
               style={{ minWidth: "100%", marginTop: "1.5%" }}
             >
-              <ul
-                style={{
-                  padding: 0,
-                  listStyle: "none",
-                  textAlign: "left",
-                }}
-              >
-                <li style={{ padding: 0 }}>
-                  <MinusSquareOutlined
-                    onClick={() => {
-                      console.log("Delete!");
-                    }}
-                  />{" "}
-                  MySchedule
-                </li>
-              </ul>
+              {myCalendarList && (
+                <ul
+                  style={{
+                    padding: 0,
+                    listStyle: "none",
+                    textAlign: "left",
+                  }}
+                >
+                  {myCalendarList.map((e) => (
+                    <li
+                      key={"calendar-" + e.ID}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Checkbox
+                        checked={e.selected}
+                        onChange={(evt) => {
+                          let mycalendars = [...myCalendarList];
+                          const idx = myCalendarList.findIndex(
+                            (d) => d.ID == e.ID
+                          );
+                          mycalendars[idx].selected =
+                            !myCalendarList[idx].selected;
+                          setMyCalendarList(mycalendars);
+                        }}
+                      >
+                        {e.Name}
+                      </Checkbox>
+                      <span className="threeDot">
+                        <Popover
+                          title={"Actions"}
+                          trigger={"click"}
+                          placement="right"
+                          content={projectCalendarActions(e)}
+                        >
+                          <Button size="small">
+                            <FontAwesomeIcon icon={faEllipsisVertical} />
+                          </Button>
+                        </Popover>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </Card>
           </div>
           <div>
@@ -170,10 +274,47 @@ export default function TimeSheet() {
               }
               style={{ marginTop: "1.5%", flex: 1, minWidth: "100%" }}
             >
-              Lorem, ipsum dolor sit amet consectetur adipisicing elit. Ut
-              explicabo quibusdam eum placeat quae consectetur modi odit quam
-              rerum excepturi corrupti provident maxime, odio assumenda soluta
-              recusandae fuga, labore sint.
+              {myCalendarList && (
+                <ul
+                  style={{
+                    padding: 0,
+                    listStyle: "none",
+                    textAlign: "left",
+                  }}
+                >
+                  {myCalendarList.map((e) => (
+                    <li
+                      key={"calendar-" + e.ID}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Checkbox
+                        checked={e.selected}
+                        onChange={(evt) => {
+                          let mycalendars = [...myCalendarList];
+                          const idx = myCalendarList.findIndex(
+                            (d) => d.ID == e.ID
+                          );
+                          mycalendars[idx].selected =
+                            !myCalendarList[idx].selected;
+                          setMyCalendarList(mycalendars);
+                        }}
+                      >
+                        {e.Name}
+                      </Checkbox>
+                      <DeleteOutlined
+                        className="delete-icon"
+                        onClick={() => {
+                          setSelectedCalendar(e.ID);
+                          setOpenDeleteModal(true);
+                        }}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              )}
             </Card>
           </div>
         </div>
@@ -186,7 +327,17 @@ export default function TimeSheet() {
         >
           <Calendar
             localizer={localizer}
-            events={events}
+            events={myCalendarList
+              .filter((c) => c.selected)
+              .map((d) => {
+                let schedules = [...d.schedules];
+                schedules = schedules.map((c) => {
+                  c.color = d.Color;
+                  return c;
+                });
+                return schedules;
+              })
+              .flat()}
             startAccessor="start"
             endAccessor="end"
             onSelectEvent={handleSelectEvent}
@@ -198,6 +349,18 @@ export default function TimeSheet() {
             onView={onView}
             view={view}
             onNavigate={onNavigate}
+            eventPropGetter={(event: any) => {
+              var backgroundColor = event.color;
+              if (backgroundColor != null) {
+                var style = {
+                  backgroundColor: backgroundColor,
+                  color: "#" + contrastingColor(backgroundColor.slice(-6)),
+                };
+                return {
+                  style: style,
+                };
+              }
+            }}
             date={calCurrDate}
           />
         </div>
@@ -205,21 +368,33 @@ export default function TimeSheet() {
       <SlotModal
         open={open}
         onClose={() => setOpen(false)}
-        events={events}
+        calendarList={myCalendarList.map((e) => {
+          return {
+            label: e.Name,
+            value: e.ID,
+          };
+        })}
         start={select}
+        // onChange={fetchData(calCurrDate)}
+      />
+      <DeleteModal
+        open={openDeleteModal}
+        onClose={() => setOpenDeleteModal(false)}
+        deleteID={selectedCalendar}
       />
       <EventModal
         open={openDetail}
         onClose={() => setOpenDetail(false)}
         evtTitle={evtTitle}
       />
-      <AddCalendar
-        open={openAddCalendar}
-        onClose={() => setOpenAddCalendar(false)}
+      <AddProjectCalendar
+        open={openAddProjectCalendar}
+        onClose={() => setOpenAddProjectCalendar(false)}
       />
       <AddMyCalendar
         open={openAddMyCalendar}
         onClose={() => setOpenAddMyCalendar(false)}
+        onChange={() => fetchData(calCurrDate)}
       />
     </div>
   );

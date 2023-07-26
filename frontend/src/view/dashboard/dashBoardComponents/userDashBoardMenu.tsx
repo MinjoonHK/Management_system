@@ -5,6 +5,13 @@ import { NavLink } from "react-router-dom";
 export const UserDashboard: MenuProps["items"] = [
   {
     label: (
+      <div style={{ fontSize: "14px", fontWeight: "bold" }}>{t("Project")}</div>
+    ),
+    key: "/Project", //key name should be uniform
+    link: "/Project",
+  },
+  {
+    label: (
       <div style={{ fontSize: "14px", fontWeight: "bold" }}>
         {t("GanttChart")}
       </div>
@@ -48,13 +55,7 @@ export const UserDashboard: MenuProps["items"] = [
     key: "/WorkOrder", //key name should be uniform
     link: "/workorder",
   },
-  {
-    label: (
-      <div style={{ fontSize: "14px", fontWeight: "bold" }}>{t("Contact")}</div>
-    ),
-    key: "/contact", //key name should be uniform
-    link: "/contact",
-  },
+
   {
     label: (
       <div style={{ fontSize: "14px", fontWeight: "bold" }}>

@@ -1,3 +1,4 @@
+import { endOfDay, format, startOfDay } from "date-fns";
 import { pool } from "../db/db";
 import { User } from "../models/usermodel";
 
@@ -178,18 +179,77 @@ export async function getPerformanceInfo(Location: string) {
   }
 }
 
+export async function getProjectList(ID: Number) {
+  try {
+    // const [result] = await pool.query("SELECT Joined_User_Email FROM ")
+    const [result2] = await pool.query(
+      "SELECT ID, ProjectName from project WHERE User_ID = ? ",
+      [ID]
+    );
+    return result2;
+  } catch (err) {
+    console.error(new Date(), "getComapnyList", err);
+    return null;
+  }
+}
+
+export async function addProjectList(
+  ProjectName: string,
+  Start: String,
+  ID: Number,
+  TeamMembers: String[]
+) {
+  try {
+    const [result1] = await pool.execute(
+      "INSERT INTO project (ProjectName, Start, User_ID) VALUES(?,?,?)",
+      [ProjectName, Start, ID]
+    );
+    const [lastAddedProject] = await pool.execute(
+      "SELECT ID FROM project WHERE User_ID =? ORDER BY ID DESC LIMIT 1",
+      [ID]
+    );
+    let affectedRows = 0;
+    for (const email of TeamMembers) {
+      const [result2, fields] = await pool.execute(
+        "INSERT INTO projectpeople (Joined_User_Email,project_ID) VALUES(?,?)",
+        [email, lastAddedProject[0].ID]
+      );
+      affectedRows += result2.affectedRows;
+    }
+    console.log(affectedRows);
+    if (result1 && affectedRows > 0) {
+      return (
+        new Date(),
+        result1,
+        "sucessfully added",
+        affectedRows,
+        "have inserted to projectpeople Table"
+      );
+    }
+  } catch (err) {
+    console.error(new Date(), "addTimeSheetManager", err);
+    return null;
+  }
+}
+
 export async function addTimesheetManager(
   Title: string,
   Start: string,
   End: string,
-  userID: number
+  userID: number,
+  CalendarID: number
 ) {
   try {
-    const [rows, fields] = await pool.execute(
-      "INSERT INTO timesheet ( Title, Start, End, user_ID) VALUES( ?, ?, ?,?);",
-      [Title, Start, End, userID]
+    const [rows] = await pool.execute(
+      "INSERT INTO timesheet ( Title, Start, End, UserID, CalendarID) VALUES( ?, ?, ?,?,?);",
+      [Title, Start, End, userID, CalendarID]
     );
-    return rows.insertId;
+    const [result] = await pool.execute(
+      "SELECT CalendarID, Title from timesheet WHERE UserID =? AND CalendarID = ?",
+      [userID, CalendarID]
+    );
+    console.log(result);
+    return result;
   } catch (err) {
     console.error(new Date(), "addTimeSheetManager", err);
     return null;
@@ -199,12 +259,58 @@ export async function addTimesheetManager(
 export async function getTimeSheet(ID: number) {
   try {
     const resultQuery =
-      "SELECT Start,End, Title  FROM timesheet WHERE user_ID = ?";
+      "SELECT Start,End, Title,CalendarID  FROM timesheet WHERE UserID = ?";
     let [result] = await pool.query(resultQuery, [ID]);
     return result;
   } catch (err) {
     console.error(new Date(), "getTimeSheet", err);
     return null;
+  }
+}
+
+export async function getCalendarList(
+  ID: number,
+  startRange: Date,
+  endRange: Date
+) {
+  try {
+    const resultQuery =
+      "SELECT Name, ID, Color FROM calendar WHERE user_ID = ?";
+    let [result] = await pool.query(resultQuery, [ID]);
+    const resultQuery2 =
+      "SELECT ID, Start,End, Title,CalendarID FROM timesheet WHERE CalendarID  IN  (?) AND Start >= ? and End <=?";
+    let [result2] = await pool.query(resultQuery2, [
+      result.map((d: any) => d.ID),
+      format(startOfDay(startRange), "yyyy-MM-dd"),
+      format(endOfDay(endRange), "yyyy-MM-dd"),
+    ]);
+
+    let finalResult = result.map((r: any) => {
+      return {
+        ...r,
+        schedules: result2.filter((r2: any) => r2.CalendarID === r.ID),
+      };
+    });
+    return finalResult;
+  } catch (err) {
+    console.error(new Date(), "getCalendarList", err);
+    return null;
+  }
+}
+
+export async function updateCalendarColor(
+  ID: number,
+  Name: string,
+  Color: string
+) {
+  try {
+    const [rows, fields] = await pool.execute(
+      "UPDATE calendar SET Color = ? WHERE Name = ? AND user_ID = ?",
+      [Color, Name, ID]
+    );
+    return true;
+  } catch (error) {
+    return new Date(), "updateCalendarColor Error", error;
   }
 }
 
@@ -226,5 +332,47 @@ export async function addworkorder(
   } catch (err) {
     console.error(new Date(), "addWorkOrder", err);
     return null;
+  }
+}
+
+export async function addCalendarListManager(
+  ID: Number,
+  Name: string,
+  Color: string
+) {
+  try {
+    const [countRows] = await pool.execute(
+      "SELECT COUNT(*) AS count FROM calendar WHERE user_ID = ?",
+      [ID]
+    );
+
+    const count = countRows[0].count;
+
+    if (count >= 5) {
+      throw new Error("Maximum number of calendars reached");
+    }
+    const [result] = await pool.execute(
+      "INSERT INTO calendar (user_ID,Name,Color) VALUES(?, ?, ?);",
+      [ID, Name, Color]
+    );
+    return true;
+  } catch (err) {
+    console.error(new Date(), "addCalendarListManager", err);
+    return false;
+  }
+}
+
+export async function deleteCalenderListManager(
+  CalendarID: Number,
+  ID: Number
+) {
+  try {
+    const result =
+      "UPDATE calendar SET isActive = 'Deactivated', deleted_at = NOW() WHERE isActive = 'Active' AND ID = ?";
+
+    return result;
+  } catch (err) {
+    console.error(new Date(), "deleteUserProfile", err);
+    return 0;
   }
 }

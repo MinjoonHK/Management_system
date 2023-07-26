@@ -13,6 +13,7 @@
      "GoodMorning": "早上好!",
      "GoodAfterNoon": "下午好!",
      "GoodEvening": "晚上好!",
-     "MyCalendars":"My Calendars",
-     "OtherCalendars":"Other Calendars"
+     "MyCalendars":"my Calendars",
+     "SharedCalendars":"Shared Calendars",
+     "Project":"Project"
 }

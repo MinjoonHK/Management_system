@@ -1,21 +1,39 @@
 import axios from "axios";
-
-interface DataType {
-  Start: Date;
-  ID: number;
-  End: Date;
-  Title: string;
+import dayjs from "dayjs";
+interface Schedule {
+  title: string;
+  start: Date;
+  end: Date;
 }
-export const CalendarList = async (): Promise<DataType[]> => {
-  const Token = localStorage.getItem("jwt");
-  const response = await axios.get<DataType[]>("/dashboard/timesheet", {
-    params: { Token },
+interface DataType {
+  Name: string;
+  ID: number;
+  selected: boolean;
+  Color: string;
+  schedules: Schedule[];
+}
+export const CalendarList = async (
+  start: dayjs.Dayjs,
+  end: dayjs.Dayjs
+): Promise<DataType[]> => {
+  const response = await axios.get<DataType[]>("/dashboard/calendarlist", {
+    params: {
+      start: start.format("YYYY-MM-DD"),
+      end: end.format("YYYY-MM-DD"),
+    },
   });
-  const newData: DataType[] = response.data.map((item) => ({
-    ...item,
-    start: new Date(item.Start),
-    end: new Date(item.End),
-    title: item.Title,
-  }));
+  const newData: DataType[] = response.data.map((item) => {
+    return {
+      ...item,
+      selected: true,
+      schedules: item.schedules.map((si: any) => {
+        return {
+          start: new Date(si.Start),
+          end: new Date(si.End),
+          title: si.Title,
+        };
+      }),
+    };
+  });
   return newData;
 };

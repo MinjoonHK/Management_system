@@ -2,7 +2,12 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import config from "config";
 interface DecodedToken {
-  userId: string;
+  Email: string;
+  ID: number;
+  Name: string;
+  Role: string;
+  iat: number;
+  exp: number;
 }
 
 export function validationIsLogggedIn(
@@ -17,11 +22,11 @@ export function validationIsLogggedIn(
         token,
         config.get("jwt.passphase")!
       ) as DecodedToken;
-      req.userId = decoded.userId;
+      req.userId = decoded.ID;
       return next();
     } catch (err) {
       console.error(err);
     }
   }
-  next("UNAUTHORIZED ACTION");
+  return next("UNAUTHORIZED ACTION");
 }

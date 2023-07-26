@@ -10,4 +10,7 @@ export class TimeSheetForm {
   Title? = String;
   @IsString()
   End? = String;
+
+  @IsNumber()
+  CalendarID? = Number;
 }

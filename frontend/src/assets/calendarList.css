@@ -1,0 +1,15 @@
+li:hover .delete-icon {
+    display: block;
+}
+
+li:hover .threeDot{
+    display:block;
+}
+
+.delete-icon {
+    display: none;
+}
+
+.threeDot{
+    display:none;
+}

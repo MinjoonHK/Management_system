@@ -1,6 +1,50 @@
-import { Card, Modal, Button, Select, Form, Input } from "antd";
+import {
+  Card,
+  Modal,
+  Button,
+  Select,
+  Form,
+  Input,
+  ColorPicker,
+  Row,
+  Col,
+} from "antd";
+import axios from "axios";
+import Swal from "sweetalert2";
+import { ColorList } from "../../../data/colorList";
 
-export default function AddMyCalendar({ open, onClose }) {
+export default function AddMyCalendar({ open, onClose, onChange }) {
+  const onFinish = async ({ Name, Color }) => {
+    try {
+      let color = "#CCCCCC";
+      if (typeof Color === typeof "") {
+        color = Color;
+      } else {
+        color = Color.toHexString();
+      }
+      const res = await axios.post("/dashboard/calendarlist", {
+        Name,
+        Color: color,
+      });
+      if (res.status === 200) {
+        onChange();
+        onClose();
+      }
+    } catch (err) {
+      if (err.response.data === "Maximum Number reached!") {
+        Swal.fire(
+          "Maximum Number Reached!",
+          "Please remove other calendars to continue",
+          "warning"
+        );
+      }
+    }
+  };
+
+  const onFinishFailed = (errorInfo: never) => {
+    console.log("Failed:", errorInfo);
+  };
+
   return (
     <Modal
       centered
@@ -11,7 +55,11 @@ export default function AddMyCalendar({ open, onClose }) {
       width={500}
       onOk={onClose}
       bodyStyle={{ height: "100%" }}
-      footer={[<Button key="cancel">Cancel</Button>]}
+      footer={[
+        <Button key="cancel" onClick={onClose}>
+          Cancel
+        </Button>,
+      ]}
     >
       <Card
         title={
@@ -21,10 +69,19 @@ export default function AddMyCalendar({ open, onClose }) {
         }
       >
         <div>
-          <Form>
-            <Form.Item name="Email">
-              <Input placeholder="Type the Calendar Name" size={"large"} />
-            </Form.Item>
+          <Form onFinish={onFinish} onFinishFailed={onFinishFailed}>
+            <Row gutter={16}>
+              <Col span={22}>
+                <Form.Item name="Name">
+                  <Input placeholder="Type the Calendar Name" size={"large"} />
+                </Form.Item>
+              </Col>
+              <Col span={2}>
+                <Form.Item name="Color" style={{ marginTop: "10%" }}>
+                  <ColorPicker format="hex" presets={[ColorList]}></ColorPicker>
+                </Form.Item>
+              </Col>
+            </Row>
             <Form.Item style={{ textAlign: "center" }}>
               <Button
                 htmlType="submit"
