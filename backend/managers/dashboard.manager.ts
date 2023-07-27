@@ -94,11 +94,16 @@ export async function updateworkorder(ID: number[]) {
 export async function getUserProfile(ID: number) {
   try {
     let [users, _] = (await pool.query(
-      "SELECT FirstName, LastName, Email, Role, PhoneNumber, isActive, created_at, Company FROM user WHERE ID = ? limit 0, 1",
+      "SELECT FirstName, LastName, Email, Role, PhoneNumber, isActive, created_at, CompanyID FROM user WHERE ID = ? limit 0, 1",
       [ID]
     )) as [User[], any];
-    if (users.length) return users[0];
-    else return null;
+    const companyID = users[0].CompanyID;
+    const [getUserCompany] = await pool.query(
+      "SELECT Name from company WHERE ID = ?",
+      [companyID]
+    );
+    const result = { ...users[0], ...getUserCompany[0] };
+    return result;
   } catch (err) {
     console.error(new Date(), "getUserProfile", err);
     return null;
@@ -181,12 +186,24 @@ export async function getPerformanceInfo(Location: string) {
 
 export async function getProjectList(ID: Number) {
   try {
-    // const [result] = await pool.query("SELECT Joined_User_Email FROM ")
-    const [result2] = await pool.query(
-      "SELECT ID, ProjectName from project WHERE User_ID = ? ",
+    const [result1] = await pool.query(
+      "SELECT ID, ProjectName from project WHERE User_ID = ? AND Deleted_At IS NULL ",
       [ID]
     );
-    return result2;
+
+    const [result2] = await pool.query(
+      "SELECT project_ID, Joined_User_Email from projectpeople WHERE project_ID IN (?)",
+      [result1.map((project: any) => project.ID)]
+    );
+
+    const projectList = result1.map((project: any) => {
+      const joinedUsers = result2
+        .filter((join: any) => join.project_ID === project.ID)
+        .map((join: any) => join.Joined_User_Email);
+      return { ...project, joinedUsers };
+    });
+
+    return projectList;
   } catch (err) {
     console.error(new Date(), "getComapnyList", err);
     return null;
@@ -259,7 +276,7 @@ export async function addTimesheetManager(
 export async function getTimeSheet(ID: number) {
   try {
     const resultQuery =
-      "SELECT Start,End, Title,CalendarID  FROM timesheet WHERE UserID = ?";
+      "SELECT Start,End, Title,CalendarID, Description FROM timesheet WHERE UserID = ?";
     let [result] = await pool.query(resultQuery, [ID]);
     return result;
   } catch (err) {
@@ -373,6 +390,19 @@ export async function deleteCalenderListManager(
     return result;
   } catch (err) {
     console.error(new Date(), "deleteUserProfile", err);
+    return 0;
+  }
+}
+
+export async function deleteProjectList(ProjectID: Number, ID: Number) {
+  try {
+    const result = pool.execute(
+      "UPDATE project SET Deleted_At = NOW() WHERE ID = ? AND User_ID = ?",
+      [ProjectID, ID]
+    );
+    return result;
+  } catch (err) {
+    console.error(new Date(), "deleteProjectList", err);
     return 0;
   }
 }

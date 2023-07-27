@@ -8,6 +8,6 @@ export interface User {
   Password: string;
   PhoneNumber: string;
   Role: string;
-  Company: string;
+  CompanyID: number;
   isActive: string;
 }

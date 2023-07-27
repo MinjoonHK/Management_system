@@ -25,6 +25,7 @@ import {
   updateCalendarColor,
   addProjectList,
   getProjectList,
+  deleteProjectList,
 } from "../managers/dashboard.manager";
 import { workorderform } from "../models/forms/workorder.form";
 import { updateWorkOrder } from "../models/forms/updateworkorder.form";
@@ -263,12 +264,12 @@ dashboardRouter.post(
 dashboardRouter.post(
   "/ganttchart/addschedule",
   async (req: Request, res: Response) => {
-    const { name, startDate, endDate, userID } = req.body;
+    const { name, startDate, endDate } = req.body;
+    const userID = req.userId;
     let form = new AddScheduleForm();
     form.name = name;
     form.startDate = startDate;
     form.endDate = endDate;
-    form.userID = userID;
     const errors = await validate(form);
     if (errors.length > 0) {
       //if there is error
@@ -279,7 +280,7 @@ dashboardRouter.post(
       });
       return;
     }
-    let result = await addScheduleManager(name, startDate, endDate, userID);
+    let result = await addScheduleManager(name, startDate, endDate, userID!);
     console.log(result);
     if (result) {
       res.status(200).send("registration successful");
@@ -397,26 +398,41 @@ dashboardRouter.post("/updatecalendar", async (req: Request, res: Response) => {
   }
 });
 
+dashboardRouter.post("/deleteCalendar", async (req: Request, res: Response) => {
+  console.log(req.query);
+  const { CalendarID } = req.body;
+  const ID = req.userId;
+  let result = await deleteCalenderListManager(ID!, CalendarID);
+  if (result) {
+    res.json({ status: true });
+  } else {
+    res.status(400).json("Internal Error Occurred!");
+  }
+  res.json("test");
+});
+
+// need to fix
 dashboardRouter.post(
-  "/dashboard/deleteCalendar",
+  "/deleteProjectList",
   async (req: Request, res: Response) => {
-    console.log(req.query);
-    const { CalendarID } = req.body;
+    console.log(req.body);
+    const { ProjectID } = req.body;
     const ID = req.userId;
-    let result = await deleteCalenderListManager(ID!, CalendarID);
+    let result = await deleteProjectList(ProjectID, ID!);
     if (result) {
       res.json({ status: true });
     } else {
-      res.status(400).json("Internal Error Occurred!");
+      res.status(400).json({
+        message: "Error occured at deleting ProjectList",
+        result: result,
+      });
     }
-    res.json("test");
   }
 );
 
 dashboardRouter.get("/calendarlist", async (req, res) => {
   const startDate = req.query.start as string;
   const endDate = req.query.end as string;
-
   const ID = req.userId;
   if (ID)
     try {
