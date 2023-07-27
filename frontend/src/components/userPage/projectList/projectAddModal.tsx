@@ -2,7 +2,7 @@ import { Card, Modal, Button, Form, Input, Select, DatePicker } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
 
-export default function AddModal({ open, onClose }) {
+export default function AddModal({ open, onClose, onChange }) {
   const onFinish = async ({ Name, TeamMembers, StartDate }) => {
     try {
       const res1 = await axios.post("/dashboard/projectList", {
@@ -11,6 +11,7 @@ export default function AddModal({ open, onClose }) {
         Start: StartDate.toISOString(),
       });
       if (res1.status === 200) {
+        onChange();
         onClose();
       }
     } catch (err) {

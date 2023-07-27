@@ -29,6 +29,7 @@ import { t } from "i18next";
 import UserProject from "../../components/userPage/projectList/userProjectList";
 import BudgetManagement from "../../components/userPage/userBudget";
 import MaterialInfo from "../../components/userPage/userMaterialInfo";
+import UserInformation from "../../components/userProfile";
 const { Header, Content, Footer, Sider } = Layout;
 
 function logout() {
@@ -184,7 +185,10 @@ const Dashboard: React.FC = () => {
                 {greeting}
               </span>
 
-              <Dropdown menu={{ items: DashboardDropdown }} trigger={["click"]}>
+              <Dropdown
+                menu={{ items: DashboardDropdown(userRole) }}
+                trigger={["click"]}
+              >
                 <a onClick={(e) => e.preventDefault()}>
                   <Space style={{ color: "black", fontSize: "18px" }}>
                     {firstName ? <>{firstName}</> : null}
@@ -257,12 +261,12 @@ const Dashboard: React.FC = () => {
                 <Route path="/addcompany" element={<AddCompany />}></Route>
                 <Route path="/addDevice" element={<AddDevice />}></Route>
                 <Route path="/addworkorder" element={<AddWorkOrder />}></Route>
-                <Route
-                  path="/admininformation"
-                  element={<AdminProfile />}
-                ></Route>
                 <Route path="/ganttchart" element={<GanttChart />}></Route>
                 <Route path="/project" element={<UserProject />}></Route>
+                <Route
+                  path="/userinformation"
+                  element={<UserInformation />}
+                ></Route>
                 <Route path="/timesheet" element={<TimeSheet />}></Route>
               </Routes>
             )}

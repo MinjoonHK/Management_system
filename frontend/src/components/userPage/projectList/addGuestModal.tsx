@@ -1,11 +1,11 @@
-import { Card, Modal, Button } from "antd";
+import { Card, Modal, Button, Input } from "antd";
 import axios from "axios";
 import Swal from "sweetalert2";
 
-export default function DeleteModal({ open, onClose, selectedCalendar }) {
-  const handleDelete = async () => {
+export default function AddGuestModal({ open, onClose, selectedProject }) {
+  const handleShare = async () => {
     const res = await axios.post("/dashboard/deleteProjectList", {
-      CalendarID: selectedCalendar.ID,
+      ProjectID: selectedProject.ID,
     });
     if (res) {
       try {
@@ -16,7 +16,6 @@ export default function DeleteModal({ open, onClose, selectedCalendar }) {
       }
     }
   };
-
   return (
     <Modal
       centered
@@ -32,12 +31,11 @@ export default function DeleteModal({ open, onClose, selectedCalendar }) {
         </Button>,
         <Button
           type="primary"
-          danger
-          key="Delete"
-          onClick={handleDelete}
-          style={{ color: "white" }}
+          key="Share"
+          onClick={handleShare}
+          style={{ color: "white", backgroundColor: "rgb(45,68,134)" }}
         >
-          Delete
+          Share
         </Button>,
       ]}
     >
@@ -49,15 +47,11 @@ export default function DeleteModal({ open, onClose, selectedCalendar }) {
               fontSize: "20px",
             }}
           >
-            Confirmation
+            Add Guest By Email
           </div>
         }
       >
-        <div style={{ fontSize: "15px" }}>
-          {selectedCalendar && (
-            <div>{`Are you sure about deleting ${selectedCalendar.Name}?`}</div>
-          )}
-        </div>
+        <Input placeholder="Please input email address" size="large" />
       </Card>
     </Modal>
   );

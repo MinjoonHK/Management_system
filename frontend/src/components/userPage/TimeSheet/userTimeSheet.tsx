@@ -14,7 +14,7 @@ import {
   ColorPicker,
 } from "antd";
 import dayjs, { Dayjs } from "dayjs";
-import "../../../assets/calendar-override.css";
+import "../../../assets/calendar/calendar-override.css";
 import { t } from "i18next";
 import { PlusSquareOutlined, DeleteOutlined } from "@ant-design/icons";
 import AddMyCalendar from "./addMyCalendarModal";
@@ -23,10 +23,11 @@ import DeleteModal from "./deleteModal";
 import AddProjectCalendar from "./addProjectCalendarModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faShare, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
-import "../../../assets/calendarList.css";
+import "../../../assets/calendar/calendarList.css";
 import { ColorList } from "../../../data/colorList";
 import axios from "axios";
 import { Color } from "antd/es/color-picker";
+import ShareModal from "./shareModal";
 const localizer = momentLocalizer(moment);
 
 interface Event {
@@ -48,7 +49,8 @@ export default function TimeSheet() {
   const [openAddMyCalendar, setOpenAddMyCalendar] = useState(false);
   const [myCalendarList, setMyCalendarList] = useState([]);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
-  const [selectedCalendar, setSelectedCalendar] = useState("");
+  const [selectedCalendar, setSelectedCalendar] = useState();
+  const [openShareModal, setOpenShareModal] = useState(false);
 
   const fetchData = async (date: Date) => {
     try {
@@ -56,6 +58,7 @@ export default function TimeSheet() {
         dayjs(date).startOf("month"),
         dayjs(date).endOf("month")
       );
+      console.log(calendarList);
       setMyCalendarList(calendarList);
     } catch (error) {
       console.error(error);
@@ -121,42 +124,26 @@ export default function TimeSheet() {
   const projectCalendarActions = (e: any) => {
     return (
       <div>
-        <div>
-          <Button style={{ width: "100%" }}>
-            <FontAwesomeIcon icon={faShare} style={{ marginRight: "15%" }} />
-            Share to other
-          </Button>
+        <div
+          className="projectAction shareCalendar"
+          style={{ cursor: "pointer" }}
+          onClick={() => setOpenShareModal(true)}
+        >
+          <FontAwesomeIcon icon={faShare} style={{ marginRight: "3%" }} />
+          <span style={{ textAlign: "left" }}>Share to other</span>
         </div>
-        <div>
-          <Button style={{ width: "100%", marginTop: "1%" }}>
-            <DeleteOutlined /> Delete Selected Calendar
-          </Button>
-        </div>
-        <div>
-          <ColorPicker
-            presets={[ColorList]}
-            defaultValue={e.Color}
-            onChange={async (value: Color, hex: string) => {
-              const res = await axios.post("/dashboard/updatecalendar", {
-                Name: e.Name,
-                Color: hex,
-              });
-              if (res.data === "Successfully updated the color") {
-                try {
-                  fetchData(calCurrDate);
-                } catch (error) {
-                  console.log("CalendarList Error", error);
-                }
-              }
-            }}
-          />
+        <div
+          className="projectAction deleteCalendar"
+          style={{ cursor: "pointer" }}
+          onClick={() => {
+            setSelectedCalendar(e);
+            setOpenDeleteModal(true);
+          }}
+        >
+          <DeleteOutlined /> Delete Selected Calendar
         </div>
       </div>
     );
-  };
-
-  const handleAddCalendar = () => {
-    setOpenAddProjectCalendar(true);
   };
 
   const handleAddMyCalendar = () => {
@@ -242,7 +229,51 @@ export default function TimeSheet() {
                       </Checkbox>
                       <span className="threeDot">
                         <Popover
-                          title={"Actions"}
+                          title={
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              <div
+                                style={{ fontWeight: "bold", fontSize: "18px" }}
+                              >
+                                Actions
+                              </div>
+                              <div>
+                                <ColorPicker
+                                  presets={[ColorList]}
+                                  defaultValue={e.Color}
+                                  onChange={async (
+                                    value: Color,
+                                    hex: string
+                                  ) => {
+                                    const res = await axios.post(
+                                      "/dashboard/updatecalendar",
+                                      {
+                                        Name: e.Name,
+                                        Color: hex,
+                                      }
+                                    );
+                                    if (
+                                      res.data ===
+                                      "Successfully updated the color"
+                                    ) {
+                                      try {
+                                        fetchData(calCurrDate);
+                                      } catch (error) {
+                                        console.log(
+                                          "CalendarList Error",
+                                          error
+                                        );
+                                      }
+                                    }
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          }
                           trigger={"click"}
                           placement="right"
                           content={projectCalendarActions(e)}
@@ -266,9 +297,6 @@ export default function TimeSheet() {
                     style={{ display: "flex", justifyContent: "space-between" }}
                   >
                     {t("SharedCalendars")}
-                    <span>
-                      <PlusSquareOutlined onClick={handleAddCalendar} />
-                    </span>
                   </div>
                 </div>
               }
@@ -302,12 +330,12 @@ export default function TimeSheet() {
                           setMyCalendarList(mycalendars);
                         }}
                       >
-                        {e.Name}
+                        {/* {e.Name} */}
                       </Checkbox>
                       <DeleteOutlined
                         className="delete-icon"
                         onClick={() => {
-                          setSelectedCalendar(e.ID);
+                          setSelectedCalendar(e);
                           setOpenDeleteModal(true);
                         }}
                       />
@@ -375,12 +403,12 @@ export default function TimeSheet() {
           };
         })}
         start={select}
-        // onChange={fetchData(calCurrDate)}
+        onChange={() => fetchData(calCurrDate)}
       />
       <DeleteModal
         open={openDeleteModal}
         onClose={() => setOpenDeleteModal(false)}
-        deleteID={selectedCalendar}
+        selectedCalendar={selectedCalendar}
       />
       <EventModal
         open={openDetail}
@@ -395,6 +423,12 @@ export default function TimeSheet() {
         open={openAddMyCalendar}
         onClose={() => setOpenAddMyCalendar(false)}
         onChange={() => fetchData(calCurrDate)}
+      />
+      <ShareModal
+        open={openShareModal}
+        onClose={() => {
+          setOpenShareModal(false);
+        }}
       />
     </div>
   );

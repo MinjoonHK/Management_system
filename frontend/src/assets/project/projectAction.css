@@ -1,0 +1,16 @@
+.projectAction{
+    width: 100%;
+    margin-top: 5px; 
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.projectAction:hover{
+    background-color: #D3D3D3;
+    border-radius: 5px;
+}
+
+.deleteProject:hover{
+    background-color: #FF0000;
+    color:white
+}

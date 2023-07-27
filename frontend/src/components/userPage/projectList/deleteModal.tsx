@@ -2,13 +2,19 @@ import { Card, Modal, Button } from "antd";
 import axios from "axios";
 import Swal from "sweetalert2";
 
-export default function DeleteModal({ open, onClose, selectedCalendar }) {
+export default function DeleteModal({
+  open,
+  onClose,
+  selectedProject,
+  onChange,
+}) {
   const handleDelete = async () => {
     const res = await axios.post("/dashboard/deleteProjectList", {
-      CalendarID: selectedCalendar.ID,
+      ProjectID: selectedProject.ID,
     });
     if (res) {
       try {
+        onChange();
         onClose();
         Swal.fire("Successfully Deleted", "success");
       } catch (error) {
@@ -16,7 +22,6 @@ export default function DeleteModal({ open, onClose, selectedCalendar }) {
       }
     }
   };
-
   return (
     <Modal
       centered
@@ -54,8 +59,10 @@ export default function DeleteModal({ open, onClose, selectedCalendar }) {
         }
       >
         <div style={{ fontSize: "15px" }}>
-          {selectedCalendar && (
-            <div>{`Are you sure about deleting ${selectedCalendar.Name}?`}</div>
+          {selectedProject && (
+            <div>
+              {`Are you sure about deleting ${selectedProject.ProjectName}?`}
+            </div>
           )}
         </div>
       </Card>

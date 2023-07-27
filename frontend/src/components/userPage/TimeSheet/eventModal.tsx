@@ -13,23 +13,30 @@ export default function EventModal({ open, onClose, evtTitle }) {
       bodyStyle={{ height: "100%" }}
       footer={[
         <Button type="default" key="Cancel" onClick={onClose}>
-          Cancel
-        </Button>,
-        <Button type="primary" danger key="Delete" style={{ color: "white" }}>
-          Delete
+          Close
         </Button>,
       ]}
     >
       <Card
         title={
-          <div style={{ fontSize: "20px", fontWeight: "bold" }}>
-            {evtTitle.start &&
-              new Date(evtTitle.start).toISOString().slice(0, 10)}
-            ~{evtTitle.end && new Date(evtTitle.end).toISOString().slice(0, 10)}
+          <div
+            style={{
+              fontSize: "20px",
+              fontWeight: "bold",
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
+            <span>{evtTitle.title && evtTitle.title}</span>
           </div>
         }
       >
-        <div style={{ fontSize: "15px" }}>{evtTitle.title}</div>
+        <div style={{ fontSize: "15px" }}>
+          {evtTitle.start &&
+            new Date(evtTitle.start).toISOString().slice(0, 10)}
+          ~{evtTitle.end && new Date(evtTitle.end).toISOString().slice(0, 10)}
+        </div>
+        <div>{evtTitle.description}</div>
       </Card>
     </Modal>
   );

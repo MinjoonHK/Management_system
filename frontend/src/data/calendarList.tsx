@@ -11,6 +11,7 @@ interface DataType {
   selected: boolean;
   Color: string;
   schedules: Schedule[];
+  Description: string;
 }
 export const CalendarList = async (
   start: dayjs.Dayjs,
@@ -31,6 +32,7 @@ export const CalendarList = async (
           start: new Date(si.Start),
           end: new Date(si.End),
           title: si.Title,
+          description: si.Description,
         };
       }),
     };

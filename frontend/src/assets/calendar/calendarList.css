@@ -1,0 +1,31 @@
+li:hover .delete-icon {
+    display: block;
+}
+
+li:hover .threeDot{
+    display:block;
+}
+
+.delete-icon {
+    display: none;
+}
+
+.threeDot{
+    display:none;
+}
+
+.projectAction {
+    width: 100%;
+    margin-top: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.deleteCalendar:hover {
+    color: white
+}
+
+
+.shareCalendar:hover {
+    background-color: #D3D3D3;
+}

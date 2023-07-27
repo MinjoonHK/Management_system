@@ -7,16 +7,16 @@ import {
   Tabs,
   DatePicker,
   Select,
+  TimePicker,
 } from "antd";
 import { SizeType } from "antd/es/config-provider/SizeContext";
 import axios from "axios";
-import jwtDecode from "jwt-decode";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
-import { decodedToken } from "../../../data/Interfaces/decodedToken";
+import TextArea from "antd/es/input/TextArea";
 
 const { RangePicker } = DatePicker;
-const SlotModal = ({ open, onClose, calendarList, start }) => {
+const SlotModal = ({ open, onClose, calendarList, start, onChange }) => {
   const [componentSize, setComponentSize] = useState<SizeType | "default">(
     "default"
   );
@@ -25,21 +25,36 @@ const SlotModal = ({ open, onClose, calendarList, start }) => {
   const onFormLayoutChange = ({ size }: { size: SizeType }) => {
     setComponentSize(size);
   };
-  const onFinish = async ({ Title, RangePicker, SelectCalendar }) => {
+  const onFinish = async ({
+    Title,
+    RangePicker,
+    SelectCalendar,
+    SelectTime,
+    Description,
+  }) => {
     try {
-      const decoded: decodedToken = jwtDecode(localStorage.getItem("jwt"));
-      const UserID = decoded.ID;
       const CalendarID = SelectCalendar;
-      const Start: String = RangePicker[0].toISOString();
-      const End: String = RangePicker[1].toISOString();
+      const Start: String = new Date(RangePicker[0]).toLocaleDateString(
+        "en-US",
+        {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        }
+      );
+      const End: String =
+        new Date(RangePicker[1]).toISOString() +
+        SelectTime[0].toISOString().slice(11, 16);
+      console.log(Start);
       const res = await axios.post("/dashboard/timesheet", {
-        UserID,
         CalendarID,
         Title,
         Start,
         End,
       });
       if (res.status === 200) {
+        onChange();
         onClose();
       }
     } catch (err) {
@@ -72,23 +87,6 @@ const SlotModal = ({ open, onClose, calendarList, start }) => {
         size={size}
         items={[
           {
-            label: <div style={{ color: "black" }}>Current Schedule</div>,
-            key: "CurrentSchedule",
-            children: (
-              // <Timeline mode={"left"}>
-              //   {events.map((e) => (
-              //     <Timeline.Item>
-              //       <span style={{ margin: "5%" }}>
-              //         {new Date(e.Start).toLocaleDateString()}
-              //       </span>
-              //       <span>{e.Title}</span>
-              //     </Timeline.Item>
-              //   ))}
-              // </Timeline>
-              <div>Hello</div>
-            ),
-          },
-          {
             label: <div style={{ color: "black" }}>Add Schedule</div>,
             key: "AddSchedule",
             children: (
@@ -115,6 +113,10 @@ const SlotModal = ({ open, onClose, calendarList, start }) => {
                     {
                       name: ["RangePicker"],
                       value: [dayjs(start), null],
+                    },
+                    {
+                      name: ["SelectTime"],
+                      value: [dayjs("12:00", "HH:mm"), null],
                     },
                   ]}
                 >
@@ -158,6 +160,17 @@ const SlotModal = ({ open, onClose, calendarList, start }) => {
                   >
                     <RangePicker size="large" />
                   </Form.Item>
+                  <Form.Item name="SelectTime" label="Select Time">
+                    <TimePicker.RangePicker
+                      minuteStep={15}
+                      format={"HH:mm"}
+                      size={"large"}
+                    />
+                  </Form.Item>
+                  <Form.Item name="Description" label="Description">
+                    <TextArea size="large" />
+                  </Form.Item>
+
                   <Form.Item>
                     <div style={{ width: "100%", textAlign: "center" }}>
                       <Button
