@@ -58,8 +58,8 @@ export default function TimeSheet() {
         dayjs(date).startOf("month"),
         dayjs(date).endOf("month")
       );
-      console.log(calendarList);
       setMyCalendarList(calendarList);
+      console.log(JSON.stringify(calendarList));
     } catch (error) {
       console.error(error);
     }
@@ -99,11 +99,11 @@ export default function TimeSheet() {
   /** Action when the slot box has selected */
   const handleSelectSlot = (SlotInfo: SlotInfo) => {
     setSelect(SlotInfo.start);
-    // console.log(`${SlotInfo.start.getHours()}:${SlotInfo.start.getMinutes()}`);
     setOpen(true);
   };
   /** Action when Event cell has been clicked */
   const handleSelectEvent = (evt: Event) => {
+    console.log(evt);
     setOpenDetail(true);
     setEvtTitle(evt);
   };
@@ -351,6 +351,7 @@ export default function TimeSheet() {
             width: "100%",
             marginRight: "2%",
             height: "100vh",
+            background: "#FFFFFF",
           }}
         >
           <Calendar
@@ -363,6 +364,7 @@ export default function TimeSheet() {
                   c.color = d.Color;
                   return c;
                 });
+                console.log("schedules", schedules);
                 return schedules;
               })
               .flat()}
@@ -387,6 +389,8 @@ export default function TimeSheet() {
                 return {
                   style: style,
                 };
+              } else {
+                return {};
               }
             }}
             date={calCurrDate}
@@ -409,6 +413,7 @@ export default function TimeSheet() {
         open={openDeleteModal}
         onClose={() => setOpenDeleteModal(false)}
         selectedCalendar={selectedCalendar}
+        onChange={() => fetchData(calCurrDate)}
       />
       <EventModal
         open={openDetail}

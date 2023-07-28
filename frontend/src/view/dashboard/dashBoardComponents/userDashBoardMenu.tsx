@@ -13,15 +13,6 @@ export const UserDashboard: MenuProps["items"] = [
   {
     label: (
       <div style={{ fontSize: "14px", fontWeight: "bold" }}>
-        {t("GanttChart")}
-      </div>
-    ),
-    key: "/ganttChart", //key name should be uniform
-    link: "/ganttchart",
-  },
-  {
-    label: (
-      <div style={{ fontSize: "14px", fontWeight: "bold" }}>
         {t("TimeSheet")}
       </div>
     ),

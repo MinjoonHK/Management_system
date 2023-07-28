@@ -23,13 +23,14 @@ import { AdminDashboard } from "./dashBoardComponents/adminDashBoardMenu";
 import { DashboardDropdown } from "./dashBoardComponents/dashBoardDropDown";
 import { UserDashboard } from "./dashBoardComponents/userDashBoardMenu";
 import WorkOrderDetail from "../../components/workOrderDetail";
-import GanttChart from "../../components/userPage/ganttChart/userGanttChart";
+import GanttChart from "../../components/userPage/projectList/ganttChart/userGanttChart";
 import TimeSheet from "../../components/userPage/TimeSheet/userTimeSheet";
 import { t } from "i18next";
 import UserProject from "../../components/userPage/projectList/userProjectList";
 import BudgetManagement from "../../components/userPage/userBudget";
 import MaterialInfo from "../../components/userPage/userMaterialInfo";
 import UserInformation from "../../components/userProfile";
+import { ProjectDetail } from "../../components/userPage/projectList/projectDetail";
 const { Header, Content, Footer, Sider } = Layout;
 
 function logout() {
@@ -77,13 +78,6 @@ const Dashboard: React.FC = () => {
       setFirstName(greetingName);
       setUserRole(decoded.Role);
     }
-    // if (hour < 12) {
-    //   setGreeting(t("GoodMorning"));
-    // } else if (hour < 18) {
-    //   setGreeting(t("GoodAfterNoon"));
-    // } else {
-    //   setGreeting(t("GoodEvening"));
-    // }
   }, []);
 
   const [collapsed, setCollapsed] = useState(false);
@@ -209,7 +203,6 @@ const Dashboard: React.FC = () => {
             style={{
               padding: 20,
               textAlign: "center",
-              background: colorBgContainer,
             }}
           >
             {userRole == "Admin" && (
@@ -249,6 +242,10 @@ const Dashboard: React.FC = () => {
                   element={<UserEnergyPerformance />}
                 ></Route>
                 <Route path="/workorder" element={<WorkOrder />}></Route>
+                <Route
+                  path="/projectdetail/:pp"
+                  element={<ProjectDetail />}
+                ></Route>
                 <Route
                   path="/budgetmanagement"
                   element={<BudgetManagement />}

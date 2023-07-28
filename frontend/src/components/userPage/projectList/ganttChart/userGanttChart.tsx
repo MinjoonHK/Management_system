@@ -33,7 +33,7 @@ function getStartEndDateForProject(tasks: Task[], projectId: string) {
   }
 }
 
-function GanttChart() {
+export function GanttChart() {
   const [view, setView] = useState<ViewMode>(ViewMode.Week);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isChecked, setIsChecked] = useState(true);

@@ -34,24 +34,24 @@ const SlotModal = ({ open, onClose, calendarList, start, onChange }) => {
   }) => {
     try {
       const CalendarID = SelectCalendar;
-      const Start: String = new Date(RangePicker[0]).toLocaleDateString(
-        "en-US",
-        {
-          weekday: "short",
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        }
-      );
-      const End: String =
-        new Date(RangePicker[1]).toISOString() +
-        SelectTime[0].toISOString().slice(11, 16);
-      console.log(Start);
+      let Start = RangePicker[0].toDate();
+      let End = RangePicker[1].toDate();
+
+      Start.setHours(SelectTime[0].hour());
+      Start.setMinutes(SelectTime[0].minute());
+      Start.setSeconds(SelectTime[0].second());
+      End.setHours(SelectTime[1].hour());
+      End.setMinutes(SelectTime[1].minute());
+      End.setSeconds(SelectTime[1].second());
+      Start = Start.toISOString();
+      End = End.toISOString();
+
       const res = await axios.post("/dashboard/timesheet", {
         CalendarID,
         Title,
         Start,
         End,
+        Description,
       });
       if (res.status === 200) {
         onChange();
@@ -75,11 +75,11 @@ const SlotModal = ({ open, onClose, calendarList, start, onChange }) => {
       centered
       open={open}
       okButtonProps={{ style: { backgroundColor: "rgb(45,68,134)" } }}
-      onOk={onOkHandler}
-      closable={false}
+      closable={true}
       onCancel={onClose}
       width={500}
       bodyStyle={{ height: "100%" }}
+      footer={null}
     >
       <Tabs
         defaultActiveKey="AddSchedule"

@@ -1,4 +1,13 @@
-import { Button, Card, Divider, Popover } from "antd";
+import {
+  Button,
+  Card,
+  Col,
+  Descriptions,
+  Divider,
+  Popover,
+  Row,
+  Table,
+} from "antd";
 import { useEffect, useState } from "react";
 import AddModal from "./projectAddModal";
 import axios from "axios";
@@ -14,6 +23,8 @@ import {
 import "../../../assets/project/projectAction.css";
 import DeleteModal from "./deleteModal";
 import AddGuestModal from "./addGuestModal";
+import { Link } from "react-router-dom";
+import dayjs from "dayjs";
 
 function UserProject() {
   const [openAddModal, setOpenAddModal] = useState(false);
@@ -25,6 +36,7 @@ function UserProject() {
   const fetchData = async () => {
     try {
       const res = await axios.get("/dashboard/projectList");
+      console.log(res.data);
       setProjectList(res.data);
     } catch (error) {
       console.error(error);
@@ -36,6 +48,7 @@ function UserProject() {
   }, []);
 
   const projectCalendarActions = (e: any) => {
+    const url = `/projectDetail/${encodeURIComponent(e.ID)}`;
     return (
       <div>
         <div
@@ -47,14 +60,11 @@ function UserProject() {
         >
           <UserAddOutlined /> Add Guest
         </div>
-        <div
-          className="projectAction"
-          onClick={() => {
-            console.log("Clicked");
-          }}
-        >
-          <InfoCircleOutlined /> Project Detail
-        </div>
+        <Link to={url} style={{ textDecoration: "none", color: "black" }}>
+          <div className="projectAction">
+            <InfoCircleOutlined /> Project Detail
+          </div>
+        </Link>
         <div
           className="projectAction deleteProject"
           onClick={() => {
@@ -67,7 +77,6 @@ function UserProject() {
       </div>
     );
   };
-
   return (
     <div>
       <div style={{ textAlign: "right" }}>
@@ -78,48 +87,88 @@ function UserProject() {
           <PlusOutlined />
         </Button>
       </div>
-      <Divider
+      {/* <Divider
         orientation="left"
         style={{ fontSize: "22px", border: "#D3D3D3" }}
       >
         Project List
-      </Divider>
+      </Divider> */}
       {projectList && (
-        <div>
-          {projectList.map((e) => (
-            <Card
-              key={e.ID}
-              style={{ margin: "2%", border: "1px solid #D3D3D3" }}
-              title={
-                <div
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <Row>
+            {projectList.map((e) => (
+              <Col key={`prj` + e.ID} style={{ padding: "8px 8px 0 8px" }}>
+                <Card
                   style={{
-                    textAlign: "left",
-                    display: "flex",
-                    justifyContent: "space-between",
+                    border: "1px solid #D3D3D3",
+                    marginBottom: 20,
+                    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
                   }}
-                >
-                  <span style={{ fontSize: "20px" }}>{e.ProjectName}</span>
-                  <span>
-                    {/* Need to fix */}
-                    <Popover
-                      key={e.ID}
-                      placement="bottom"
-                      title={<div style={{ fontSize: "20px" }}>Actions</div>}
-                      trigger={"click"}
-                      content={projectCalendarActions(e)}
+                  title={
+                    <div
+                      style={{
+                        textAlign: "left",
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
                     >
-                      <FontAwesomeIcon
-                        icon={faEllipsis}
-                        style={{ cursor: "pointer" }}
-                      />
-                    </Popover>
-                  </span>
-                </div>
-              }
-            >
-              <div style={{ textAlign: "left" }}>Example content</div>
-            </Card>
-          ))}
+                      <span style={{ fontSize: "20px" }}>{e.ProjectName}</span>
+                      <span>
+                        <Popover
+                          key={e.ID}
+                          placement="bottom"
+                          title={
+                            <div style={{ fontSize: "20px" }}>Actions</div>
+                          }
+                          trigger={"click"}
+                          content={projectCalendarActions(e)}
+                        >
+                          <FontAwesomeIcon
+                            icon={faEllipsis}
+                            style={{ cursor: "pointer" }}
+                          />
+                        </Popover>
+                      </span>
+                    </div>
+                  }
+                >
+                  <Row
+                    style={{
+                      textAlign: "left",
+                    }}
+                  >
+                    <Col span={24}>
+                      <Descriptions
+                        key={e.ID}
+                        layout="vertical"
+                        column={5}
+                        bordered={false}
+                        title={"General Info"}
+                      >
+                        <Descriptions.Item label="Project Owner">
+                          {e.FirstName}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Status">
+                          {e.Status}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Start Date">
+                          {dayjs(e.Start).format("YYYY-MM-DD")}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Due Date">
+                          {dayjs(e.End).format("YYYY-MM-DD")}
+                        </Descriptions.Item>
+                      </Descriptions>
+                    </Col>
+                  </Row>
+                </Card>
+              </Col>
+            ))}
+          </Row>
         </div>
       )}
       <AddModal

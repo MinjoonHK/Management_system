@@ -16,7 +16,6 @@ export default function DeleteModal({
       try {
         onChange();
         onClose();
-        Swal.fire("Successfully Deleted", "success");
       } catch (error) {
         console.log("Failed to delete", error);
       }

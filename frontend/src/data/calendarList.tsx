@@ -1,6 +1,7 @@
 import axios from "axios";
 import dayjs from "dayjs";
 interface Schedule {
+  id: number;
   title: string;
   start: Date;
   end: Date;
@@ -27,10 +28,12 @@ export const CalendarList = async (
     return {
       ...item,
       selected: true,
-      schedules: item.schedules.map((si: any) => {
+      schedules: item.schedules.map((si: any, index: number) => {
         return {
           start: new Date(si.Start),
           end: new Date(si.End),
+          id: item.ID * 1000 + index,
+          allday: false,
           title: si.Title,
           description: si.Description,
         };

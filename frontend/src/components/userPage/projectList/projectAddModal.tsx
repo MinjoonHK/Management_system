@@ -3,12 +3,14 @@ import axios from "axios";
 import dayjs from "dayjs";
 
 export default function AddModal({ open, onClose, onChange }) {
-  const onFinish = async ({ Name, TeamMembers, StartDate }) => {
+  const onFinish = async ({ Name, TeamMembers, DateRange, Budget }) => {
     try {
       const res1 = await axios.post("/dashboard/projectList", {
         ProjectName: Name,
         TeamMembers: TeamMembers,
-        Start: StartDate.toISOString(),
+        Start: DateRange[0].toISOString(),
+        End: DateRange[0].toISOString(),
+        Budget: Budget,
       });
       if (res1.status === 200) {
         onChange();
@@ -22,6 +24,8 @@ export default function AddModal({ open, onClose, onChange }) {
   const onFinishFailed = (errorInfo: never) => {
     console.log("Failed:", errorInfo);
   };
+
+  const { RangePicker } = DatePicker;
   return (
     <Modal
       centered
@@ -32,11 +36,7 @@ export default function AddModal({ open, onClose, onChange }) {
       width={500}
       onOk={onClose}
       bodyStyle={{ height: "100%" }}
-      footer={[
-        <Button type="default" key="Cancel" onClick={onClose}>
-          Cancel
-        </Button>,
-      ]}
+      footer={null}
     >
       <Card
         title={
@@ -90,7 +90,7 @@ export default function AddModal({ open, onClose, onChange }) {
               />
             </Form.Item>
             <Form.Item
-              name={"StartDate"}
+              name={"DateRange"}
               label={"Project Start Date"}
               style={{ fontSize: "15px" }}
               rules={[
@@ -100,7 +100,20 @@ export default function AddModal({ open, onClose, onChange }) {
                 },
               ]}
             >
-              <DatePicker size="large" />
+              <RangePicker size="large" />
+            </Form.Item>
+            <Form.Item
+              name={"Budget"}
+              label={"Budget"}
+              style={{ fontSize: "15px" }}
+              rules={[
+                {
+                  required: true,
+                  message: "Please name your project!",
+                },
+              ]}
+            >
+              <Input size="large" />
             </Form.Item>
             <Form.Item style={{ textAlign: "center" }}>
               <Button
