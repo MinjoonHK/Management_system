@@ -187,7 +187,11 @@ export async function getPerformanceInfo(Location: string) {
 export async function getProjectList(ID: Number) {
   try {
     const [result1] = await pool.query(
-      "SELECT ID, ProjectName from project WHERE User_ID = ? AND Deleted_At IS NULL ",
+      `SELECT project.ID, ProjectName, Start, End, Status, Budget,FirstName 
+      FROM project 
+      LEFT join user on project.User_ID = user.ID 
+      WHERE User_ID = ? 
+         AND project.Deleted_At IS NULL `,
       [ID]
     );
 
@@ -213,13 +217,15 @@ export async function getProjectList(ID: Number) {
 export async function addProjectList(
   ProjectName: string,
   Start: String,
+  End: String,
   ID: Number,
-  TeamMembers: String[]
+  TeamMembers: String[],
+  Budget: String
 ) {
   try {
     const [result1] = await pool.execute(
-      "INSERT INTO project (ProjectName, Start, User_ID) VALUES(?,?,?)",
-      [ProjectName, Start, ID]
+      "INSERT INTO project (ProjectName, Start,END, User_ID,Budget) VALUES(?,?,?,?,?)",
+      [ProjectName, Start, End, ID, Budget]
     );
     const [lastAddedProject] = await pool.execute(
       "SELECT ID FROM project WHERE User_ID =? ORDER BY ID DESC LIMIT 1",
@@ -254,18 +260,18 @@ export async function addTimesheetManager(
   Start: string,
   End: string,
   userID: number,
-  CalendarID: number
+  CalendarID: number,
+  Description: string
 ) {
   try {
     const [rows] = await pool.execute(
-      "INSERT INTO timesheet ( Title, Start, End, UserID, CalendarID) VALUES( ?, ?, ?,?,?);",
-      [Title, Start, End, userID, CalendarID]
+      "INSERT INTO timesheet ( Title, Start, End, UserID, CalendarID,Description) VALUES( ?, ?, ?,?,?,?);",
+      [Title, Start, End, userID, CalendarID, Description]
     );
     const [result] = await pool.execute(
       "SELECT CalendarID, Title from timesheet WHERE UserID =? AND CalendarID = ?",
       [userID, CalendarID]
     );
-    console.log(result);
     return result;
   } catch (err) {
     console.error(new Date(), "addTimeSheetManager", err);
@@ -278,6 +284,7 @@ export async function getTimeSheet(ID: number) {
     const resultQuery =
       "SELECT Start,End, Title,CalendarID, Description FROM timesheet WHERE UserID = ?";
     let [result] = await pool.query(resultQuery, [ID]);
+    console.log(result);
     return result;
   } catch (err) {
     console.error(new Date(), "getTimeSheet", err);
@@ -292,10 +299,10 @@ export async function getCalendarList(
 ) {
   try {
     const resultQuery =
-      "SELECT Name, ID, Color FROM calendar WHERE user_ID = ?";
+      "SELECT Name, ID, Color FROM calendar WHERE user_ID = ? AND Deleted_at IS NULL";
     let [result] = await pool.query(resultQuery, [ID]);
     const resultQuery2 =
-      "SELECT ID, Start,End, Title,CalendarID FROM timesheet WHERE CalendarID  IN  (?) AND Start >= ? and End <=?";
+      "SELECT ID, Start,End, Title,CalendarID FROM timesheet WHERE CalendarID  IN  (?) AND (END >= ? AND START <=?) AND Deleted_At IS NULL";
     let [result2] = await pool.query(resultQuery2, [
       result.map((d: any) => d.ID),
       format(startOfDay(startRange), "yyyy-MM-dd"),
@@ -359,7 +366,7 @@ export async function addCalendarListManager(
 ) {
   try {
     const [countRows] = await pool.execute(
-      "SELECT COUNT(*) AS count FROM calendar WHERE user_ID = ?",
+      "SELECT COUNT(*) AS count FROM calendar WHERE user_ID = ? AND Deleted_At IS NULL",
       [ID]
     );
 
@@ -384,12 +391,17 @@ export async function deleteCalenderListManager(
   ID: Number
 ) {
   try {
-    const result =
-      "UPDATE calendar SET isActive = 'Deactivated', deleted_at = NOW() WHERE isActive = 'Active' AND ID = ?";
-
-    return result;
+    const [result] = await pool.execute(
+      "UPDATE calendar SET Deleted_At = NOW() WHERE ID = ? AND user_ID = ?",
+      [CalendarID, ID]
+    );
+    const [result2] = await pool.execute(
+      "UPDATE timesheet SET Deleted_At = NOW() WHERE CalendarID = ?",
+      [CalendarID]
+    );
+    return true;
   } catch (err) {
-    console.error(new Date(), "deleteUserProfile", err);
+    console.error(new Date(), "deleteCalendarList", err);
     return 0;
   }
 }

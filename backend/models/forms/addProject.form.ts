@@ -6,6 +6,12 @@ export class addProjectForm {
   @IsString()
   Start?: String;
 
+  @IsString()
+  End?: String;
+
   @IsString({ each: true })
   TeamMembers: string[] = [];
+
+  @IsString()
+  Budget?: String;
 }

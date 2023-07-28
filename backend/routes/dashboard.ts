@@ -113,12 +113,14 @@ dashboardRouter.post("/deactivateuser", async (req, res) => {
 
 /** Need to be modified */
 dashboardRouter.post("/projectList", async (req, res) => {
-  const { ProjectName, Start, TeamMembers } = req.body;
+  const { ProjectName, Start, End, TeamMembers, Budget } = req.body;
   const ID = req.userId;
   let form = new addProjectForm();
   form.ProjectName = ProjectName;
   form.Start = Start;
+  form.End = End;
   form.TeamMembers = TeamMembers;
+  form.Budget = Budget;
   const errors = await validate(form);
   if (errors.length > 0) {
     //if there is error
@@ -129,7 +131,14 @@ dashboardRouter.post("/projectList", async (req, res) => {
     });
     return;
   }
-  let result = await addProjectList(ProjectName, Start, ID!, TeamMembers);
+  let result = await addProjectList(
+    ProjectName,
+    Start,
+    End,
+    ID!,
+    TeamMembers,
+    Budget
+  );
   if (result) {
     res.json({ message: "successfully added", result: result });
   } else {
@@ -281,7 +290,6 @@ dashboardRouter.post(
       return;
     }
     let result = await addScheduleManager(name, startDate, endDate, userID!);
-    console.log(result);
     if (result) {
       res.status(200).send("registration successful");
     } else {
@@ -291,16 +299,16 @@ dashboardRouter.post(
 );
 
 dashboardRouter.post("/timesheet", async (req: Request, res: Response) => {
-  const { Title, Start, End, UserID, CalendarID } = req.body;
+  const { Title, Start, End, CalendarID, Description } = req.body;
+  const userID = req.userId;
   let form = new TimeSheetForm();
   form.Title = Title;
   form.Start = Start;
   form.End = End;
-  form.UserID = UserID;
   form.CalendarID = CalendarID;
+  form.Description = Description;
   const errors = await validate(form);
   if (errors.length > 0) {
-    //if there is error
     res.status(400).json({
       success: false,
       error: "validation_error",
@@ -308,7 +316,14 @@ dashboardRouter.post("/timesheet", async (req: Request, res: Response) => {
     });
     return;
   }
-  let result = await addTimesheetManager(Title, Start, End, UserID, CalendarID);
+  let result = await addTimesheetManager(
+    Title,
+    Start,
+    End,
+    userID!,
+    CalendarID,
+    Description
+  );
   if (result) {
     res.json(result);
   } else {
@@ -399,23 +414,20 @@ dashboardRouter.post("/updatecalendar", async (req: Request, res: Response) => {
 });
 
 dashboardRouter.post("/deleteCalendar", async (req: Request, res: Response) => {
-  console.log(req.query);
   const { CalendarID } = req.body;
   const ID = req.userId;
-  let result = await deleteCalenderListManager(ID!, CalendarID);
+  let result = await deleteCalenderListManager(CalendarID, ID!);
   if (result) {
-    res.json({ status: true });
+    res.json({ status: true, result: result });
   } else {
     res.status(400).json("Internal Error Occurred!");
   }
-  res.json("test");
 });
 
 // need to fix
 dashboardRouter.post(
   "/deleteProjectList",
   async (req: Request, res: Response) => {
-    console.log(req.body);
     const { ProjectID } = req.body;
     const ID = req.userId;
     let result = await deleteProjectList(ProjectID, ID!);
