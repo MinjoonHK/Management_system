@@ -243,7 +243,7 @@ const Dashboard: React.FC = () => {
                 ></Route>
                 <Route path="/workorder" element={<WorkOrder />}></Route>
                 <Route
-                  path="/projectdetail/:pp"
+                  path="/projectdetail"
                   element={<ProjectDetail />}
                 ></Route>
                 <Route

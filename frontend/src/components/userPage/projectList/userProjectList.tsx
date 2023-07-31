@@ -1,13 +1,4 @@
-import {
-  Button,
-  Card,
-  Col,
-  Descriptions,
-  Divider,
-  Popover,
-  Row,
-  Table,
-} from "antd";
+import { Button, Card, Col, Descriptions, Popover, Row } from "antd";
 import { useEffect, useState } from "react";
 import AddModal from "./projectAddModal";
 import axios from "axios";
@@ -19,16 +10,20 @@ import {
   UserAddOutlined,
   InfoCircleOutlined,
   PlusOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
 import "../../../assets/project/projectAction.css";
 import DeleteModal from "./deleteModal";
 import AddGuestModal from "./addGuestModal";
 import { Link } from "react-router-dom";
 import dayjs from "dayjs";
+import MemberListModal from "./memberListModal";
+import DocumentSubmission from "./documentSubmission/documentSubmissionModal";
 
 function UserProject() {
   const [openAddModal, setOpenAddModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [openUserListModal, setOpenUserListModal] = useState(false);
   const [openAddGuestModal, setOpenAddGuestModal] = useState(false);
   const [projectList, setProjectList] = useState([]);
   const [selectedProject, setSelectedProject] = useState();
@@ -36,7 +31,6 @@ function UserProject() {
   const fetchData = async () => {
     try {
       const res = await axios.get("/dashboard/projectList");
-      console.log(res.data);
       setProjectList(res.data);
     } catch (error) {
       console.error(error);
@@ -46,9 +40,10 @@ function UserProject() {
   useEffect(() => {
     fetchData();
   }, []);
-
+  const url = `/projectDetail`;
   const projectCalendarActions = (e: any) => {
-    const url = `/projectDetail/${encodeURIComponent(e.ID)}`;
+    const url = `/projectDetail`;
+    // ${encodeURIComponent(e.ID)}
     return (
       <div>
         <div
@@ -66,6 +61,15 @@ function UserProject() {
           </div>
         </Link>
         <div
+          className="projectAction"
+          onClick={() => {
+            setSelectedProject(e);
+            setOpenUserListModal(true);
+          }}
+        >
+          <UserOutlined /> Member List
+        </div>
+        <div
           className="projectAction deleteProject"
           onClick={() => {
             setSelectedProject(e);
@@ -81,18 +85,12 @@ function UserProject() {
     <div>
       <div style={{ textAlign: "right" }}>
         <Button
-          style={{ fontWeight: "bold", fontSize: "14px" }}
+          style={{ fontWeight: "bold", fontSize: "14px", marginRight: "0.5%" }}
           onClick={() => setOpenAddModal(true)}
         >
           <PlusOutlined />
         </Button>
       </div>
-      {/* <Divider
-        orientation="left"
-        style={{ fontSize: "22px", border: "#D3D3D3" }}
-      >
-        Project List
-      </Divider> */}
       {projectList && (
         <div
           style={{
@@ -110,31 +108,37 @@ function UserProject() {
                     boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
                   }}
                   title={
-                    <div
-                      style={{
-                        textAlign: "left",
-                        display: "flex",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <span style={{ fontSize: "20px" }}>{e.ProjectName}</span>
-                      <span>
-                        <Popover
-                          key={e.ID}
-                          placement="bottom"
-                          title={
-                            <div style={{ fontSize: "20px" }}>Actions</div>
-                          }
-                          trigger={"click"}
-                          content={projectCalendarActions(e)}
-                        >
-                          <FontAwesomeIcon
-                            icon={faEllipsis}
-                            style={{ cursor: "pointer" }}
-                          />
-                        </Popover>
-                      </span>
-                    </div>
+                    <>
+                      <div
+                        style={{
+                          textAlign: "left",
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <Link to={url}>
+                          <span style={{ fontSize: "20px" }}>
+                            {e.ProjectName}
+                          </span>
+                        </Link>
+                        <span>
+                          <Popover
+                            key={e.ID}
+                            placement="bottom"
+                            title={
+                              <div style={{ fontSize: "20px" }}>Actions</div>
+                            }
+                            trigger={"click"}
+                            content={projectCalendarActions(e)}
+                          >
+                            <FontAwesomeIcon
+                              icon={faEllipsis}
+                              style={{ cursor: "pointer" }}
+                            />
+                          </Popover>
+                        </span>
+                      </div>
+                    </>
                   }
                 >
                   <Row
@@ -186,6 +190,13 @@ function UserProject() {
         open={openAddGuestModal}
         onClose={() => {
           setOpenAddGuestModal(false);
+        }}
+        selectedProject={selectedProject}
+      />
+      <MemberListModal
+        open={openUserListModal}
+        onClose={() => {
+          setOpenUserListModal(false);
         }}
         selectedProject={selectedProject}
       />
