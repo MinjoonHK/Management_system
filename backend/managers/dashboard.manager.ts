@@ -196,7 +196,9 @@ export async function getProjectList(ID: Number) {
     );
 
     const [result2] = await pool.query(
-      "SELECT project_ID, Joined_User_Email from projectpeople WHERE project_ID IN (?)",
+      `SELECT project_ID, Joined_User_Email, IFNULL(FirstName, 'Unknown') AS JoinedUserName FROM projectpeople
+      LEFT join user on projectPeople.Joined_User_Email = user.Email
+      WHERE project_ID IN (?)`,
       [result1.map((project: any) => project.ID)]
     );
 

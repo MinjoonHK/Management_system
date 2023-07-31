@@ -5,6 +5,7 @@ import cors from "cors";
 import { validationIsLogggedIn } from "./middlewares/checkIsLoggedIn";
 import authenticationRouter from "./routes/authentication";
 import dashboardRouter from "./routes/dashboard";
+import uploadRouter from "./routes/upload";
 declare global {
   namespace Express {
     interface Request {
@@ -24,7 +25,7 @@ app.use(
     methods: ["GET", "POST"],
   })
 );
-
+app.use("/upload", uploadRouter);
 app.use("/auth", authenticationRouter);
 app.use("/dashboard", validationIsLogggedIn, dashboardRouter);
 
