@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import config from "config";
-interface DecodedToken {
+export interface DecodedToken {
   Email: string;
   ID: number;
   Name: string;

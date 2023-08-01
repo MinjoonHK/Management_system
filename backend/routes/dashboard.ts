@@ -33,8 +33,11 @@ import { AddScheduleForm } from "../models/forms/addSchedule.form";
 import { TimeSheetForm } from "../models/forms/timeSheet.form";
 import { CalendarListForm } from "../models/forms/calendarlist.form";
 import { addProjectForm } from "../models/forms/addProject.form";
+import uploadRouter from "./upload";
 
 const dashboardRouter = express.Router();
+
+dashboardRouter.use("/upload", uploadRouter);
 
 dashboardRouter.get("/companylist", async (req, res) => {
   try {
@@ -281,7 +284,6 @@ dashboardRouter.post(
     form.endDate = endDate;
     const errors = await validate(form);
     if (errors.length > 0) {
-      //if there is error
       res.status(400).json({
         success: false,
         error: "validation_error",
@@ -346,7 +348,6 @@ dashboardRouter.get("/schedule", async (req, res) => {
   const ID = req.userId;
   try {
     const result = await getSchedule(ID!);
-    console.log(result);
     res.json(result);
   } catch (error) {
     console.error(error);

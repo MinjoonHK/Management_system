@@ -42,7 +42,6 @@ authenticationRouter.post("/signup", async (req: Request, res: Response) => {
   form.company = company;
   const errors = await validate(form);
   if (errors.length > 0) {
-    //if there is error
     res.status(400).json({
       success: false,
       error: "validation_error",
@@ -58,11 +57,11 @@ authenticationRouter.post("/signup", async (req: Request, res: Response) => {
     phoneNumber,
     email
   );
-
-  if (result) {
-    res.status(200).send("registration successful");
+  console.log(result.message);
+  if (result.message === "email already exists") {
+    res.json({ message: "Email already has been registered", result: result });
   } else {
-    res.status(400).json("registration failed");
+    res.json({ message: "registration Succssful", result: result });
   }
 });
 

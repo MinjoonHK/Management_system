@@ -44,9 +44,20 @@ class UserManager {
   ) {
     try {
       const hashedPassword = await this.hashPassword(Password);
+      const emailChekcer = await pool.execute(
+        "SELECT ID FROM user WHERE Email = ?",
+        [Email]
+      );
+      if (emailChekcer.length > 0) {
+        return { message: "email already exists", emailChekcer };
+      }
+      const [companyID] = await pool.execute(
+        "SELECT ID FROM company WHERE Name = ?",
+        [Company]
+      );
       const [rows, fields] = await pool.execute(
-        "INSERT INTO user (FirstName, LastName, Company, Password, PhoneNumber, Email) VALUES(?, ?, ?, ?, ?, ?);",
-        [FirstName, LastName, Company, hashedPassword, PhoneNumber, Email]
+        "INSERT INTO user (FirstName, LastName, CompanyID, Password, PhoneNumber, Email) VALUES(?, ?, ?, ?, ?, ?);",
+        [FirstName, LastName, !companyID.ID, hashedPassword, PhoneNumber, Email]
       );
       return rows.insertId;
     } catch (err) {

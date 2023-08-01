@@ -129,7 +129,7 @@ export async function getUserList() {
     );
     return result;
   } catch (err) {
-    console.error(new Date(), "getComapnyList", err);
+    console.error(new Date(), "getUserList", err);
     return null;
   }
 }
@@ -142,7 +142,7 @@ export async function getSchedule(ID: number) {
     );
     return result;
   } catch (err) {
-    console.error(new Date(), "getComapnyList", err);
+    console.error(new Date(), "getSchedule", err);
     return null;
   }
 }
@@ -152,7 +152,7 @@ export async function getSiteList() {
     let [result] = await pool.query("SELECT LocationName FROM site");
     return result;
   } catch (err) {
-    console.error(new Date(), "getComapnyList", err);
+    console.error(new Date(), "getSiteList", err);
     return null;
   }
 }
@@ -164,7 +164,7 @@ export async function getWorkOrder() {
     );
     return result;
   } catch (err) {
-    console.error(new Date(), "getComapnyList", err);
+    console.error(new Date(), "getWorkOrder", err);
     return null;
   }
 }
@@ -179,7 +179,7 @@ export async function getPerformanceInfo(Location: string) {
     let [result] = await pool.query(resultQuery, [siteID]);
     return result;
   } catch (err) {
-    console.error(new Date(), "getComapnyList", err);
+    console.error(new Date(), "getPerformanceInfo", err);
     return null;
   }
 }
@@ -189,7 +189,7 @@ export async function getProjectList(ID: Number) {
     const [result1] = await pool.query(
       `SELECT project.ID, ProjectName, Start, End, Status, Budget,FirstName 
       FROM project 
-      LEFT join user on project.User_ID = user.ID 
+      LEFT join user on project.User_ID = user.ID
       WHERE User_ID = ? 
          AND project.Deleted_At IS NULL `,
       [ID]
@@ -211,7 +211,7 @@ export async function getProjectList(ID: Number) {
 
     return projectList;
   } catch (err) {
-    console.error(new Date(), "getComapnyList", err);
+    console.error(new Date(), "getProjectList", err);
     return null;
   }
 }
@@ -241,7 +241,6 @@ export async function addProjectList(
       );
       affectedRows += result2.affectedRows;
     }
-    console.log(affectedRows);
     if (result1 && affectedRows > 0) {
       return (
         new Date(),
