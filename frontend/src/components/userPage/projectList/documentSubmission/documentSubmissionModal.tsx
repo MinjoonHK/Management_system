@@ -5,32 +5,30 @@ import axios from "axios";
 
 const { Dragger } = Upload;
 
-export default function DocumentSubmission({ open, onClose }) {
+export default function DocumentSubmission({
+  open,
+  onClose,
+  onChange,
+  selectedProject,
+}) {
   const props: UploadProps = {
     name: "file",
     multiple: true,
-    customRequest(props) {
-      /*onProgress: (event: { percent: number }): void
-onError: (event: Error, body?: Object): void
-onSuccess: (body: Object): void
-data: Object
-filename: String
-file: File
-withCredentials: Boolean
-action: String
-headers: Object */
+    async customRequest(props) {
       const form = new FormData();
       form.append("file", props.file);
-
-      axios
-        .post("/upload/documents", form, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        })
-        .then((d) => {
-          alert("success");
-        });
+      form.append("selectedProject", selectedProject);
+      const res = await axios.post("/dashboard/upload/documents", form, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      if (res.data.status === "success") {
+        onChange();
+        message.success(`file uploaded successfully.`);
+      } else if (res.data.status === "error") {
+        message.error("file upload failed");
+      }
       return;
     },
 

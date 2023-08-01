@@ -1,21 +1,104 @@
-import { Button, Calendar, Card, Divider, List, Tabs, Upload } from "antd";
+import { Button, Calendar, Modal, Table, Tabs } from "antd";
 import GanttChart from "./ganttChart/userGanttChart";
 import { UploadOutlined } from "@ant-design/icons";
 import DocumentSubmission from "./documentSubmission/documentSubmissionModal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import dayjs from "dayjs";
+import { useParams } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import { ColumnsType } from "antd/es/table";
+import LogModal from "./logModal";
 
 export const ProjectDetail = () => {
   const [openDocumentSubmissionModal, setOpenDocumentSubmissionModal] =
     useState(false);
+  const [data, setData] = useState([]);
+  const [currentProject, setCurrentProject] = useState("");
+  const [openLogModal, setOpenLogModal] = useState(true);
+  const { selectedProject } = useParams();
 
-  const data = [
-    <UploadOutlined />,
-    "Racing car sprays burning fuel into crowd.",
-    "Japanese princess to wed commoner.",
-    "Australian walks 100km after outback crash.",
-    "Man charged over missing wedding girl.",
-    "Los Angeles battles huge wildfires.",
+  const FileColumns: ColumnsType = [
+    {
+      title: "File Name",
+      dataIndex: "Name",
+      align: "center",
+    },
+    {
+      title: "Uploader",
+      dataIndex: "FirstName",
+      align: "center",
+    },
+    {
+      title: "Uploaded Date",
+      dataIndex: "UploadDate",
+      align: "center",
+    },
+    {
+      title: "File Size",
+      dataIndex: "Size",
+      align: "center",
+    },
+    {
+      title: "Download",
+      dataIndex: "Download",
+      align: "center",
+    },
+    {
+      title: "Download Logs",
+      dataIndex: "DownloadLogs",
+      align: "center",
+      render: (text) => (
+        <Button
+          onClick={() => {
+            setOpenLogModal(true);
+          }}
+        >
+          <FontAwesomeIcon icon={faMagnifyingGlass} />
+        </Button>
+      ),
+    },
   ];
+
+  const fetchData = async () => {
+    try {
+      const res = await axios.get("/dashboard/upload/fileList", {
+        params: { ProjectID: selectedProject },
+      });
+      const newData = res.data.result.map((item) => ({
+        ...item,
+        key: item.ID,
+        UploadDate: dayjs(item.UploadDate).format("YYYY-MMM-DD"),
+        Size: (item.Size / 1000).toString() + " " + "KB",
+        Download: (
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <a
+              download={true}
+              href={`${
+                axios.defaults.baseURL
+              }/download?token=${encodeURIComponent(
+                localStorage.getItem("jwt")
+              )}&fileId=${item.ID}`}
+              className="btn"
+              style={{ color: "rgb(45,68,134)", textDecoration: "underline" }}
+            >
+              download
+            </a>
+          </div>
+        ),
+      }));
+      console.log(newData);
+      setData(newData);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+    setCurrentProject(selectedProject);
+  }, []);
   return (
     <div>
       <Tabs
@@ -65,12 +148,7 @@ export const ProjectDetail = () => {
                     </Button>
                   </span>
                 </div>
-                <Card bodyStyle={{ padding: "0 24px" }}>
-                  <List
-                    dataSource={data}
-                    renderItem={(item) => <List.Item>{item}</List.Item>}
-                  />
-                </Card>
+                <Table dataSource={data} columns={FileColumns} />
               </div>
             ),
           },
@@ -81,7 +159,18 @@ export const ProjectDetail = () => {
         onClose={() => {
           setOpenDocumentSubmissionModal(false);
         }}
+        onChange={() => {
+          fetchData();
+        }}
+        selectedProject={currentProject}
       />
+      {/* <LogModal
+        open={openLogModal}
+        onClose={() => {
+          setOpenLogModal(false);
+        }}
+        selectedProject={selectedProject}
+      /> */}
     </div>
   );
 };

@@ -15,10 +15,9 @@ import {
 import "../../../assets/project/projectAction.css";
 import DeleteModal from "./deleteModal";
 import AddGuestModal from "./addGuestModal";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import dayjs from "dayjs";
 import MemberListModal from "./memberListModal";
-import DocumentSubmission from "./documentSubmission/documentSubmissionModal";
 
 function UserProject() {
   const [openAddModal, setOpenAddModal] = useState(false);
@@ -40,10 +39,9 @@ function UserProject() {
   useEffect(() => {
     fetchData();
   }, []);
-  const url = `/projectDetail`;
+
   const projectCalendarActions = (e: any) => {
     const url = `/projectDetail`;
-    // ${encodeURIComponent(e.ID)}
     return (
       <div>
         <div
@@ -116,8 +114,14 @@ function UserProject() {
                           justifyContent: "space-between",
                         }}
                       >
-                        <Link to={url}>
-                          <span style={{ fontSize: "20px" }}>
+                        <Link to={`/projectdetail/${e.ID}`}>
+                          <span
+                            onClick={() => {
+                              setSelectedProject(e);
+                              console.log(e);
+                            }}
+                            style={{ fontSize: "20px" }}
+                          >
                             {e.ProjectName}
                           </span>
                         </Link>

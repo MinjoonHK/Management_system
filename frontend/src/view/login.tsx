@@ -25,10 +25,10 @@ function Login() {
       const decodedToken: decodedToken = jwtDecode(localStorage.getItem("jwt"));
       const role: string = decodedToken.Role;
       {
-        role === "User" && navigate("/ganttchart");
+        role === "User" && navigate("/Project");
       }
       {
-        role === "Admin" && navigate("/energyperformance");
+        role === "Admin" && navigate("/Project");
       }
     } catch (err) {
       if (err.response.status === 400) {

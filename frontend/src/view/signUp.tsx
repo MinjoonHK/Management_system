@@ -25,13 +25,16 @@ function SignUp() {
         phoneNumber,
         password,
       });
-      if (res.status === 200) {
+      console.log(res.data.message);
+      if (res.data.message === "registration Succssful") {
         Swal.fire(
           `Welcome ${firstName}`,
           "You have successfully Signed Up!",
           "success"
         );
         navigate("/login");
+      } else if ((res.data.message = "Email already has been registered")) {
+        Swal.fire(`Email ${email} is already exists`, "", "warning");
       }
     } catch (err) {
       console.log(err);

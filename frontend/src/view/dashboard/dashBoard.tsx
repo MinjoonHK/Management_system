@@ -108,14 +108,7 @@ const Dashboard: React.FC = () => {
           <Menu
             theme="dark"
             mode="inline"
-            defaultSelectedKeys={["/ganttChart"]}
-            onClick={({ item, key, keyPath, domEvent }) => {
-              // console.log(key, AdminDashboard[key]);
-              // localStorage.setItem(
-              //   "lastPage",
-              //   AdminDashboard[key].label.props.to
-              // );
-            }}
+            defaultSelectedKeys={["/Project"]}
             items={AdminDashboard}
           />
         )}
@@ -123,14 +116,7 @@ const Dashboard: React.FC = () => {
           <Menu
             theme="dark"
             mode="inline"
-            defaultSelectedKeys={["/ganttChart"]}
-            onClick={({ item, key, keyPath, domEvent }) => {
-              // console.log(key, UserDashboard[key]);
-              // localStorage.setItem(
-              //   "lastPage",
-              //   UserDashboard[key].label.props.to
-              // );
-            }}
+            defaultSelectedKeys={["/Project"]}
             items={UserDashboard}
           />
         )}
@@ -236,14 +222,13 @@ const Dashboard: React.FC = () => {
             )}
             {userRole == "User" && (
               <Routes>
-                <Route path="/dashboard" element={<GanttChart />}></Route>
                 <Route
                   path="/userenergyperformance"
                   element={<UserEnergyPerformance />}
                 ></Route>
                 <Route path="/workorder" element={<WorkOrder />}></Route>
                 <Route
-                  path="/projectdetail"
+                  path="/projectdetail/:selectedProject"
                   element={<ProjectDetail />}
                 ></Route>
                 <Route
