@@ -31,6 +31,7 @@ app.use(
     methods: ["GET", "POST"],
   })
 );
+
 app.get("/download", async (req, res) => {
   const token = req.query.token;
   const fileId = req.query.fileId;
@@ -52,7 +53,6 @@ app.get("/download", async (req, res) => {
           "attachment; filename=" + result[0][0].Name
         );
         res.setHeader("Content-type", result[0][0].FileType);
-
         var filestream = fs.createReadStream(result[0][0].Path);
         filestream.pipe(res);
       } else {

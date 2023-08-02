@@ -419,3 +419,52 @@ export async function deleteProjectList(ProjectID: Number, ID: Number) {
     return 0;
   }
 }
+
+export async function getJoinedUserList(project_ID: number) {
+  try {
+    const result = await pool.execute(
+      "SELECT Joined_User_Email FROM projectpeople WHERE Deleted_At IS NULL AND project_ID =?",
+      [project_ID]
+    );
+    if (result) {
+      return result;
+    }
+  } catch (error) {
+    return { message: "internal Error in get joined user List", error: error };
+  }
+}
+
+export async function addProjectTask(
+  Name: string,
+  Manager: string,
+  DueDate: string,
+  Description: string,
+  ID: number,
+  project_ID: number
+) {
+  try {
+    const [result] = await pool.execute(
+      "INSERT INTO submissiontask (Name, Manager, DueDate, Description,CreatorID,project_ID) VALUES (?,?,?,?,?,?);",
+      [Name, Manager, DueDate, Description, ID, project_ID]
+    );
+    if (result) {
+      return result.affectedRows;
+    }
+  } catch (error) {
+    return { error: error };
+  }
+}
+
+export async function getProjectTask(project_ID: number) {
+  try {
+    const [result] = await pool.execute(
+      "SELECT ID,Name, Manager, CreateDate, DueDate, Description,Status FROM submissiontask WHERE Deleted_At IS NULL AND project_ID =?",
+      [project_ID]
+    );
+    if (result) {
+      return result;
+    }
+  } catch (error) {
+    return { message: "internal Error in get joined user List", error: error };
+  }
+}

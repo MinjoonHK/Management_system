@@ -26,6 +26,9 @@ import {
   addProjectList,
   getProjectList,
   deleteProjectList,
+  getJoinedUserList,
+  addProjectTask,
+  getProjectTask,
 } from "../managers/dashboard.manager";
 import { workorderform } from "../models/forms/workorder.form";
 import { updateWorkOrder } from "../models/forms/updateworkorder.form";
@@ -459,6 +462,64 @@ dashboardRouter.get("/calendarlist", async (req, res) => {
       console.error(error);
       res.status(500).json({ message: "Internal Server Error" });
     }
+});
+
+dashboardRouter.get("/joinedUserList", async (req, res) => {
+  const project_ID = Number(req.query.project_ID);
+
+  if (project_ID) {
+    try {
+      const result = await getJoinedUserList(project_ID);
+
+      if (result) {
+        try {
+          res.json({
+            message: "successfully loaded joined user list opitons",
+            result: result,
+          });
+        } catch (error) {
+          res.json({
+            message: "error occured in get joined user List",
+            error: error,
+          });
+        }
+      }
+    } catch (error) {
+      res.json({ message: "get joined user list error", error: error });
+    }
+  }
+});
+
+dashboardRouter.post("/addsubmissiontask", async (req, res) => {
+  const { Name, Manager, DueDate, Description, project_ID } = req.body;
+  const ID = req.userId;
+  let result = await addProjectTask(
+    Name,
+    Manager,
+    DueDate,
+    Description,
+    ID!,
+    project_ID
+  );
+  if (result) {
+    try {
+      res.json({ status: "success", result: result });
+    } catch (error) {
+      res.json({ message: "error occured at addsubmissiontask", error: error });
+    }
+  }
+});
+
+dashboardRouter.get("/submissiontask", async (req, res) => {
+  const project_ID = Number(req.query.project_ID);
+  let result = await getProjectTask(project_ID);
+  if (result) {
+    try {
+      res.json({ status: "OK", result: result });
+    } catch (error) {
+      res.json({ message: "error at get submission task list", error });
+    }
+  }
 });
 
 export default dashboardRouter;
