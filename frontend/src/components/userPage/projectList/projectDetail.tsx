@@ -1,15 +1,30 @@
-import { Button, Calendar, Modal, Table, Tabs } from "antd";
+import {
+  Button,
+  Calendar,
+  Card,
+  Descriptions,
+  Divider,
+  Modal,
+  Table,
+  Tabs,
+} from "antd";
 import GanttChart from "./ganttChart/userGanttChart";
-import { UploadOutlined } from "@ant-design/icons";
+import {
+  UploadOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import DocumentSubmission from "./documentSubmission/documentSubmissionModal";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import dayjs from "dayjs";
-import { useParams } from "react-router-dom";
+import { Link, Route, Routes, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import { faL, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { ColumnsType } from "antd/es/table";
 import LogModal from "./logModal";
+import { t } from "i18next";
+import { DocumentSubmissionPage } from "./documentSubmission";
 
 export const ProjectDetail = () => {
   const [openDocumentSubmissionModal, setOpenDocumentSubmissionModal] =
@@ -66,7 +81,7 @@ export const ProjectDetail = () => {
       const res = await axios.get("/dashboard/upload/fileList", {
         params: { ProjectID: selectedProject },
       });
-      const newData = res.data.result.map((item) => ({
+      const newData = res.data.result.map((item: any) => ({
         ...item,
         key: item.ID,
         UploadDate: dayjs(item.UploadDate).format("YYYY-MMM-DD"),
@@ -88,7 +103,6 @@ export const ProjectDetail = () => {
           </div>
         ),
       }));
-      console.log(newData);
       setData(newData);
     } catch (error) {
       console.log(error);
@@ -102,12 +116,11 @@ export const ProjectDetail = () => {
   return (
     <div>
       <Tabs
-        defaultActiveKey="WrokingSchedule"
         type="card"
         items={[
           {
             label: <div style={{ color: "black" }}>Working Schedule</div>,
-            key: "WrokingSchedule",
+            key: "WorkingSchdule",
             children: <Calendar />,
           },
           {
@@ -117,7 +130,14 @@ export const ProjectDetail = () => {
           },
           {
             label: <div style={{ color: "black" }}>Document Submission</div>,
-            key: "Uploaded Documnets",
+            key: "Document Submission",
+            children: (
+              <DocumentSubmissionPage selectedProject={selectedProject} />
+            ),
+          },
+          {
+            label: <div style={{ color: "black" }}>Document Pool</div>,
+            key: "Document Pool",
             children: (
               <div>
                 <div

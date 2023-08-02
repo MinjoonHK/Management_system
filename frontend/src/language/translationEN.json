@@ -19,5 +19,15 @@
      "GoodEvening": "Good Evening!",
      "MyCalendars":"My Calendars",
      "SharedCalendars":"Shared Calendars",
-     "Project":"Project"
+     "Project":"Project",
+     "AddGuest":"Add Guest",
+     "ProjectDetail": "Project Detail",
+     "MemberList":"Member List",
+     "DeleteSelectedProject":"Delete Selected Project",
+     "Actions":"Actions",
+     "ProjectOwner":"Project Owner",
+     "Status":"Status",
+     "StartDate":"Start Date",
+     "DueDate":"Due Date",
+     "GeneralInfo":"General Info"
 }

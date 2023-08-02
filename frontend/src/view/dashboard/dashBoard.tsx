@@ -31,6 +31,7 @@ import BudgetManagement from "../../components/userPage/userBudget";
 import MaterialInfo from "../../components/userPage/userMaterialInfo";
 import UserInformation from "../../components/userProfile";
 import { ProjectDetail } from "../../components/userPage/projectList/projectDetail";
+import { SubmissionPage } from "../../components/userPage/projectList/submissionPage";
 const { Header, Content, Footer, Sider } = Layout;
 
 function logout() {
@@ -238,12 +239,15 @@ const Dashboard: React.FC = () => {
                 <Route path="/settings" element={<Settings />}></Route>
                 <Route path="/companylist" element={<CompanyList />}></Route>
                 <Route path="/userlist" element={<UserList />}></Route>
-
                 <Route path="/materialinfo" element={<MaterialInfo />}></Route>
                 <Route path="/addcompany" element={<AddCompany />}></Route>
                 <Route path="/addDevice" element={<AddDevice />}></Route>
                 <Route path="/addworkorder" element={<AddWorkOrder />}></Route>
                 <Route path="/ganttchart" element={<GanttChart />}></Route>
+                <Route
+                  path="/submissionpage"
+                  element={<SubmissionPage />}
+                ></Route>
                 <Route path="/project" element={<UserProject />}></Route>
                 <Route
                   path="/userinformation"

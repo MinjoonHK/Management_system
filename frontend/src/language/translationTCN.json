@@ -15,6 +15,16 @@
      "GoodEvening": "晚上好!",
       "MyCalendars":"내 달력목록",
      "SharedCalendars":"다른 달력목록",
-     "Project":"Project"
+     "Project":"Project",
+     "AddGuest":"Add Guest",
+     "ProjectDetail": "Project Detail",
+     "MemberList":"Member List",
+     "DeleteSelectedProject":"Delete Selected Project",
+     "Actions":"Actions",
+     "ProjectOwner":"Project Owner",
+     "Status":"Status",
+     "StartDate":"Start Date",
+     "DueDate":"Due Date",
+     "GeneralInfo":"General Info"
 
 }

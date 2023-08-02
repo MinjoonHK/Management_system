@@ -16,5 +16,15 @@
      "GoodEvening": "벌써 저녘이네요!",
      "MyCalendars":"내 달력목록",
      "OtherCalendars":"공유한 달력",
-     "Project":"프로젝트"
+     "Project":"프로젝트",
+     "AddGuest":"게스트 추가",
+     "ProjectDetail": "프로젝트 상세",
+     "MemberList":"멤버 목록",
+     "DeleteSelectedProject":"선택한 프로젝트 삭제",
+     "Actions":"목록",
+     "ProjectOwner":"프로젝트 책임자",
+     "Status":"상태",
+     "StartDate":"시작일",
+     "DueDate":"마감일",
+     "GeneralInfo":"정보"
 }

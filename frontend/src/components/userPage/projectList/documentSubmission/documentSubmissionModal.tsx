@@ -5,7 +5,7 @@ import axios from "axios";
 
 const { Dragger } = Upload;
 
-export default function DocumentSubmission({
+export default function DocumentSubmissionModal({
   open,
   onClose,
   onChange,

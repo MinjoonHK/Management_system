@@ -17,6 +17,7 @@ import DeleteModal from "./deleteModal";
 import AddGuestModal from "./addGuestModal";
 import { Link, useParams } from "react-router-dom";
 import dayjs from "dayjs";
+import { t } from "i18next";
 import MemberListModal from "./memberListModal";
 
 function UserProject() {
@@ -51,11 +52,11 @@ function UserProject() {
             setOpenAddGuestModal(true);
           }}
         >
-          <UserAddOutlined /> Add Guest
+          <UserAddOutlined /> {t("AddGuest")}
         </div>
         <Link to={url} style={{ textDecoration: "none", color: "black" }}>
           <div className="projectAction">
-            <InfoCircleOutlined /> Project Detail
+            <InfoCircleOutlined /> {t("ProjectDetail")}
           </div>
         </Link>
         <div
@@ -65,7 +66,7 @@ function UserProject() {
             setOpenUserListModal(true);
           }}
         >
-          <UserOutlined /> Member List
+          <UserOutlined /> {t("MemberList")}
         </div>
         <div
           className="projectAction deleteProject"
@@ -74,7 +75,8 @@ function UserProject() {
             setOpenDeleteModal(true);
           }}
         >
-          <DeleteOutlined /> Delete Selected Project
+          <DeleteOutlined />
+          {t("DeleteSelectedProject")}
         </div>
       </div>
     );
@@ -130,7 +132,9 @@ function UserProject() {
                             key={e.ID}
                             placement="bottom"
                             title={
-                              <div style={{ fontSize: "20px" }}>Actions</div>
+                              <div style={{ fontSize: "20px" }}>
+                                {t("Actions")}
+                              </div>
                             }
                             trigger={"click"}
                             content={projectCalendarActions(e)}
@@ -156,18 +160,18 @@ function UserProject() {
                         layout="vertical"
                         column={5}
                         bordered={false}
-                        title={"General Info"}
+                        title={t("GeneralInfo")}
                       >
-                        <Descriptions.Item label="Project Owner">
+                        <Descriptions.Item label={t("ProjectOwner")}>
                           {e.FirstName}
                         </Descriptions.Item>
-                        <Descriptions.Item label="Status">
+                        <Descriptions.Item label={t("Status")}>
                           {e.Status}
                         </Descriptions.Item>
-                        <Descriptions.Item label="Start Date">
+                        <Descriptions.Item label={t("StartDate")}>
                           {dayjs(e.Start).format("YYYY-MM-DD")}
                         </Descriptions.Item>
-                        <Descriptions.Item label="Due Date">
+                        <Descriptions.Item label={t("DueDate")}>
                           {dayjs(e.End).format("YYYY-MM-DD")}
                         </Descriptions.Item>
                       </Descriptions>
