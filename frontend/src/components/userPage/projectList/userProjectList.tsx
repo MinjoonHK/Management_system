@@ -13,7 +13,7 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import "../../../assets/project/projectAction.css";
-import DeleteModal from "./deleteModal";
+import DeleteModal from "./prjListDelModal";
 import AddGuestModal from "./addGuestModal";
 import { Link, useParams } from "react-router-dom";
 import dayjs from "dayjs";
@@ -163,7 +163,7 @@ function UserProject() {
                         title={t("GeneralInfo")}
                       >
                         <Descriptions.Item label={t("ProjectOwner")}>
-                          {e.FirstName}
+                          {e.CreatorName}
                         </Descriptions.Item>
                         <Descriptions.Item label={t("Status")}>
                           {e.Status}

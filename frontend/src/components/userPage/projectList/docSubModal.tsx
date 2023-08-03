@@ -23,7 +23,6 @@ export const DocumentSubmissionModal = ({ open, onClose, onChange }) => {
     const response = await axios.get("/dashboard/joinedUserList", {
       params: { project_ID: selectedProject },
     });
-
     if (response.data) {
       try {
         let result = response.data.result[0].map((a) => a.Joined_User_Email);

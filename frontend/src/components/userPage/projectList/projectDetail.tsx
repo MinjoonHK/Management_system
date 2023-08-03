@@ -1,20 +1,6 @@
-import {
-  Button,
-  Calendar,
-  Card,
-  Descriptions,
-  Divider,
-  Modal,
-  Table,
-  Tabs,
-} from "antd";
+import { Button, Calendar, Table, Tabs } from "antd";
 import GanttChart from "./ganttChart/userGanttChart";
-import {
-  UploadOutlined,
-  DeleteOutlined,
-  PlusOutlined,
-} from "@ant-design/icons";
-import DocumentSubmission from "./documentSubmission/documentSubmissionModal";
+
 import { useEffect, useState } from "react";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -24,11 +10,9 @@ import { faL, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { ColumnsType } from "antd/es/table";
 import LogModal from "./logModal";
 import { t } from "i18next";
-import { DocumentSubmissionPage } from "./documentSubmission";
+import { DocumentSubmissionPage } from "./docSubPage";
 
 export const ProjectDetail = () => {
-  const [openDocumentSubmissionModal, setOpenDocumentSubmissionModal] =
-    useState(false);
   const [data, setData] = useState([]);
   const [currentProject, setCurrentProject] = useState("");
   const [openLogModal, setOpenLogModal] = useState(true);
@@ -156,17 +140,6 @@ export const ProjectDetail = () => {
                   >
                     Uploaded Files
                   </span>
-                  <span>
-                    <Button
-                      shape={"round"}
-                      onClick={() => {
-                        setOpenDocumentSubmissionModal(true);
-                      }}
-                    >
-                      Upload Files
-                      <UploadOutlined />
-                    </Button>
-                  </span>
                 </div>
                 <Table dataSource={data} columns={FileColumns} />
               </div>
@@ -174,16 +147,7 @@ export const ProjectDetail = () => {
           },
         ]}
       />
-      <DocumentSubmission
-        open={openDocumentSubmissionModal}
-        onClose={() => {
-          setOpenDocumentSubmissionModal(false);
-        }}
-        onChange={() => {
-          fetchData();
-        }}
-        selectedProject={currentProject}
-      />
+
       {/* <LogModal
         open={openLogModal}
         onClose={() => {

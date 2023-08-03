@@ -35,10 +35,6 @@ function Settings() {
           <Button onClick={() => changeLanguage("tcn")}>中文（繁體)</Button>
         </span>
       </div>
-      <div>
-        <b>{t("DarkMode")}</b>
-        <Switch style={{ marginLeft: "2%" }} />
-      </div>
     </div>
   );
 }

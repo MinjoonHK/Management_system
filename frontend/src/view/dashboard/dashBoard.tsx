@@ -7,7 +7,6 @@ import {
 } from "@ant-design/icons";
 import { Layout, Menu, theme, Button, Dropdown, Space } from "antd";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import EnergyPerformance from "../../components/energyPerformance";
 import CompanyList from "../../components/companyList";
 import AddCompany from "../../components/companyAdd";
 import AdminProfile from "../../components/adminProfile";
@@ -31,7 +30,6 @@ import BudgetManagement from "../../components/userPage/userBudget";
 import MaterialInfo from "../../components/userPage/userMaterialInfo";
 import UserInformation from "../../components/userProfile";
 import { ProjectDetail } from "../../components/userPage/projectList/projectDetail";
-import { SubmissionPage } from "../../components/userPage/projectList/submissionPage";
 const { Header, Content, Footer, Sider } = Layout;
 
 function logout() {
@@ -194,14 +192,6 @@ const Dashboard: React.FC = () => {
           >
             {userRole == "Admin" && (
               <Routes>
-                <Route
-                  path="/dashboard"
-                  element={<EnergyPerformance />}
-                ></Route>
-                <Route
-                  path="/energyPerformance"
-                  element={<EnergyPerformance />}
-                ></Route>
                 <Route path="/workorder" element={<WorkOrder />}></Route>
                 <Route path="/settings" element={<Settings />}></Route>
                 <Route path="/companylist" element={<CompanyList />}></Route>
@@ -244,10 +234,7 @@ const Dashboard: React.FC = () => {
                 <Route path="/addDevice" element={<AddDevice />}></Route>
                 <Route path="/addworkorder" element={<AddWorkOrder />}></Route>
                 <Route path="/ganttchart" element={<GanttChart />}></Route>
-                <Route
-                  path="/submissionpage"
-                  element={<SubmissionPage />}
-                ></Route>
+
                 <Route path="/project" element={<UserProject />}></Route>
                 <Route
                   path="/userinformation"
