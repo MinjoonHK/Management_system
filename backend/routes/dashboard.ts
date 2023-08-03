@@ -29,6 +29,7 @@ import {
   getJoinedUserList,
   addProjectTask,
   getProjectTask,
+  deleteTask,
 } from "../managers/dashboard.manager";
 import { workorderform } from "../models/forms/workorder.form";
 import { updateWorkOrder } from "../models/forms/updateworkorder.form";
@@ -37,6 +38,7 @@ import { TimeSheetForm } from "../models/forms/timeSheet.form";
 import { CalendarListForm } from "../models/forms/calendarlist.form";
 import { addProjectForm } from "../models/forms/addProject.form";
 import uploadRouter from "./upload";
+import { idForm } from "../models/forms/idforms";
 
 const dashboardRouter = express.Router();
 
@@ -519,6 +521,32 @@ dashboardRouter.get("/submissiontask", async (req, res) => {
     } catch (error) {
       res.json({ message: "error at get submission task list", error });
     }
+  }
+});
+
+dashboardRouter.post("/deleteTaskList", async (req: Request, res: Response) => {
+  const TaskID = Number(req.body.TaskID);
+  const ID = req.userId;
+  let form = new idForm();
+  form.TaskID = TaskID;
+  form.ID = ID;
+  const errors = await validate(form);
+  if (errors.length > 0) {
+    res.status(400).json({
+      success: false,
+      error: "validation_error",
+      message: errors,
+    });
+    return;
+  }
+  let result = await deleteTask(TaskID, ID!);
+  if (result) {
+    res.json({ status: true });
+  } else {
+    res.status(400).json({
+      message: "Error occured at deleting ProjectList",
+      result: result,
+    });
   }
 });
 

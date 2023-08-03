@@ -25,9 +25,11 @@ uploadRouter.post(
       const size = req.file.size;
       const path = req.file.path;
       const ProjectID = req.body.selectedProject;
+      const TaskID = req.body.taskID;
+      console.log(req.body);
       let result = await pool.query(
-        "INSERT INTO fileuploads (Name, FileType,UploadUserID,Size, Path,ProjectID) VALUES(?,?,?,?,?,?)",
-        [name, type, userID, size, path, ProjectID]
+        "INSERT INTO fileuploads (Name, FileType,UploadUserID,Size, Path,ProjectID,TaskID) VALUES(?,?,?,?,?,?,?)",
+        [name, type, userID, size, path, ProjectID, TaskID]
       );
       if (result) {
         res.json({
@@ -57,6 +59,24 @@ uploadRouter.get("/fileList", async (req, res) => {
       res.json({ message: "successfully loaded data", result: result });
     } catch (error) {
       res.json({ message: error, status: "error" });
+    }
+  }
+});
+
+uploadRouter.get("/uploadedTasks", async (req, res) => {
+  const selectedTask = Number(req.query.TaskID);
+  const selectedProject = Number(req.query.projectID);
+  let [result] = await pool.query(
+    `SELECT fileuploads.ID,FirstName, Name, UploadDate FROM fileuploads 
+    LEFT JOIN user ON fileuploads.UploadUserID = user.ID
+    WHERE TaskID =? AND ProjectID = ? AND DeleteDate IS NULL`,
+    [selectedTask, selectedProject]
+  );
+  if (result) {
+    try {
+      res.json({ status: "true", result: result });
+    } catch (error) {
+      res.json({ message: "error in get uploadedTasks", error: error });
     }
   }
 });

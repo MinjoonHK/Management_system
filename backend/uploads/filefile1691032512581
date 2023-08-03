@@ -1,0 +1,1662 @@
+import { useCallback, useEffect, useState } from "react";
+
+import { ClockCircleOutlined, InfoCircleOutlined } from "@ant-design/icons";
+import AddIcon from "@mui/icons-material/Add";
+import type { SelectProps } from "antd";
+import {
+  Button,
+  Checkbox,
+  Col,
+  DatePicker,
+  Divider,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  Radio,
+  Row,
+  Switch,
+  TimePicker,
+  Tooltip,
+  message,
+} from "antd";
+import TextArea from "antd/lib/input/TextArea";
+import Paragraph from "antd/lib/typography/Paragraph";
+import moment, { Moment } from "moment";
+import {
+  Calendar,
+  SlotInfo,
+  Views,
+  momentLocalizer,
+  type View,
+} from "react-big-calendar";
+import "react-big-calendar/lib/css/react-big-calendar.css";
+import Swal from "sweetalert2";
+import { nonRootParkingScheduleService } from "../../@core/context/nonRoot/nonRootParkingScheduleService";
+import { rootScheduleService } from "../../@core/context/root/rootScheduleService";
+import ModalPickParkingSpaceGroup from "../../components/Modal/ModalPickParkingSpaceGroup";
+import { ManagerAPIFail } from "../../models/general/general";
+import { ChargeRoundMethod } from "../../models/schema/enumerate/chargeRoundMethod.enum";
+import { ParkingScheduleBookingType } from "../../models/schema/enumerate/parkingScheduleBookingType.enum";
+import {
+  ParkingSchedule,
+  ParkingScheduleInput,
+} from "../../models/schema/parkingSchedule.schema";
+import { ParkingSpaceGroupShort } from "../../models/schema/parkingSpaceGroup.schema";
+
+const localizer = momentLocalizer(moment);
+
+const { RangePicker } = DatePicker;
+
+const zeroPad = (num: number, places: number) =>
+  String(num).padStart(places, "0");
+
+interface Event {
+  id?: number;
+  title: string;
+  start: Date | Moment;
+  end: Date | Moment;
+}
+
+interface Props {
+  companyId: number;
+  myCompany: boolean;
+}
+
+const ParkingSchedules = (props: Props) => {
+  // const [parkingSchedules, setparkingSchedules] = useState<ParkingSchedule[]>(
+  //   []
+  // )
+
+  const [events, setEvents] = useState<Event[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<ParkingSchedule>();
+
+  const [
+    parkingSpaceGroupEnableOrDisable,
+    setParkingSpaceGroupEnableOrDisable,
+  ] = useState<"Enable" | "Disable">("Enable");
+
+  const [
+    currentSelectedParkingSpaceGroup,
+    setCurrentSelectedParkingSpaceGroup,
+  ] = useState<ParkingSpaceGroupShort>();
+
+  const [eventModalState, setEventModalState] = useState(false);
+
+  const [
+    selectParkingSpacesGroupsModalState,
+    setSelectParkingSpacesGroupsModalState,
+  ] = useState(false);
+
+  const [where, setWhere] = useState({});
+
+  const [eventFormRef] = Form.useForm();
+
+  const [filterFormRef] = Form.useForm();
+
+  const [bookingType, setBookingType] = useState<ParkingScheduleBookingType>();
+  const [chargeRoundMethod, setChargeRoundMethod] =
+    useState<ChargeRoundMethod>();
+
+  // const [myCompany, setMycompany] = useState<boolean>()
+  // const [companyId, setCompanyId] = useState<number>()
+
+  // useEffect(() => {
+  //   setMycompany(props.myCompany)
+  //   setCompanyId(props.companyId)
+  // }, [props])
+
+  function doSearch() {
+    //TODO fetch API here
+
+    if (props.myCompany) {
+      nonRootParkingScheduleService
+        .getAllParkingSchedule({ where: where })
+        .then((data) => {
+          if (data.success) {
+            setEvents(convertToEvent(data.data));
+          }
+        })
+        .catch((d: ManagerAPIFail) => {});
+    }
+    if (!props.myCompany) {
+      rootScheduleService
+        .getAllParkingSchedule({
+          comapnyId: props.companyId,
+          where: where,
+        })
+        .then((data) => {
+          if (data.success) {
+            setEvents(convertToEvent(data.data));
+          }
+        })
+        .catch((d: ManagerAPIFail) => {});
+    }
+  }
+  function doSearchOne(scheduleId: number) {
+    if (props.myCompany) {
+      nonRootParkingScheduleService
+        .getTheSchedule({ scheduleId: scheduleId })
+        .then((data) => {
+          if (data.success) {
+            let tempEvent = data.data;
+
+            if (tempEvent.schedulePercentage) {
+              tempEvent.schedulePercentageNumber =
+                tempEvent.schedulePercentage * 100;
+            } else {
+              tempEvent.schedulePercentageNumber = 0;
+            }
+
+            setSelectedEvent(tempEvent);
+          }
+        })
+        .catch((d: ManagerAPIFail) => {});
+    }
+    if (!props.myCompany) {
+      rootScheduleService
+        .getTheSchedule({ comapnyId: props.companyId, scheduleId: scheduleId })
+        .then((data) => {
+          if (data.success) {
+            let tempEvent = data.data;
+
+            if (tempEvent.schedulePercentage) {
+              tempEvent.schedulePercentageNumber =
+                tempEvent.schedulePercentage * 100;
+            } else {
+              tempEvent.schedulePercentageNumber = 0;
+            }
+
+            setSelectedEvent(tempEvent);
+          }
+        })
+        .catch((d: ManagerAPIFail) => {});
+    }
+  }
+
+  const tagsOptions: SelectProps["options"] = [];
+
+  function convertToEvent(data: ParkingSchedule[]) {
+    return data
+      .map((item: ParkingSchedule) => {
+        // console.log("item", item)
+
+        let event = [];
+        // let startDate = moment(item.fromDate, "YYYY-MM-DD")
+        let startDate = moment(item.fromDate);
+
+        let endDate = moment(item.toDate);
+        // console.log("startDate", startDate.toDate())
+        // console.log("endDate", endDate.toDate())
+
+        while (startDate <= endDate) {
+          let start = startDate.toDate();
+
+          start.setHours(Math.floor(item.fromTime / 60));
+          start.setMinutes(item.fromTime % 60);
+          let end = startDate.toDate();
+          if (item.toTime > 24 * 60) {
+            end.setHours(23);
+            end.setMinutes(59);
+            end.setSeconds(59);
+
+            let nextHalfStart = startDate.toDate();
+            nextHalfStart.setDate(nextHalfStart.getDate() + 1);
+            nextHalfStart.setHours(0);
+            nextHalfStart.setMinutes(0);
+            nextHalfStart.setSeconds(0);
+
+            // nextHalfStart.setTime(nextHalfStart.getTime() + 16 * 60 * 60 * 1000) //set to next day start
+            // console.log(2, nextHalfStart)
+
+            let nextHalfEnd = startDate.toDate();
+            nextHalfEnd.setDate(nextHalfEnd.getDate() + 1);
+            nextHalfEnd.setHours(Math.floor((item.toTime - 1440) / 60));
+            nextHalfEnd.setMinutes((item.toTime - 1440) % 60);
+            nextHalfEnd.setSeconds(0);
+
+            // console.log("nextHalfStart", nextHalfStart)
+            // console.log("nextHalfEnd", nextHalfEnd)
+
+            //add the next half of the event into the array
+
+            // console.log("nextHalfStart.getDay()", nextHalfStart.getDay())
+
+            let createEvent = false;
+
+            switch (nextHalfStart.getDay()) {
+              case 0:
+                if (item.sun) {
+                  createEvent = true;
+                }
+                break;
+              case 1:
+                if (item.mon) {
+                  createEvent = true;
+                }
+                break;
+              case 2:
+                if (item.tue) {
+                  createEvent = true;
+                }
+                break;
+              case 3:
+                if (item.wed) {
+                  createEvent = true;
+                }
+                break;
+              case 4:
+                if (item.thu) {
+                  createEvent = true;
+                }
+                break;
+              case 5:
+                if (item.fri) {
+                  createEvent = true;
+                }
+                break;
+              case 6:
+                if (item.sat) {
+                  createEvent = true;
+                }
+                break;
+            }
+            if (createEvent) {
+              event.push({
+                id: item.id,
+                title: item.scheduleName + "_2",
+                start: nextHalfStart,
+                end: nextHalfEnd,
+              });
+            }
+          } else if (item.toTime == 1440) {
+            end.setHours(23);
+            end.setMinutes(59);
+            end.setSeconds(59);
+          } else if (item.fromTime == 0 && item.toTime == 0) {
+            end.setHours(23);
+            end.setMinutes(59);
+            end.setSeconds(59);
+          } else {
+            end.setHours(Math.floor(item.toTime / 60));
+            end.setMinutes(item.toTime % 60);
+          }
+
+          let createEvent = false;
+
+          switch (start.getDay()) {
+            case 0:
+              if (item.sun) {
+                createEvent = true;
+              }
+              break;
+            case 1:
+              if (item.mon) {
+                createEvent = true;
+              }
+              break;
+            case 2:
+              if (item.tue) {
+                createEvent = true;
+              }
+              break;
+            case 3:
+              if (item.wed) {
+                createEvent = true;
+              }
+              break;
+            case 4:
+              if (item.thu) {
+                createEvent = true;
+              }
+              break;
+            case 5:
+              if (item.fri) {
+                createEvent = true;
+              }
+              break;
+            case 6:
+              if (item.sat) {
+                createEvent = true;
+              }
+              break;
+          }
+
+          if (createEvent) {
+            event.push({
+              id: item.id,
+              title: item.scheduleName + "_1",
+              start: start,
+              end: end,
+            });
+          }
+          startDate = startDate.add(1, "days");
+        }
+
+        // console.log("event added", event)
+
+        return event;
+      })
+      .flat();
+  }
+
+  const handleSelectEvent = (evt: Event) => {
+    // let tempSelectedEvent = parkingSchedules.find((e) => e.id === evt.id!)
+
+    // console.log("handleSelectEvent tempSelectedEvent", tempSelectedEvent)
+
+    // setSelectedEvent(tempSelectedEvent)
+
+    if (evt.id) {
+      doSearchOne(evt.id);
+
+      setEventModalState(true);
+    }
+  };
+
+  const handleSelectSlot = (slotInfo: SlotInfo) => {
+    console.log("slotInfo", slotInfo);
+  };
+
+  const handleSelecting = (range: { start: Date; end: Date }) => {
+    console.log("range", range);
+
+    return false;
+  };
+
+  useEffect(() => {
+    let tempSelectedEvent = selectedEvent;
+
+    if (tempSelectedEvent !== undefined) {
+      if (tempSelectedEvent?.relatedEnableSpaceGroup === null) {
+        tempSelectedEvent.relatedEnableSpaceGroupIdsConcat = "Nil";
+      } else if (
+        tempSelectedEvent.relatedEnableSpaceGroup !== undefined &&
+        tempSelectedEvent?.relatedEnableSpaceGroup !== null
+      ) {
+        tempSelectedEvent.relatedEnableSpaceGroupIdsConcat =
+          tempSelectedEvent.relatedEnableSpaceGroup.title;
+      }
+
+      if (tempSelectedEvent?.relatedDisableSpaceGroup === null) {
+        tempSelectedEvent.relatedDisableSpaceGroupIdsConcat = "Nil";
+      } else if (
+        tempSelectedEvent.relatedDisableSpaceGroup !== undefined &&
+        tempSelectedEvent?.relatedDisableSpaceGroup !== null
+      ) {
+        tempSelectedEvent.relatedDisableSpaceGroupIdsConcat =
+          tempSelectedEvent.relatedDisableSpaceGroup.title;
+      }
+
+      tempSelectedEvent.fromDateModal = moment(tempSelectedEvent?.fromDate);
+      tempSelectedEvent.toDateModal = moment(tempSelectedEvent?.toDate);
+
+      tempSelectedEvent.dateRange = [
+        tempSelectedEvent.fromDateModal,
+        tempSelectedEvent.toDateModal,
+      ];
+
+      let fromTime = new Date();
+
+      fromTime.setHours(Math.floor(tempSelectedEvent.fromTime / 60));
+      fromTime.setMinutes(tempSelectedEvent.fromTime % 60);
+      fromTime.setSeconds(0);
+
+      tempSelectedEvent.fromTimeModal = moment(fromTime);
+
+      let toTime = new Date();
+
+      toTime.setHours(Math.floor(tempSelectedEvent.toTime / 60));
+      toTime.setMinutes(tempSelectedEvent.toTime % 60);
+      toTime.setSeconds(0);
+
+      tempSelectedEvent.toTimeModal = moment(toTime);
+
+      setSelectedEvent(tempSelectedEvent);
+    }
+  }, [selectedEvent]);
+
+  useEffect(() => {
+    setTimeout(() => {
+      eventFormRef.resetFields();
+    }, 100);
+  }, [eventModalState]);
+
+  const onScheduleFinish = () => {
+    let modalSubmitEvent: ParkingScheduleInput = {
+      id: selectedEvent?.id,
+      scheduleName: eventFormRef.getFieldValue("scheduleName"),
+      description: eventFormRef.getFieldValue("description"),
+      customeInterval: eventFormRef.getFieldValue("customeInterval") ?? 0,
+      customRate: eventFormRef.getFieldValue("customRate") ?? 0,
+      upperLimitRate: eventFormRef.getFieldValue("upperLimitRate") ?? 0,
+      acceptPublic: eventFormRef.getFieldValue("acceptPublic"),
+      chargeRoundMethod: eventFormRef.getFieldValue("chargeRoundMethod"),
+      cutsomRoundInterval:
+        eventFormRef.getFieldValue("cutsomRoundInterval") ?? 0,
+      relatedEnableSpaceGroupId: selectedEvent?.relatedEnableSpaceGroup?.id,
+      relatedDisableSpaceGroupId: selectedEvent?.relatedDisableSpaceGroup?.id,
+      bookingType: eventFormRef.getFieldValue("bookingType"),
+      maximumTime: eventFormRef.getFieldValue("maximumTime") ?? 0,
+      minimumTime: eventFormRef.getFieldValue("minimumTime") ?? 0,
+      schedulePercentage:
+        eventFormRef.getFieldValue("schedulePercentageNumber") / 100 ?? 0,
+      penaltyInterval: eventFormRef.getFieldValue("penaltyInterval") ?? 0,
+      penaltyAmount: eventFormRef.getFieldValue("penaltyAmount") ?? 0,
+      penaltyBuffer: eventFormRef.getFieldValue("penaltyBuffer") ?? 0,
+      // tag: eventFormRef.getFieldValue("tag"),
+      mon: eventFormRef.getFieldValue("mon") === true ? true : false,
+      tue: eventFormRef.getFieldValue("tue") === true ? true : false,
+      wed: eventFormRef.getFieldValue("wed") === true ? true : false,
+      thu: eventFormRef.getFieldValue("thu") === true ? true : false,
+      fri: eventFormRef.getFieldValue("fri") === true ? true : false,
+      sat: eventFormRef.getFieldValue("sat") === true ? true : false,
+      sun: eventFormRef.getFieldValue("sun") === true ? true : false,
+      publicHoliday:
+        eventFormRef.getFieldValue("publicHoliday") === true ? true : false,
+      fromDate: eventFormRef.getFieldValue("dateRange")[0].toDate(),
+      toDate: eventFormRef.getFieldValue("dateRange")[1].toDate(),
+      fromTime:
+        eventFormRef.getFieldValue("fromTimeModal").hours() * 60 +
+        eventFormRef.getFieldValue("fromTimeModal").minute(),
+      toTime:
+        eventFormRef.getFieldValue("toTimeModal").hours() * 60 +
+        eventFormRef.getFieldValue("toTimeModal").minute(),
+
+      priority: eventFormRef.getFieldValue("priority"),
+    };
+
+    modalSubmitEvent.fromTime =
+      eventFormRef.getFieldValue("fromTimeModal").hours() * 60 +
+      eventFormRef.getFieldValue("fromTimeModal").minute();
+
+    modalSubmitEvent.toTime =
+      eventFormRef.getFieldValue("toTimeModal").hours() * 60 +
+      eventFormRef.getFieldValue("toTimeModal").minute();
+
+    if (modalSubmitEvent.fromTime > modalSubmitEvent.toTime)
+      modalSubmitEvent.toTime += 1440;
+
+    if (modalSubmitEvent.id === 0) {
+      nonRootParkingScheduleService
+        .createParkingSchedule({
+          parkingSchedule: [modalSubmitEvent],
+        })
+        .then((d) => {
+          Swal.fire({
+            position: "center",
+            icon: "success",
+            title: "Record created",
+
+            showConfirmButton: false,
+            // timer: 1500
+          }).then((d) => {
+            doSearch();
+          });
+        })
+        .catch((d) => {
+          Swal.fire({
+            position: "center",
+            icon: "error",
+            title: "Error",
+
+            showConfirmButton: false,
+            // timer: 1500
+          });
+        });
+    } else {
+      nonRootParkingScheduleService
+        .updateParkingSchedule({
+          parkingSchedule: modalSubmitEvent,
+        })
+        .then((d) => {
+          Swal.fire({
+            position: "center",
+            icon: "success",
+            title: "Record updated",
+
+            showConfirmButton: false,
+            // timer: 1500
+          }).then((d) => {
+            doSearch();
+          });
+        })
+        .catch((d) => {
+          Swal.fire({
+            position: "center",
+            icon: "error",
+            title: "Error",
+
+            showConfirmButton: false,
+            // timer: 1500
+          });
+        });
+    }
+  };
+
+  // calendar
+
+  const [searchRange, setSearchRange] = useState({
+    from: moment().startOf("month").toDate(),
+    to: moment().endOf("month").toDate(),
+  });
+
+  const [calCurrDate, setCalCurrDate] = useState(new Date());
+  const [view, setView] = useState(Views.WEEK as View);
+
+  const onNavigate = useCallback(
+    (newDate: Date) => {
+      setCalCurrDate(newDate);
+
+      let tempSearchRange = {
+        from: moment(newDate).startOf("month").toDate(),
+        to: moment(newDate).endOf("month").toDate(),
+      };
+
+      if (
+        !(
+          moment(searchRange.from).isSame(tempSearchRange.from) &&
+          moment(searchRange.to).isSame(tempSearchRange.to)
+        )
+      ) {
+        setSearchRange({
+          from: moment(newDate).startOf("month").toDate(),
+          to: moment(newDate).endOf("month").toDate(),
+        });
+      }
+    },
+    [setCalCurrDate]
+  );
+
+  const onView = useCallback(
+    (newView: View) => {
+      setView(newView);
+      // console.log("newView", newView)
+    },
+    [setView]
+  );
+
+  const [range, setRange] = useState<[Date, Date]>([new Date(), new Date()]);
+
+  const onRangeChange = useCallback(
+    (rangeInfo: { start: Date; end: Date } | Date[]) => {
+      if (Array.isArray(rangeInfo)) {
+        setRange([rangeInfo[0], rangeInfo[rangeInfo.length - 1]]);
+      } else {
+        setRange([rangeInfo.start, rangeInfo.end]);
+      }
+      // console.log("rangeInfo", rangeInfo)
+    },
+    [setRange]
+  );
+  // calendar
+
+  useEffect(() => {
+    setWhere({
+      fromDate: range[0],
+      toDate: range[1],
+    });
+    doSearch();
+  }, [range]);
+
+  const isCreate = selectedEvent && selectedEvent.id === 0;
+  const isMycompany = props.myCompany;
+
+  return (
+    <>
+      <Row
+        style={{ marginBottom: "20px" }}
+        justify="space-evenly"
+        hidden={!isMycompany}
+      >
+        <Col>
+          <Button
+            type="primary"
+            shape="round"
+            icon={
+              <AddIcon
+                style={{
+                  fontSize: "23px",
+                  marginBottom: "-7px",
+                  marginRight: "5px",
+                }}
+              />
+            }
+            size={"middle"}
+            onClick={() => {
+              setSelectedEvent({
+                id: 0,
+                scheduleName: "",
+                // customeInterval: 0,
+                // customRate: 0,
+                // upperLimitRate: 0,
+                acceptPublic: false,
+                chargeRoundMethod: ChargeRoundMethod.RoundUp,
+                // cutsomRoundInterval: 0,
+                bookingType: ParkingScheduleBookingType.Unrestricted,
+                // maximumTime: 0,
+                // minimumTime: 0,
+                // schedulePercentage: 0,
+                // penaltyInterval: 0,
+                // penaltyAmount: 0,
+                // penaltyBuffer: 0,
+                fromDate: new Date(),
+                toDate: new Date(),
+                fromTime: 0,
+                toTime: 1440,
+
+                fromDateModal: moment(new Date()),
+                toDateModal: moment(new Date()),
+                fromTimeModal: moment().set({
+                  hour: 0,
+                  minute: 0,
+                  second: 0,
+                }),
+                toTimeModal: moment().set({
+                  hour: 0,
+                  minute: 0,
+                  second: 0,
+                }),
+                mon: true,
+                tue: true,
+                wed: true,
+                thu: true,
+                fri: true,
+                sat: true,
+                sun: true,
+                publicHoliday: true,
+                priority: 0,
+                relatedDisableSpaceGroupId: undefined,
+                relatedEnableSpaceGroupId: undefined,
+                // schedulePercentageNumber: 0,
+                tag: "",
+
+                relatedDisableSpaceGroup: undefined,
+                relatedEnableSpaceGroup: undefined,
+              });
+              setEventModalState(true);
+            }}
+          >
+            Create new parking schedule
+          </Button>
+        </Col>
+      </Row>
+      {/* 
+      <Form
+        form={filterFormRef}
+        layout="vertical"
+        // initialValues={user}
+        style={{ marginBottom: 20 }}
+      >
+        <Form.Item
+          name="fromDate"
+          label="From"
+          style={{ display: "inline-block", width: "50%", padding: 10 }}
+        >
+          <DatePicker format="YYYY-MM-DD" style={{ width: "100%" }} />
+        </Form.Item>
+        <Form.Item
+          name="toDate"
+          label="To"
+          style={{ display: "inline-block", width: "50%", padding: 10 }}
+          rules={[
+            ({ getFieldValue }) => ({
+              validator(_, value) {
+                const fromDate = getFieldValue("fromDate")
+                if (value && fromDate && value.isBefore(fromDate, "day")) {
+                  return Promise.reject(
+                    "To date must be greater than or equal to From date"
+                  )
+                }
+                return Promise.resolve()
+              },
+            }),
+          ]}
+        >
+          <DatePicker format="YYYY-MM-DD" style={{ width: "100%" }} />
+        </Form.Item>
+        <Form.Item
+          style={{ display: "inline-block", width: "50%", padding: 10 }}
+        >
+          <Button
+            type="primary"
+            onClick={() => {
+              setDate(filterFormRef.getFieldValue("fromDate"))
+            }}
+          >
+            Search
+          </Button>
+        </Form.Item>
+      </Form> */}
+
+      <Calendar
+        // eventPropGetter={(event, start, end, isSelected) => {
+        //   console.log(event)
+        //   // var backgroundColor = "#" + event.hexColor
+        //   const color = Math.floor(Math.random() * 16777215).toString(16)
+        //   var backgroundColor = "#f0f0f0" //`#${color}`
+        //   var style = {
+        //     backgroundColor: backgroundColor,
+        //     borderRadius: "0px",
+        //     opacity: 0.8,
+        //     color: "black",
+        //     border: "0px",
+        //     display: "block",
+        //   }
+        //   return {
+        //     style: style,
+        //   }
+        // }}
+        localizer={localizer}
+        events={events}
+        startAccessor="start"
+        endAccessor="end"
+        style={{ height: "70vh" }}
+        onSelectEvent={handleSelectEvent}
+        onSelectSlot={handleSelectSlot}
+        onSelecting={handleSelecting}
+        selectable
+        step={15}
+        onNavigate={onNavigate}
+        onView={onView}
+        onRangeChange={onRangeChange}
+        view={view}
+        date={calCurrDate}
+      />
+
+      <Modal
+        title={isCreate ? "Create Schedule" : "Edit Schedule"}
+        open={eventModalState}
+        onOk={() => {
+          setEventModalState(false);
+        }}
+        onCancel={() => {
+          setEventModalState(false);
+        }}
+        bodyStyle={{ overflowY: "auto", maxHeight: "calc(100vh - 200px)" }}
+        width="60vw"
+        centered
+        footer={[
+          <Button
+            hidden={!isCreate || isMycompany}
+            danger
+            key="Terminate"
+            onClick={() => {
+              Swal.fire({
+                title: "Type 'terminate' to confirm terminate",
+                input: "text",
+                showCancelButton: true,
+                icon: "warning",
+                confirmButtonText: "Terminate",
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                showLoaderOnConfirm: true,
+                preConfirm: (inputValue) => {
+                  if (inputValue == "terminate") {
+                    //
+                    {
+                      selectedEvent && selectedEvent.id !== 0
+                        ? nonRootParkingScheduleService
+                            .deleteParkingSchedule({
+                              parkingScheduleId: selectedEvent?.id,
+                            })
+                            .then((d) => {
+                              Swal.fire({
+                                position: "center",
+                                icon: "success",
+                                title: "Record Terminated",
+                                timer: 1500,
+                              }).then((d) => {
+                                doSearch();
+                              });
+                            })
+                            .catch((d) => {
+                              Swal.fire({
+                                position: "center",
+                                icon: "error",
+                                title: "error",
+                                showConfirmButton: false,
+                                timer: 1500,
+                              }).then((d) => {
+                                setEventModalState(false);
+                              });
+                            })
+                        : null;
+                    }
+
+                    //
+                  } else {
+                    Swal.fire('"Terminate"?', "T-e-r-mi-n-a-t-e", "question");
+                  }
+                },
+                allowOutsideClick: () => !Swal.isLoading(),
+              });
+            }}
+          >
+            Terminate
+          </Button>,
+          <Button
+            hidden={!isCreate || isMycompany}
+            danger
+            key="Delete"
+            onClick={() => {
+              Swal.fire({
+                title: "Type 'delete' to confirm delete",
+                input: "text",
+                showCancelButton: true,
+                icon: "warning",
+                confirmButtonText: "Delete",
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                showLoaderOnConfirm: true,
+                preConfirm: (inputValue) => {
+                  if (inputValue == "delete") {
+                    //
+                    {
+                      selectedEvent && selectedEvent.id !== 0
+                        ? nonRootParkingScheduleService
+                            .deleteParkingSchedule({
+                              parkingScheduleId: selectedEvent?.id,
+                            })
+                            .then((d) => {
+                              Swal.fire({
+                                position: "center",
+                                icon: "success",
+                                title: "Record Deleted",
+                                timer: 1500,
+                              }).then((d) => {
+                                doSearch();
+                              });
+                            })
+                            .catch((d) => {
+                              Swal.fire({
+                                position: "center",
+                                icon: "error",
+                                title: "error",
+                                showConfirmButton: false,
+                                timer: 1500,
+                              }).then((d) => {
+                                setEventModalState(false);
+                              });
+                            })
+                        : null;
+                    }
+
+                    //
+                  } else {
+                    Swal.fire('"Delete"?', "D-e-l-e-t-e", "question");
+                  }
+                },
+                allowOutsideClick: () => !Swal.isLoading(),
+              });
+            }}
+          >
+            Delete
+          </Button>,
+          <Button
+            hidden={!isMycompany}
+            key="reset"
+            onClick={() => {
+              eventFormRef.resetFields();
+            }}
+          >
+            Reset
+          </Button>,
+          <Button
+            key="back"
+            onClick={() => {
+              setEventModalState(false);
+            }}
+          >
+            Back
+          </Button>,
+          <Button
+            hidden={!isMycompany}
+            key="submit"
+            type="primary"
+            onClick={() => {
+              eventFormRef
+                .validateFields()
+                .then(() => {
+                  onScheduleFinish();
+                  setEventModalState(false);
+                })
+                .catch((errorInfo) => {
+                  message.info(
+                    "Please fill in all of the required fields correctly!"
+                  );
+                  console.log("error", errorInfo);
+                });
+            }}
+          >
+            {isCreate ? "Create Schedule" : "Save Changes"}
+          </Button>,
+        ]}
+      >
+        <Form
+          form={eventFormRef}
+          layout="vertical"
+          initialValues={selectedEvent}
+        >
+          <Form.Item
+            name="scheduleName"
+            label="Schedule Name"
+            // rules={[{ required: true, message: "Required!" }]}
+          >
+            <Input readOnly={!isMycompany} />
+          </Form.Item>
+          <Form.Item
+            name="description"
+            label="Description"
+            // rules={[{ required: true, message: "Required!" }]}
+          >
+            <TextArea rows={4} readOnly={!isMycompany} />
+          </Form.Item>
+          <Form.Item
+            name="color"
+            label="Color #hex"
+            rules={[
+              {
+                pattern: /^([0-9A-Fa-f]{3}){1,2}$/,
+                message: "Please enter a valid hex color code",
+              },
+            ]}
+            // rules={[{ required: true, message: "Required!" }]}
+          >
+            <Input addonBefore="#" readOnly={!isMycompany} />
+          </Form.Item>
+          <Divider />
+
+          <Form.Item
+            label={
+              <div>
+                Valid Time Period{" "}
+                <Tooltip
+                  title="Schedule time
+                 will be repeated for every day within the selected dates"
+                >
+                  <InfoCircleOutlined />
+                </Tooltip>
+              </div>
+            }
+            style={{ marginBottom: 0 }}
+          >
+            <Form.Item
+              name="dateRange"
+              label="Date Range"
+              style={{ width: "100%" }}
+            >
+              <RangePicker style={{ width: "95%" }} disabled={!isMycompany} />
+            </Form.Item>
+          </Form.Item>
+          <Form.Item style={{ marginBottom: 20 }}>
+            <Form.Item
+              name="fromTimeModal"
+              label="From"
+              style={{ display: "inline-block", width: "50%" }}
+            >
+              <TimePicker
+                format="HH:mm"
+                style={{ width: "90%" }}
+                disabled={!isMycompany}
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="toTimeModal"
+              label="To"
+              style={{ display: "inline-block", width: "50%" }}
+            >
+              <TimePicker
+                format="HH:mm"
+                style={{ width: "90%" }}
+                disabled={!isMycompany}
+              />
+            </Form.Item>
+
+            <Button
+              disabled={!isMycompany}
+              onClick={() => {
+                message.info("Time period set as whole day");
+                eventFormRef.setFieldValue(
+                  "fromTimeModal",
+                  moment().set({
+                    hour: 0,
+                    minute: 0,
+                    second: 0,
+                  })
+                );
+                eventFormRef.setFieldValue(
+                  "toTimeModal",
+                  moment().set({
+                    hour: 0,
+                    minute: 0,
+                    second: 0,
+                  })
+                );
+              }}
+            >
+              Whole Day
+            </Button>
+          </Form.Item>
+
+          <Divider />
+          <Form.Item label="Recurs on">
+            <Form.Item
+              name="mon"
+              // label="Monday"
+              valuePropName="checked"
+              style={{ display: "inline-block" }}
+            >
+              <Checkbox disabled={!isMycompany}>Monday</Checkbox>
+            </Form.Item>
+            <Form.Item
+              name="tue"
+              // label="Tuesday"
+              valuePropName="checked"
+              style={{ display: "inline-block" }}
+            >
+              <Checkbox disabled={!isMycompany}>Tuesday</Checkbox>
+            </Form.Item>
+            <Form.Item
+              name="wed"
+              // label="Wednesday"
+              valuePropName="checked"
+              style={{ display: "inline-block" }}
+            >
+              <Checkbox disabled={!isMycompany}>Wednesday</Checkbox>
+            </Form.Item>
+            <Form.Item
+              name="thu"
+              // label="Thursday"
+              valuePropName="checked"
+              style={{ display: "inline-block" }}
+            >
+              <Checkbox disabled={!isMycompany}>Thursday</Checkbox>
+            </Form.Item>
+            <Form.Item
+              name="fri"
+              // label="Friday"
+              valuePropName="checked"
+              style={{ display: "inline-block" }}
+            >
+              <Checkbox disabled={!isMycompany}>Friday</Checkbox>
+            </Form.Item>
+            <Form.Item
+              name="sat"
+              // label="Saturday"
+              valuePropName="checked"
+              style={{ display: "inline-block" }}
+            >
+              <Checkbox disabled={!isMycompany}>Saturday</Checkbox>
+            </Form.Item>
+            <Form.Item
+              name="sun"
+              // label="Sunday"
+              valuePropName="checked"
+              style={{ display: "inline-block" }}
+            >
+              <Checkbox disabled={!isMycompany}>Sunday</Checkbox>
+            </Form.Item>
+            <Form.Item
+              name="publicHoliday"
+              // label="Public Holiday"
+              valuePropName="checked"
+              style={{ display: "inline-block" }}
+            >
+              <Checkbox disabled={!isMycompany}>Public Holiday</Checkbox>
+            </Form.Item>
+          </Form.Item>
+          <Divider />
+          {/*  */}
+          <Form.Item
+            name="customeInterval"
+            label={
+              <div>
+                Custom Interval{" "}
+                <Tooltip title="Parking rate charged unit in minute (e.g. 5 = ${CustomRate}/5 mins)">
+                  <InfoCircleOutlined />
+                </Tooltip>
+              </div>
+            }
+            // rules={[{ required: true, message: "Required!" }]}
+          >
+            <InputNumber
+              formatter={(value) => `${value}`.replace(/[^0-9]/g, "")}
+              step={1}
+              min={0}
+              placeholder="Parking rate charged unit in minute (e.g. 5 = ${CustomRate}/5 mins)"
+              style={{ width: "100%" }}
+              addonBefore={<ClockCircleOutlined />}
+              addonAfter="mins"
+              readOnly={!isMycompany}
+            />
+          </Form.Item>
+          {/*  */}
+          <Form.Item
+            name="customRate"
+            label={
+              <div>
+                Custom Rate{" "}
+                <Tooltip title="Parking rate per custom interval">
+                  <InfoCircleOutlined />
+                </Tooltip>
+              </div>
+            }
+            // rules={[{ required: true, message: "Required!" }]}
+          >
+            <InputNumber
+              // formatter={(value) => `${value}`.replace(/[^0-9]/g, "")}
+              step={1}
+              min={0}
+              placeholder="Parking rate per custom interval"
+              style={{ width: "100%" }}
+              addonBefore="$"
+              addonAfter="HKD"
+              readOnly={!isMycompany}
+            />
+          </Form.Item>
+          {/*  */}
+          <Form.Item
+            name="upperLimitRate"
+            label={
+              <div>
+                Upper Limit Rate{" "}
+                <Tooltip title="Maximum charge for parking">
+                  <InfoCircleOutlined />
+                </Tooltip>
+              </div>
+            }
+            // rules={[{ required: true, message: "Required!" }]}
+          >
+            <InputNumber
+              // formatter={(value) => `${value}`.replace(/[^0-9]/g, "")}
+              step={1}
+              min={0}
+              placeholder="Maximum charge for parking"
+              style={{ width: "100%" }}
+              addonBefore="$"
+              addonAfter="HKD"
+              readOnly={!isMycompany}
+            />
+          </Form.Item>
+
+          {/*  */}
+          <Form.Item
+            name="chargeRoundMethod"
+            label={
+              <div>
+                Charge Round Method{" "}
+                <Tooltip title="Round up or down if the remining parking time does not fullfil one full custom interval (e.g. if the custom interval is 60 mins, the user only parked for 84 mins, selecting rounding up or down to charge the user)">
+                  <InfoCircleOutlined />
+                </Tooltip>
+              </div>
+            }
+            rules={[{ required: true, message: "Required!" }]}
+          >
+            <Radio.Group
+              onChange={(evt) => {
+                setChargeRoundMethod(evt.target.value);
+              }}
+              disabled={!isMycompany}
+            >
+              <Radio.Button value={ChargeRoundMethod.RoundUp}>
+                Round Up
+              </Radio.Button>
+              <Radio.Button value={ChargeRoundMethod.RoundDown}>
+                Round Down
+              </Radio.Button>
+              <Radio.Button value={ChargeRoundMethod.CustomRoundUpInterval}>
+                Custom Round Up Interval
+              </Radio.Button>
+            </Radio.Group>
+          </Form.Item>
+          {/*  */}
+          <Form.Item
+            name="acceptPublic"
+            label={
+              <div>
+                Accept Public{" "}
+                <Tooltip title="Allow for non monthly users">
+                  <InfoCircleOutlined />
+                </Tooltip>
+              </div>
+            }
+            // rules={[{ required: true, message: "Required!" }]}
+            valuePropName="checked"
+          >
+            <Switch disabled={!isMycompany} />
+          </Form.Item>
+          {/*  */}
+          <Form.Item
+            name="cutsomRoundInterval"
+            label={
+              <div>
+                Cutsom Round Interval{" "}
+                <Tooltip title="Interval of charging round method">
+                  <InfoCircleOutlined />
+                </Tooltip>
+              </div>
+            }
+            // rules={[{ required: true, message: "Required!" }]}
+            hidden={
+              chargeRoundMethod !== ChargeRoundMethod.CustomRoundUpInterval
+            }
+          >
+            <InputNumber
+              disabled={
+                chargeRoundMethod !== ChargeRoundMethod.CustomRoundUpInterval
+              }
+              formatter={(value) => `${value}`.replace(/[^0-9]/g, "")}
+              step={1}
+              min={0}
+              placeholder="Minutes"
+              style={{ width: "100%" }}
+              addonBefore={<ClockCircleOutlined />}
+              addonAfter="mins"
+              readOnly={!isMycompany}
+            />
+          </Form.Item>
+          <Divider />
+          <Paragraph>
+            <blockquote>
+              Unrestricted: Accept all users, ignore parking space groupping
+              <br />
+              RestrictUser: Restrict for specific users
+              <br />
+              Restrict Time: For booking only
+              <br />
+              Restrict Above Percentage: Rule applicable when the vehicle parked
+              amount is above the set percentage <br />
+              Restrict Below Percentage: Rule applicable when the vehicle parked
+              amount is below the set percentage
+            </blockquote>
+          </Paragraph>
+          <Form.Item
+            name="bookingType"
+            label="Booking Type"
+            rules={[{ required: true, message: "Required!" }]}
+          >
+            <Radio.Group
+              onChange={(evt) => {
+                setBookingType(evt.target.value);
+              }}
+              disabled={!isMycompany}
+            >
+              <Radio.Button
+                value={ParkingScheduleBookingType.RestrictAbovePercentage}
+              >
+                Restrict Above Percentage
+              </Radio.Button>
+              <Radio.Button
+                value={ParkingScheduleBookingType.RestrictBelowPercentage}
+              >
+                Restrict Below Percentage
+              </Radio.Button>
+              <Radio.Button value={ParkingScheduleBookingType.RestrictTime}>
+                Restrict Time
+              </Radio.Button>
+              <Radio.Button value={ParkingScheduleBookingType.RestrictUser}>
+                Restrict User
+              </Radio.Button>
+              <Radio.Button value={ParkingScheduleBookingType.Unrestricted}>
+                Unrestricted
+              </Radio.Button>
+            </Radio.Group>
+          </Form.Item>
+
+          {/*  */}
+          <Form.Item
+            name="maximumTime"
+            label={
+              <div>
+                Maximum Time{" "}
+                <Tooltip title="Maximum amount of time allows for each booking">
+                  <InfoCircleOutlined />
+                </Tooltip>
+              </div>
+            }
+            hidden={bookingType !== ParkingScheduleBookingType.RestrictTime}
+            // rules={[{ required: true, message: "Required!" }]}
+          >
+            <InputNumber
+              readOnly={!isMycompany}
+              formatter={(value) => `${value}`.replace(/[^0-9]/g, "")}
+              step={1}
+              min={0}
+              placeholder="Minutes; -1 = unlimited"
+              style={{ width: "100%" }}
+              addonBefore={<ClockCircleOutlined />}
+              addonAfter="mins"
+            />
+          </Form.Item>
+          {/*  */}
+          <Form.Item
+            name="minimumTime"
+            label={
+              <div>
+                Minimum Time{" "}
+                <Tooltip title="Minimum amount of time allows for each booking">
+                  <InfoCircleOutlined />
+                </Tooltip>
+              </div>
+            }
+            hidden={bookingType !== ParkingScheduleBookingType.RestrictTime}
+            // rules={[{ required: true, message: "Required!" }]}
+          >
+            <InputNumber
+              readOnly={!isMycompany}
+              formatter={(value) => `${value}`.replace(/[^0-9]/g, "")}
+              step={1}
+              min={0}
+              placeholder="Minutes"
+              style={{ width: "100%" }}
+              addonBefore={<ClockCircleOutlined />}
+              addonAfter="mins"
+            />
+          </Form.Item>
+          {/*  */}
+          <Form.Item
+            name="schedulePercentageNumber"
+            label={
+              <div>
+                Schedule Percentage{" "}
+                <Tooltip title="The percentage of parked vehicles within the parking space groups (for Restrict Above Percentage & Restrict Below Percentage, e.g. 75%)">
+                  <InfoCircleOutlined />
+                </Tooltip>
+              </div>
+            }
+            hidden={
+              !(
+                bookingType ===
+                  ParkingScheduleBookingType.RestrictAbovePercentage ||
+                bookingType ===
+                  ParkingScheduleBookingType.RestrictBelowPercentage
+              )
+            }
+            // rules={[{ required: true, message: "Required!" }]}
+          >
+            <InputNumber
+              readOnly={!isMycompany}
+              step={1}
+              min={0}
+              max={100}
+              style={{ width: "100%" }}
+              addonAfter="%"
+            />
+          </Form.Item>
+          {/*  */}
+          <Form.Item
+            name="penaltyInterval"
+            label={
+              <div>
+                Penalty Interval{" "}
+                <Tooltip title="Penalty interval in minutes">
+                  <InfoCircleOutlined />
+                </Tooltip>
+              </div>
+            }
+            hidden={bookingType !== ParkingScheduleBookingType.RestrictTime}
+            // rules={[{ required: true, message: "Required!" }]}
+          >
+            <InputNumber
+              readOnly={!isMycompany}
+              formatter={(value) => `${value}`.replace(/[^0-9]/g, "")}
+              step={1}
+              min={0}
+              placeholder="Parking rate per minute"
+              style={{ width: "100%" }}
+              addonBefore={<ClockCircleOutlined />}
+              addonAfter="mins"
+            />
+          </Form.Item>
+          {/*  */}
+          <Form.Item
+            name="penaltyAmount"
+            label={
+              <div>
+                Penalty Amount{" "}
+                <Tooltip title="Penalty amount as in interval">
+                  <InfoCircleOutlined />
+                </Tooltip>
+              </div>
+            }
+            hidden={bookingType !== ParkingScheduleBookingType.RestrictTime}
+            // rules={[{ required: true, message: "Required!" }]}
+          >
+            <InputNumber
+              readOnly={!isMycompany}
+              // formatter={(value) => `${value}`.replace(/[^0-9]/g, "")}
+              step={1}
+              min={0}
+              placeholder="Penalty amount as in interval"
+              style={{ width: "100%" }}
+              addonBefore="$"
+              addonAfter="HKD"
+            />
+          </Form.Item>
+          {/*  */}
+          <Form.Item
+            name="penaltyBuffer"
+            label={
+              <div>
+                Penalty Buffer{" "}
+                <Tooltip title="Penalty buffer in minutes">
+                  <InfoCircleOutlined />
+                </Tooltip>
+              </div>
+            }
+            hidden={bookingType !== ParkingScheduleBookingType.RestrictTime}
+            // rules={[{ required: true, message: "Required!" }]}
+          >
+            <InputNumber
+              readOnly={!isMycompany}
+              formatter={(value) => `${value}`.replace(/[^0-9]/g, "")}
+              step={1}
+              min={0}
+              placeholder="Penalty buffer in minutes"
+              style={{ width: "100%" }}
+              addonBefore={<ClockCircleOutlined />}
+              addonAfter="mins"
+            />
+          </Form.Item>
+          {/*  */}
+          <Divider />
+          <Form.Item
+            name="priority"
+            label={
+              <div>
+                Priority{" "}
+                <Tooltip title="collided schedules with largest priority will be considered (if the priority is same, lastest created schedule will be considered)">
+                  <InfoCircleOutlined />
+                </Tooltip>
+              </div>
+            }
+            // rules={[{ required: true, message: "Required!" }]}
+          >
+            <InputNumber
+              readOnly={!isMycompany}
+              formatter={(value) => `${value}`.replace(/[^0-9]/g, "")}
+              step={1}
+              min={0}
+              placeholder="Number e.g. 99"
+              style={{ width: "100%" }}
+            />
+          </Form.Item>
+          {/*  */}
+          <Form.Item
+            name="relatedEnableSpaceGroupIdsConcat"
+            label="Enable Space Group
+"
+            // rules={[{ required: true, message: "Required!" }]}
+          >
+            <Input readOnly />
+          </Form.Item>
+          <Form.Item name="options" hidden={!isMycompany}>
+            <Row>
+              <Col span={16}>
+                <Button
+                  style={{ width: "100%" }}
+                  onClick={() => {
+                    setParkingSpaceGroupEnableOrDisable("Enable");
+                    if (selectedEvent) {
+                      setCurrentSelectedParkingSpaceGroup(
+                        selectedEvent.relatedEnableSpaceGroup
+                      );
+                      setSelectParkingSpacesGroupsModalState(true);
+                    }
+                  }}
+                >
+                  Select Parking Space Group
+                </Button>
+              </Col>
+              <Col span={7} offset={1}>
+                <Button
+                  style={{ width: "100%" }}
+                  onClick={() => {
+                    let tempSelectedEvent = selectedEvent;
+                    if (tempSelectedEvent) {
+                      tempSelectedEvent.relatedEnableSpaceGroup = undefined;
+
+                      tempSelectedEvent.relatedEnableSpaceGroupIdsConcat =
+                        "Nil";
+                    }
+
+                    setSelectedEvent(tempSelectedEvent);
+
+                    setTimeout(() => {
+                      eventFormRef.setFieldValue(
+                        "relatedEnableSpaceGroupIdsConcat",
+                        selectedEvent?.relatedEnableSpaceGroupIdsConcat
+                      );
+                    }, 100);
+                  }}
+                >
+                  Remove Group
+                </Button>
+              </Col>
+            </Row>
+          </Form.Item>
+          {/*  */}
+          <Form.Item
+            name="relatedDisableSpaceGroupIdsConcat"
+            label="Disable Space Group"
+            // rules={[{ required: true, message: "Required!" }]}
+          >
+            <Input readOnly />
+          </Form.Item>
+          <Form.Item name="options" hidden={!isMycompany}>
+            <Row>
+              <Col span={16}>
+                <Button
+                  style={{ width: "100%" }}
+                  onClick={() => {
+                    setParkingSpaceGroupEnableOrDisable("Disable");
+
+                    if (selectedEvent) {
+                      setCurrentSelectedParkingSpaceGroup(
+                        selectedEvent.relatedDisableSpaceGroup
+                      );
+                      setSelectParkingSpacesGroupsModalState(true);
+                    }
+                  }}
+                >
+                  Select Parking Space Group
+                </Button>
+              </Col>
+              <Col span={7} offset={1}>
+                <Button
+                  style={{ width: "100%" }}
+                  onClick={() => {
+                    let tempSelectedEvent = selectedEvent;
+                    if (tempSelectedEvent) {
+                      tempSelectedEvent.relatedDisableSpaceGroup = undefined;
+
+                      tempSelectedEvent.relatedDisableSpaceGroupIdsConcat =
+                        "Nil";
+                    }
+
+                    setSelectedEvent(tempSelectedEvent);
+
+                    setTimeout(() => {
+                      eventFormRef.setFieldValue(
+                        "relatedDisableSpaceGroupIdsConcat",
+                        selectedEvent?.relatedDisableSpaceGroupIdsConcat
+                      );
+                    }, 100);
+                  }}
+                >
+                  Remove Group
+                </Button>
+              </Col>
+            </Row>
+          </Form.Item>
+          {/*  */}
+        </Form>
+      </Modal>
+
+      {/* select parking space group Modal */}
+      <Modal
+        bodyStyle={{ overflowY: "auto", maxHeight: "calc(100vh - 200px)" }}
+        destroyOnClose={true}
+        title="Select parking space group"
+        centered
+        width="80vw"
+        // style={{ height: "80vh" }} //TODO this didn't work
+        open={selectParkingSpacesGroupsModalState}
+        onOk={() => {
+          setSelectParkingSpacesGroupsModalState(false);
+        }}
+        onCancel={() => setSelectParkingSpacesGroupsModalState(false)}
+        footer={[]}
+      >
+        <>
+          enable
+          <ModalPickParkingSpaceGroup
+            parkingSpaceGroup={currentSelectedParkingSpaceGroup}
+            returnParkingSpaceGroup={(parkingSpaceGroup) => {
+              let tempSelectedEvent = selectedEvent;
+
+              if (tempSelectedEvent) {
+                if (parkingSpaceGroupEnableOrDisable === "Enable") {
+                  tempSelectedEvent.relatedEnableSpaceGroup = parkingSpaceGroup;
+
+                  tempSelectedEvent.relatedEnableSpaceGroupIdsConcat =
+                    parkingSpaceGroup.title;
+                }
+                if (parkingSpaceGroupEnableOrDisable === "Disable") {
+                  tempSelectedEvent.relatedDisableSpaceGroup =
+                    parkingSpaceGroup;
+
+                  tempSelectedEvent.relatedDisableSpaceGroupIdsConcat =
+                    parkingSpaceGroup.title;
+                }
+
+                setSelectedEvent(tempSelectedEvent);
+
+                setTimeout(() => {
+                  if (parkingSpaceGroupEnableOrDisable === "Enable")
+                    eventFormRef.setFieldValue(
+                      "relatedEnableSpaceGroupIdsConcat",
+                      selectedEvent?.relatedEnableSpaceGroupIdsConcat
+                    );
+                  if (parkingSpaceGroupEnableOrDisable === "Disable")
+                    eventFormRef.setFieldValue(
+                      "relatedDisableSpaceGroupIdsConcat",
+                      selectedEvent?.relatedDisableSpaceGroupIdsConcat
+                    );
+                }, 500);
+              }
+
+              setCurrentSelectedParkingSpaceGroup(undefined);
+
+              setSelectParkingSpacesGroupsModalState(false);
+            }}
+          />
+        </>
+      </Modal>
+    </>
+  );
+};
+
+export default ParkingSchedules;

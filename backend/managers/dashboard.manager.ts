@@ -45,9 +45,8 @@ export async function deleteUserProfile(ID: number[]) {
     let affectedRows = 0;
     for (const id of ID) {
       const result = await pool.query(query, id);
-      console.log(result);
+
       affectedRows += result[0].affectedRows;
-      console.log(result);
     }
     console.log(affectedRows, "users have successfully deleted");
     return affectedRows;
@@ -186,13 +185,16 @@ export async function getPerformanceInfo(Location: string) {
 
 export async function getProjectList(ID: Number) {
   try {
-    const [result1] = await pool.query(
-      `SELECT project.ID, ProjectName, Start, End, Status, Budget,FirstName 
-      FROM project 
-      LEFT join user on project.User_ID = user.ID
-      WHERE User_ID = ? 
-         AND project.Deleted_At IS NULL `,
+    const [userEmail] = await pool.query(
+      `SELECT Email FROM user WHERE ID = ?`,
       [ID]
+    );
+
+    const [result1] = await pool.query(
+      `SELECT * FROM project WHERE 
+      (User_ID = ? OR ID IN (SELECT project_ID FROM electrictracker.projectpeople WHERE Joined_User_Email = ? AND Deleted_At IS NULL)) 
+      AND Deleted_At IS NULL`,
+      [ID, userEmail[0].Email]
     );
 
     const [result2] = await pool.query(
@@ -225,9 +227,13 @@ export async function addProjectList(
   Budget: String
 ) {
   try {
+    const [creatorName] = await pool.execute(
+      "SELECT FirstName FROM user WHERE ID =?",
+      [ID]
+    );
     const [result1] = await pool.execute(
-      "INSERT INTO project (ProjectName, Start,END, User_ID,Budget) VALUES(?,?,?,?,?)",
-      [ProjectName, Start, End, ID, Budget]
+      "INSERT INTO project (ProjectName, Start,END, User_ID,Budget, CreatorName) VALUES(?,?,?,?,?,?)",
+      [ProjectName, Start, End, ID, Budget, creatorName[0].FirstName]
     );
     const [lastAddedProject] = await pool.execute(
       "SELECT ID FROM project WHERE User_ID =? ORDER BY ID DESC LIMIT 1",
@@ -409,7 +415,7 @@ export async function deleteCalenderListManager(
 
 export async function deleteProjectList(ProjectID: Number, ID: Number) {
   try {
-    const result = pool.execute(
+    const result = await pool.execute(
       "UPDATE project SET Deleted_At = NOW() WHERE ID = ? AND User_ID = ?",
       [ProjectID, ID]
     );
@@ -466,5 +472,18 @@ export async function getProjectTask(project_ID: number) {
     }
   } catch (error) {
     return { message: "internal Error in get joined user List", error: error };
+  }
+}
+
+export async function deleteTask(TaskID: Number, ID: Number) {
+  try {
+    const result = await pool.execute(
+      "UPDATE submissiontask SET Deleted_At = NOW() WHERE ID = ? AND CreatorID = ?",
+      [TaskID, ID]
+    );
+    return result;
+  } catch (err) {
+    console.error(new Date(), "deleteTask", err);
+    return 0;
   }
 }
