@@ -191,14 +191,14 @@ export async function getProjectList(ID: Number) {
     );
 
     const [result1] = await pool.query(
-      `SELECT * FROM project WHERE 
-      (User_ID = ? OR ID IN (SELECT project_ID FROM electrictracker.projectpeople WHERE Joined_User_Email = ? AND Deleted_At IS NULL)) 
+      `SELECT * FROM project WHERE
+      (User_ID = ? OR ID IN (SELECT project_ID FROM electrictracker.projectpeople WHERE Joined_User_Email = ? AND Deleted_At IS NULL))
       AND Deleted_At IS NULL`,
       [ID, userEmail[0].Email]
     );
 
     const [result2] = await pool.query(
-      `SELECT project_ID, Joined_User_Email, IFNULL(FirstName, 'Unknown') AS JoinedUserName FROM projectpeople
+      `SELECT projectpeople.Role, project_ID, Joined_User_Email FROM projectpeople
       LEFT join user on projectPeople.Joined_User_Email = user.Email
       WHERE project_ID IN (?)`,
       [result1.map((project: any) => project.ID)]
@@ -224,7 +224,9 @@ export async function addProjectList(
   End: String,
   ID: Number,
   TeamMembers: String[],
-  Budget: String
+  Budget: String,
+  TeamManagers: String[],
+  Guests: String[]
 ) {
   try {
     const [creatorName] = await pool.execute(
@@ -246,6 +248,20 @@ export async function addProjectList(
         [email, lastAddedProject[0].ID]
       );
       affectedRows += result2.affectedRows;
+    }
+    for (const email of TeamManagers) {
+      const [result3, fields] = await pool.execute(
+        "INSERT INTO projectpeople (Joined_User_Email,project_ID,Role) VALUES(?,?,'Manager')",
+        [email, lastAddedProject[0].ID]
+      );
+      affectedRows += result3.affectedRows;
+    }
+    for (const email of Guests) {
+      const [result4, fields] = await pool.execute(
+        "INSERT INTO projectpeople (Joined_User_Email,project_ID,Role) VALUES(?,?,'Guest')",
+        [email, lastAddedProject[0].ID]
+      );
+      affectedRows += result4.affectedRows;
     }
     if (result1 && affectedRows > 0) {
       return (
@@ -291,7 +307,6 @@ export async function getTimeSheet(ID: number) {
     const resultQuery =
       "SELECT Start,End, Title,CalendarID, Description FROM timesheet WHERE UserID = ?";
     let [result] = await pool.query(resultQuery, [ID]);
-    console.log(result);
     return result;
   } catch (err) {
     console.error(new Date(), "getTimeSheet", err);
@@ -309,7 +324,7 @@ export async function getCalendarList(
       "SELECT Name, ID, Color FROM calendar WHERE user_ID = ? AND Deleted_at IS NULL";
     let [result] = await pool.query(resultQuery, [ID]);
     const resultQuery2 =
-      "SELECT ID, Start,End, Title,CalendarID FROM timesheet WHERE CalendarID  IN  (?) AND (END >= ? AND START <=?) AND Deleted_At IS NULL";
+      "SELECT ID, Start,End, Title,CalendarID FROM timesheet WHERE CalendarID  IN  (?) AND (END >= ? AND START <= ?) AND Deleted_At IS NULL";
     let [result2] = await pool.query(resultQuery2, [
       result.map((d: any) => d.ID),
       format(startOfDay(startRange), "yyyy-MM-dd"),
@@ -429,7 +444,7 @@ export async function deleteProjectList(ProjectID: Number, ID: Number) {
 export async function getJoinedUserList(project_ID: number) {
   try {
     const result = await pool.execute(
-      "SELECT Joined_User_Email FROM projectpeople WHERE Deleted_At IS NULL AND project_ID =?",
+      "SELECT Joined_User_Email,Role FROM projectpeople WHERE Deleted_At IS NULL AND project_ID =?",
       [project_ID]
     );
     if (result) {
@@ -443,20 +458,49 @@ export async function getJoinedUserList(project_ID: number) {
 export async function addProjectTask(
   Name: string,
   Manager: string,
+  Member: string,
   DueDate: string,
   Description: string,
   ID: number,
   project_ID: number
 ) {
+  let affectedRows = 0;
   try {
-    const [result] = await pool.execute(
-      "INSERT INTO submissiontask (Name, Manager, DueDate, Description,CreatorID,project_ID) VALUES (?,?,?,?,?,?);",
-      [Name, Manager, DueDate, Description, ID, project_ID]
+    const [creatorName] = await pool.execute(
+      "SELECT FirstName from user WHERE ID = ?",
+      [ID]
     );
-    if (result) {
-      return result.affectedRows;
+    const [result] = await pool.execute(
+      "INSERT INTO submissiontask (Name, DueDate, Description,CreatorID,project_ID,CreatorName) VALUES (?,?,?,?,?,?);",
+      [Name, DueDate, Description, ID, project_ID, creatorName[0].FirstName]
+    );
+    affectedRows += result.affectedRows;
+    const [LastID] = await pool.execute(
+      "SELECT ID FROM submissiontask WHERE Name = ? AND project_ID =? AND DueDate = ?",
+      [Name, project_ID, DueDate]
+    );
+    const [result2] = await pool.execute(
+      "INSERT INTO submissiontaskpeople (Email, Role, submissiontask_ID) VALUES (?,'Manager',?)",
+      [Manager, LastID[0].ID]
+    );
+    affectedRows += result2.affectedRows;
+    for (let i = 0; i < Member.length; i++) {
+      const [result3] = await pool.execute(
+        "INSERT INTO submissiontaskpeople (Email, Role, submissiontask_ID) VALUES (?,'Member',?)",
+        [Member[i], LastID[0].ID]
+      );
+
+      affectedRows += result3.affectedRows;
+    }
+    if (result && result2 && affectedRows > 0) {
+      const updateLogs = await pool.execute(
+        "INSERT INTO activitylog (UserID, ProjectID, Activity) VALUES (?,?,'Create Update Task')",
+        [ID, project_ID]
+      );
+      return affectedRows;
     }
   } catch (error) {
+    console.log(error);
     return { error: error };
   }
 }
@@ -464,13 +508,14 @@ export async function addProjectTask(
 export async function getProjectTask(project_ID: number) {
   try {
     const [result] = await pool.execute(
-      "SELECT ID,Name, Manager, CreateDate, DueDate, Description,Status FROM submissiontask WHERE Deleted_At IS NULL AND project_ID =?",
+      "SELECT ID,Name,CreatorName, CreateDate, DueDate, Description,Status FROM submissiontask WHERE Deleted_At IS NULL AND project_ID =?",
       [project_ID]
     );
     if (result) {
       return result;
     }
   } catch (error) {
+    console.log(error);
     return { message: "internal Error in get joined user List", error: error };
   }
 }
@@ -484,6 +529,42 @@ export async function deleteTask(TaskID: Number, ID: Number) {
     return result;
   } catch (err) {
     console.error(new Date(), "deleteTask", err);
-    return 0;
+    return { message: "deleteTaskError", error: err };
+  }
+}
+
+export async function getTaskPeple(TaskID: Number) {
+  try {
+    const [result] = await pool.execute(
+      "SELECT Email, Role FROM submissiontaskpeople WHERE submissiontask_ID =?",
+      [TaskID]
+    );
+    if (result) {
+      return result;
+    }
+  } catch (error) {
+    console.error(new Date(), "getTaskpeople Error", error);
+    return { message: "getTaskPeopleError", error: error };
+  }
+}
+
+export async function getActivityLogs(project_ID: Number) {
+  try {
+    const [result] = await pool.execute(
+      `SELECT activitylog.ID,Activity, FirstName, ProjectName,TimeStamp FROM activitylog
+       LEFT JOIN user on activitylog.UserID = user.ID
+        LEFT JOIN project on activitylog.ProjectID = project.ID
+        WHERE activitylog.Deleted_At IS NULL AND ProjectID = ?
+        ORDER BY TimeStamp DESC
+
+      `,
+      [project_ID]
+    );
+    if (result) {
+      return result;
+    }
+  } catch (error) {
+    console.log("error at getActivityLogs", error);
+    return error;
   }
 }

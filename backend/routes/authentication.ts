@@ -57,7 +57,6 @@ authenticationRouter.post("/signup", async (req: Request, res: Response) => {
     phoneNumber,
     email
   );
-  console.log(result.message);
   if (result.message === "email already exists") {
     res.json({ message: "Email already has been registered", result: result });
   } else {

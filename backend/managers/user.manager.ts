@@ -44,12 +44,13 @@ class UserManager {
   ) {
     try {
       const hashedPassword = await this.hashPassword(Password);
-      const emailChekcer = await pool.execute(
+      const [emailChecker] = await pool.execute(
         "SELECT ID FROM user WHERE Email = ?",
         [Email]
       );
-      if (emailChekcer.length > 0) {
-        return { message: "email already exists", emailChekcer };
+      console.log(emailChecker.length);
+      if (emailChecker.length > 0) {
+        return { message: "email already exists", emailChecker };
       }
       const [companyID] = await pool.execute(
         "SELECT ID FROM company WHERE Name = ?",

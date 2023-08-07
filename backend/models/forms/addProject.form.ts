@@ -14,4 +14,10 @@ export class addProjectForm {
 
   @IsString()
   Budget?: String;
+
+  @IsString({ each: true })
+  TeamManagers: string[] = [];
+
+  @IsString({ each: true })
+  Guests: string[] = [];
 }

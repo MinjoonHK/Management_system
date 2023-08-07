@@ -35,6 +35,7 @@ app.use(
 app.get("/download", async (req, res) => {
   const token = req.query.token;
   const fileId = req.query.fileId;
+  const projectID = Number(req.query.projectID);
   if (token) {
     try {
       const decoded = jwt.verify(
@@ -42,12 +43,16 @@ app.get("/download", async (req, res) => {
         config.get("jwt.passphase")!
       ) as DecodedToken;
       req.userId = decoded.ID;
-
+      const userID = req.userId;
       const result = await pool.execute(
         "SELECT * FROM fileuploads WHERE ID = ? ",
         [fileId]
       );
       if (result[0].length) {
+        const updateLog = await pool.execute(
+          "INSERT INTO activitylog (UserID, ProjectID, Activity) VALUES (?,?,'Download') ",
+          [userID, projectID]
+        );
         res.setHeader(
           "Content-disposition",
           "attachment; filename=" + result[0][0].Name

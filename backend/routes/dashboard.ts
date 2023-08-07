@@ -30,6 +30,8 @@ import {
   addProjectTask,
   getProjectTask,
   deleteTask,
+  getTaskPeple,
+  getActivityLogs,
 } from "../managers/dashboard.manager";
 import { workorderform } from "../models/forms/workorder.form";
 import { updateWorkOrder } from "../models/forms/updateworkorder.form";
@@ -39,6 +41,9 @@ import { CalendarListForm } from "../models/forms/calendarlist.form";
 import { addProjectForm } from "../models/forms/addProject.form";
 import uploadRouter from "./upload";
 import { idForm } from "../models/forms/idforms";
+import { addsubmissiontaskForm } from "../models/forms/addSubmissiontask.form";
+import { getTaskUser } from "../models/forms/getTaskUser.form";
+import { getActivityLogsForm } from "../models/forms/getActivityLog.form";
 
 const dashboardRouter = express.Router();
 
@@ -119,9 +124,9 @@ dashboardRouter.post("/deactivateuser", async (req, res) => {
   }
 });
 
-/** Need to be modified */
 dashboardRouter.post("/projectList", async (req, res) => {
-  const { ProjectName, Start, End, TeamMembers, Budget } = req.body;
+  const { ProjectName, Start, End, TeamMembers, Budget, TeamManagers, Guests } =
+    req.body;
   const ID = req.userId;
   let form = new addProjectForm();
   form.ProjectName = ProjectName;
@@ -129,6 +134,8 @@ dashboardRouter.post("/projectList", async (req, res) => {
   form.End = End;
   form.TeamMembers = TeamMembers;
   form.Budget = Budget;
+  form.TeamManagers = TeamManagers;
+  form.Guests = Guests;
   const errors = await validate(form);
   if (errors.length > 0) {
     //if there is error
@@ -145,7 +152,9 @@ dashboardRouter.post("/projectList", async (req, res) => {
     End,
     ID!,
     TeamMembers,
-    Budget
+    Budget,
+    TeamManagers,
+    Guests
   );
   if (result) {
     res.json({ message: "successfully added", result: result });
@@ -493,11 +502,19 @@ dashboardRouter.get("/joinedUserList", async (req, res) => {
 });
 
 dashboardRouter.post("/addsubmissiontask", async (req, res) => {
-  const { Name, Manager, DueDate, Description, project_ID } = req.body;
+  const { Name, Manager, Member, DueDate, Description, project_ID } = req.body;
   const ID = req.userId;
+  let form = new addsubmissiontaskForm();
+  form.Name = Name;
+  form.Manager = Manager;
+  form.Member = Member;
+  form.DueDate = DueDate;
+  form.Description = Description;
+  form.project_ID = project_ID;
   let result = await addProjectTask(
     Name,
     Manager,
+    Member,
     DueDate,
     Description,
     ID!,
@@ -547,6 +564,56 @@ dashboardRouter.post("/deleteTaskList", async (req: Request, res: Response) => {
       message: "Error occured at deleting ProjectList",
       result: result,
     });
+  }
+});
+
+dashboardRouter.get("/getTaskPeople", async (req, res) => {
+  const TaskID = Number(req.query.TaskID);
+  let form = new getTaskUser();
+  form.TaskID = TaskID;
+  const errors = await validate(form);
+  if (errors.length > 0) {
+    res.status(400).json({
+      success: false,
+      error: "validation_error",
+      message: errors,
+    });
+    return;
+  }
+  const response = await getTaskPeple(TaskID);
+  if (response) {
+    res.json({
+      message: "successfully loaded TaskPeople",
+      status: "success",
+      result: response,
+    });
+  } else {
+    res.send("Manager Error occurred at getTaskPeople");
+  }
+});
+
+dashboardRouter.get("/activityLogs", async (req, res) => {
+  const project_ID = Number(req.query.project_ID);
+  let form = new getActivityLogsForm();
+  form.projectID = project_ID;
+  const errors = await validate(form);
+  if (errors.length > 0) {
+    res.status(400).json({
+      success: false,
+      error: "validation_error",
+      message: errors,
+    });
+    return;
+  }
+  const response = await getActivityLogs(project_ID);
+  if (response) {
+    res.json({
+      message: "successfully loaded activity logs",
+      status: true,
+      result: response,
+    });
+  } else {
+    res.json({ message: "failed to load activity logs", error: response });
   }
 });
 

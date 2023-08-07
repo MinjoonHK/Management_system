@@ -1,9 +1,6 @@
 import { IsNumber } from "class-validator";
 
-export class idForm {
+export class getTaskUser {
   @IsNumber()
   TaskID?: Number;
-
-  @IsNumber()
-  ID?: Number;
 }
