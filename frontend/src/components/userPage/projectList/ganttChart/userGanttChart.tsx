@@ -1,14 +1,7 @@
 import "gantt-task-react/dist/index.css";
 import "./viewSwitcher";
 import { useEffect, useState } from "react";
-import {
-  Gantt,
-  Task,
-  EventOption,
-  StylingOption,
-  ViewMode,
-  DisplayOption,
-} from "gantt-task-react";
+import { Gantt, Task, ViewMode } from "gantt-task-react";
 import { ViewSwitcher } from "./viewSwitcher";
 import axios from "axios";
 
@@ -43,7 +36,6 @@ export function GanttChart() {
       const response = await axios.get("/dashboard/schedule", {
         params: { Token: token },
       });
-      console.log("scheduleResponse", response);
       setTasks(
         response.data.map((d) => {
           return {
@@ -88,7 +80,6 @@ export function GanttChart() {
 
   const handleProgressChange = async (task: Task) => {
     setTasks(tasks.map((t) => (t.id === task.id ? task : t)));
-    console.log("On progress change Id:" + task.id);
   };
 
   return (

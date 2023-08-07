@@ -1,64 +1,19 @@
 import { Button, Calendar, Table, Tabs } from "antd";
 import GanttChart from "./ganttChart/userGanttChart";
-
 import { useEffect, useState } from "react";
 import axios from "axios";
 import dayjs from "dayjs";
 import { Link, Route, Routes, useParams } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faL, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
-import { ColumnsType } from "antd/es/table";
-import LogModal from "./logModal";
 import { t } from "i18next";
 import { DocumentSubmissionPage } from "./docSubPage";
+import { DocumentPool } from "./prjDocPool";
+import { FileColumns } from "./docPoolFileColumns";
+import { ActivityLog } from "./prjActivityLog";
 
 export const ProjectDetail = () => {
   const [data, setData] = useState([]);
   const [currentProject, setCurrentProject] = useState("");
-  const [openLogModal, setOpenLogModal] = useState(true);
   const { selectedProject } = useParams();
-
-  const FileColumns: ColumnsType = [
-    {
-      title: "File Name",
-      dataIndex: "Name",
-      align: "center",
-    },
-    {
-      title: "Uploader",
-      dataIndex: "FirstName",
-      align: "center",
-    },
-    {
-      title: "Uploaded Date",
-      dataIndex: "UploadDate",
-      align: "center",
-    },
-    {
-      title: "File Size",
-      dataIndex: "Size",
-      align: "center",
-    },
-    {
-      title: "Download",
-      dataIndex: "Download",
-      align: "center",
-    },
-    {
-      title: "Download Logs",
-      dataIndex: "DownloadLogs",
-      align: "center",
-      render: (text) => (
-        <Button
-          onClick={() => {
-            setOpenLogModal(true);
-          }}
-        >
-          <FontAwesomeIcon icon={faMagnifyingGlass} />
-        </Button>
-      ),
-    },
-  ];
 
   const fetchData = async () => {
     try {
@@ -78,7 +33,7 @@ export const ProjectDetail = () => {
                 axios.defaults.baseURL
               }/download?token=${encodeURIComponent(
                 localStorage.getItem("jwt")
-              )}&fileId=${item.ID}`}
+              )}&fileId=${item.ID}&projectID=${selectedProject}`}
               className="btn"
               style={{ color: "rgb(45,68,134)", textDecoration: "underline" }}
             >
@@ -103,58 +58,37 @@ export const ProjectDetail = () => {
         type="card"
         items={[
           {
-            label: <div style={{ color: "black" }}>Working Schedule</div>,
+            label: <div style={{ color: "black" }}>{t("WorkingSchedule")}</div>,
             key: "WorkingSchdule",
             children: <Calendar />,
           },
           {
-            label: <div style={{ color: "black" }}>Gantt Chart</div>,
+            label: <div style={{ color: "black" }}>{t("GanttChart")}</div>,
             key: "GanttChart",
             children: <GanttChart />,
           },
           {
-            label: <div style={{ color: "black" }}>Document Submission</div>,
+            label: (
+              <div style={{ color: "black" }}>{t("DocumentSubmission")}</div>
+            ),
             key: "Document Submission",
             children: (
               <DocumentSubmissionPage selectedProject={selectedProject} />
             ),
           },
+
           {
-            label: <div style={{ color: "black" }}>Document Pool</div>,
+            label: <div style={{ color: "black" }}>{t("DocumentPool")}</div>,
             key: "Document Pool",
-            children: (
-              <div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginBottom: "1.5%",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: "25px",
-                      fontWeight: "bold",
-                      marginLeft: "1%",
-                    }}
-                  >
-                    Uploaded Files
-                  </span>
-                </div>
-                <Table dataSource={data} columns={FileColumns} />
-              </div>
-            ),
+            children: <DocumentPool data={data} FileColumns={FileColumns} />,
+          },
+          {
+            label: <div style={{ color: "black" }}>{t("ActivityLogs")}</div>,
+            key: "ActivityLogs",
+            children: <ActivityLog selectedProject={selectedProject} />,
           },
         ]}
       />
-
-      {/* <LogModal
-        open={openLogModal}
-        onClose={() => {
-          setOpenLogModal(false);
-        }}
-        selectedProject={selectedProject}
-      /> */}
     </div>
   );
 };

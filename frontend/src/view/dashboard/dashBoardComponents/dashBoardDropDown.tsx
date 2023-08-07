@@ -1,5 +1,6 @@
 import { MenuProps } from "antd";
 import { Link } from "react-router-dom";
+import { t } from "i18next";
 
 function logout() {
   localStorage.clear();
@@ -10,7 +11,7 @@ export const DashboardDropdown = (UserRole: string): MenuProps["items"] => {
       {
         label: (
           <Link style={{ textDecoration: "none" }} to="/admininformation">
-            Profile
+            {t("profile")}
           </Link>
         ),
         key: "0",
@@ -22,7 +23,7 @@ export const DashboardDropdown = (UserRole: string): MenuProps["items"] => {
             style={{ fontWeight: "bold", textDecoration: "none" }}
             to="/login"
           >
-            Logout
+            {t("logOut")}
           </Link>
         ),
         key: "1",

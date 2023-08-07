@@ -29,5 +29,23 @@
      "Status":"Status",
      "StartDate":"Start Date",
      "DueDate":"Due Date",
-     "GeneralInfo":"General Info"
+     "GeneralInfo":"General Info",
+     "WorkingSchedule":"Working Schedule",
+     "DocumentSubmission":"Document Submission",
+     "DocumentPool":"Document Pool",
+     "ActivityLogs":"Activity Logs",
+     "Name":"Name",
+     "Role":"Role",
+     "Activity":"Activity",
+     "ProjectName":"Project Name",
+     "TimeStamp":"Time Stamp",
+     "profile":"Profile",
+     "logOut":"Log Out",
+     "UploadedFiles":"Uploaded Files",
+     "FileName":"File Name",
+     "Uploader":"Uploader",
+     "UploadedDate":"Uploaded Date",
+     "FileSize":"File Size",
+     "Download":"Download"
+
 }

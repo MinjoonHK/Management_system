@@ -1,16 +1,29 @@
 import { Card, Modal, Button, Form, Input, Select, DatePicker } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
+import jwtDecode from "jwt-decode";
+import { decodedToken } from "../../../data/Interfaces/decodedToken";
 
 export default function AddModal({ open, onClose, onChange }) {
-  const onFinish = async ({ Name, TeamMembers, DateRange, Budget }) => {
+  const DecodeToken: decodedToken = jwtDecode(localStorage.getItem("jwt"));
+  const LoggedUserEmail = DecodeToken.Email;
+  const onFinish = async ({
+    Name,
+    TeamMembers,
+    DateRange,
+    Budget,
+    TeamManagers,
+    Guests,
+  }) => {
     try {
       const res1 = await axios.post("/dashboard/projectList", {
         ProjectName: Name,
         TeamMembers: TeamMembers,
         Start: DateRange[0].toISOString(),
-        End: DateRange[0].toISOString(),
+        End: DateRange[1].toISOString(),
         Budget: Budget,
+        TeamManagers: TeamManagers,
+        Guests: Guests,
       });
       if (res1.status === 200) {
         onChange();
@@ -52,12 +65,16 @@ export default function AddModal({ open, onClose, onChange }) {
             layout="vertical"
             fields={[
               {
-                name: ["StartDate"],
-                value: dayjs(),
+                name: ["DateRange"],
+                value: [dayjs(), null],
               },
               {
                 name: ["Name"],
                 value: "Example Project",
+              },
+              {
+                name: ["TeamManagers"],
+                value: [LoggedUserEmail],
               },
             ]}
           >
@@ -75,8 +92,27 @@ export default function AddModal({ open, onClose, onChange }) {
               <Input size="large" />
             </Form.Item>
             <Form.Item
+              name={"TeamManagers"}
+              label={"Invite person as manager"}
+              style={{ fontSize: "15px" }}
+              rules={[
+                {
+                  required: true,
+                  message: "Please invite mangers!",
+                },
+              ]}
+            >
+              <Select
+                mode="tags"
+                size="large"
+                placeholder="Please type email"
+                style={{ width: "100%" }}
+                tokenSeparators={[","]}
+              />
+            </Form.Item>
+            <Form.Item
               name={"TeamMembers"}
-              label={"Invite other members"}
+              label={"Invite person as members"}
               style={{ fontSize: "15px" }}
             >
               <Select
@@ -84,9 +120,20 @@ export default function AddModal({ open, onClose, onChange }) {
                 size="large"
                 placeholder="Please type email"
                 style={{ width: "100%" }}
-                // onChange={handleChange}
                 tokenSeparators={[","]}
-                // options={options}
+              />
+            </Form.Item>
+            <Form.Item
+              name={"Guests"}
+              label={"Invite person as guests"}
+              style={{ fontSize: "15px" }}
+            >
+              <Select
+                mode="tags"
+                size="large"
+                placeholder="Please type email"
+                style={{ width: "100%" }}
+                tokenSeparators={[","]}
               />
             </Form.Item>
             <Form.Item
@@ -130,9 +177,7 @@ export default function AddModal({ open, onClose, onChange }) {
               </Button>
             </Form.Item>
           </Form>
-          <span></span>
         </div>
-        <div></div>
       </Card>
     </Modal>
   );

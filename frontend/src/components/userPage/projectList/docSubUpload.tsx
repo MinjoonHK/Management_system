@@ -11,8 +11,19 @@ import type { UploadProps } from "antd";
 import { InboxOutlined, CheckOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCheck, faX } from "@fortawesome/free-solid-svg-icons";
+import jwtDecode from "jwt-decode";
 
 const { Dragger } = Upload;
+
+interface userToken {
+  Email: string;
+  ID?: Number;
+  Role?: String;
+  exp?: number;
+  iat?: number;
+}
 
 export default function DocumentUploadModal({
   open,
@@ -22,13 +33,13 @@ export default function DocumentUploadModal({
   selectedTask,
 }) {
   const [defaultList, setDefaultList] = useState([]);
-  const [currentTask, setCurrentTask] = useState(null);
+  const [manager, setManager] = useState(null);
+  const userToken: userToken = jwtDecode(localStorage.getItem("jwt"));
 
   const props: UploadProps = {
     name: "file",
     multiple: true,
     async customRequest(props) {
-      console.log(props);
       const form = new FormData();
       form.append("file", props.file);
       form.append("selectedProject", selectedProject);
@@ -43,7 +54,8 @@ export default function DocumentUploadModal({
       });
       if (res.data.status === "success") {
         onChange();
-        fetchData();
+        fetchUploadTask();
+        updateActivityLog();
         props.onSuccess("");
       } else if (res.data.status === "error") {
         message.error("file upload failed");
@@ -51,13 +63,41 @@ export default function DocumentUploadModal({
       return;
     },
   };
-  const fetchData = async () => {
+  const updateActivityLog = async () => {
+    const res = await axios.post("/dashboard/upload/updateLog", {
+      TaskID: selectedTask.ID,
+      projectID: Number(selectedProject),
+    });
+    if (res.data.status === true) {
+      console.log("successfully updated Log");
+    } else {
+      console.log("error in updating log");
+    }
+  };
+  const fetchUploadTask = async () => {
     if (selectedTask) {
       const res = await axios.get("/dashboard/upload/uploadedTasks", {
         params: { TaskID: selectedTask.ID, projectID: selectedProject },
       });
       if (res.data.status === "true") {
+        console.log(res.data.result);
         setDefaultList(res.data.result);
+      } else {
+        console.log("error");
+      }
+    }
+  };
+
+  const fetchTaskPeople = async () => {
+    if (selectedTask) {
+      const res = await axios.get("/dashboard/getTaskPeople", {
+        params: { TaskID: selectedTask.ID },
+      });
+      if (res.data.status === "success") {
+        const filteredData = res.data.result.filter(
+          (e) => e.Role === "Manager"
+        );
+        setManager(filteredData[0]);
       } else {
         console.log("error");
       }
@@ -66,7 +106,8 @@ export default function DocumentUploadModal({
 
   useEffect(() => {
     if (selectedTask) {
-      fetchData();
+      fetchUploadTask();
+      fetchTaskPeople();
     }
   }, [selectedTask]);
   return (
@@ -78,7 +119,11 @@ export default function DocumentUploadModal({
       width={"70%"}
       bodyStyle={{ height: "100%" }}
       keyboard={true}
-      footer={[<Button onClick={onClose}>Cancel</Button>]}
+      footer={[
+        <Button key={"document-submission-modal-close-btn"} onClick={onClose}>
+          Cancel
+        </Button>,
+      ]}
     >
       <Dragger {...props}>
         <p className="ant-upload-drag-icon">
@@ -104,7 +149,7 @@ export default function DocumentUploadModal({
         renderItem={(item) => (
           <List.Item
             style={{ textAlign: "center" }}
-            key={item.ID}
+            key={`taskitem` + item.ID}
             actions={[
               <a
                 download={true}
@@ -112,7 +157,7 @@ export default function DocumentUploadModal({
                   axios.defaults.baseURL
                 }/download?token=${encodeURIComponent(
                   localStorage.getItem("jwt")
-                )}&fileId=${item.ID}`}
+                )}&fileId=${item.ID}&projectID=${selectedProject}`}
                 className="btn"
                 style={{
                   color: "rgb(45,68,134)",
@@ -131,33 +176,64 @@ export default function DocumentUploadModal({
                 <Descriptions.Item label="Uploader">
                   {item.FirstName}
                 </Descriptions.Item>
-                <Descriptions.Item label="Status">Pending</Descriptions.Item>
-                <Descriptions.Item label="Approval">Hi</Descriptions.Item>
-                <Descriptions.Item
-                  style={{ overflowX: "hidden" }}
-                  label="File Name"
-                >
-                  {item.Name}
+                <Descriptions.Item label="Status">
+                  {item.Status}
+                </Descriptions.Item>
+                {manager?.Email === userToken.Email && (
+                  <Descriptions.Item label="Approval">
+                    <div style={{ textAlign: "left", width: "100%" }}>
+                      <Button
+                        onClick={async () => {
+                          const res = await axios.post(
+                            "/dashboard/upload/updateApproved",
+                            {
+                              ItemID: item.ID,
+                            }
+                          );
+                          if (res.data.status === "success") {
+                            fetchUploadTask();
+                          }
+                        }}
+                        size="small"
+                      >
+                        <FontAwesomeIcon icon={faCheck} />
+                      </Button>{" "}
+                      |{" "}
+                      <Button
+                        onClick={async () => {
+                          const res = await axios.post(
+                            "/dashboard/upload/updateReject",
+                            {
+                              ItemID: item.ID,
+                            }
+                          );
+                          if (res.data.status === "success") {
+                            fetchUploadTask();
+                          }
+                        }}
+                        size="small"
+                      >
+                        <FontAwesomeIcon icon={faX} />
+                      </Button>
+                    </div>
+                  </Descriptions.Item>
+                )}
+                <Descriptions.Item label="File Name">
+                  <div
+                    style={{
+                      textOverflow: "ellipsis",
+                      textAlign: "left",
+                      overflowX: "hidden",
+                      whiteSpace: "nowrap",
+                      display: "inline-block",
+                      width: "100px",
+                    }}
+                  >
+                    {item.Name}
+                  </div>
                 </Descriptions.Item>
               </Descriptions>
             </div>
-            {/* <List.Item.Meta title={item.FirstName} description={item.Name} />
-            <List.Item.Meta
-              title={"Upload Date"}
-              description={item.UploadDate.substring(0, 10)}
-            />
-            <List.Item.Meta title={"Status"} description={"Pending"} />
-            <List.Item.Meta
-              title={"Approval"}
-              description={
-                <div>
-                  <Button style={{ padding: 0 }}>
-                    <CheckOutlined style={{ padding: 0 }} />
-                  </Button>
-                  <Button style={{ padding: 0 }}>X</Button>
-                </div>
-              }
-            /> */}
           </List.Item>
         )}
       />

@@ -1,14 +1,4 @@
-import {
-  Button,
-  Card,
-  Col,
-  DatePicker,
-  Form,
-  Input,
-  Modal,
-  Row,
-  Select,
-} from "antd";
+import { Button, Card, DatePicker, Form, Input, Modal, Select } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import Swal from "sweetalert2";
 import axios from "axios";
@@ -17,34 +7,48 @@ import { useParams } from "react-router-dom";
 
 export const DocumentSubmissionModal = ({ open, onClose, onChange }) => {
   const [userOption, setUserOption] = useState([]);
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const filteredOptions = userOption.filter((o) => !selectedItems.includes(o));
-  const fetchData = async () => {
+  const [selectedMember, setSelectedMember] = useState<string[]>([]);
+  const [selectedManager, setSelectedManager] = useState<string[]>([]);
+
+  const filteredOptions = userOption.filter((e) => e.Role === "Member");
+  const filteredOptions2 = userOption.filter((e) => e.Role === "Manager");
+  const memberList = filteredOptions.map((e) => e.Joined_User_Email);
+  const managerList = filteredOptions2.map((e) => e.Joined_User_Email);
+  const fetchUserList = async () => {
     const response = await axios.get("/dashboard/joinedUserList", {
       params: { project_ID: selectedProject },
     });
     if (response.data) {
       try {
-        let result = response.data.result[0].map((a) => a.Joined_User_Email);
+        let result = response.data.result[0].map((a) => a);
         setUserOption(result);
       } catch (error) {
         console.log("failed to get useroptions", error);
       }
     }
   };
+
   useEffect(() => {
-    fetchData();
+    fetchUserList();
   }, []);
   const { selectedProject } = useParams();
-  const onFinish = async ({ taskName, manager, dueDate, description }) => {
+  const onFinish = async ({
+    taskName,
+    manager,
+    member,
+    dueDate,
+    description,
+  }) => {
     try {
       const response = await axios.post("/dashboard/addsubmissiontask", {
         Name: taskName,
-        Manager: manager,
+        Manager: manager.label,
+        Member: member,
         DueDate: dueDate.toISOString(),
         Description: description,
         project_ID: selectedProject,
       });
+      console.log(response.data);
       if (response.data) {
         Swal.fire({
           title: "Successful",
@@ -60,6 +64,7 @@ export const DocumentSubmissionModal = ({ open, onClose, onChange }) => {
       console.log("Add project task error", error);
     }
   };
+  console.log();
   return (
     <div>
       <Modal
@@ -78,23 +83,50 @@ export const DocumentSubmissionModal = ({ open, onClose, onChange }) => {
             title={<h2 style={{ textAlign: "left" }}>Add Submission Task</h2>}
           >
             <Form layout="vertical" onFinish={onFinish}>
-              <Form.Item label="Task Name" name="taskName">
+              <Form.Item
+                label="Task Name"
+                name="taskName"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please name the task!",
+                  },
+                ]}
+              >
                 <Input size="large" placeholder="Input the task name" />
               </Form.Item>
-              <Form.Item label="Person in Charge" name="manager">
-                <Input
+
+              <Form.Item
+                name={"manager"}
+                label="Person in Charge"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please select person in charge!",
+                  },
+                ]}
+              >
+                <Select
                   size="large"
-                  placeholder="Type name of the person in charge"
+                  placeholder="Please type email"
+                  value={selectedManager}
+                  labelInValue
+                  onChange={setSelectedManager}
+                  options={managerList.map((item) => ({
+                    value: item,
+                    label: item,
+                  }))}
+                  style={{ width: "100%" }}
                 />
               </Form.Item>
-              <Form.Item label="Required Member List">
+              <Form.Item name={"member"} label="Required Member List">
                 <Select
                   mode="tags"
                   size="large"
                   placeholder="Please type email"
-                  value={selectedItems}
-                  onChange={setSelectedItems}
-                  options={filteredOptions.map((item) => ({
+                  value={selectedMember}
+                  onChange={setSelectedMember}
+                  options={memberList.map((item) => ({
                     value: item,
                     label: item,
                   }))}

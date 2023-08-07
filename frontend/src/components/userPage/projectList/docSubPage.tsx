@@ -25,9 +25,8 @@ export const DocumentSubmissionPage = ({ selectedProject }) => {
       const res = await axios.get("/dashboard/submissiontask", {
         params: { project_ID: selectedProject },
       });
-      console.log(res.data.result);
+
       setTaskList(res.data.result);
-      console.log(taskList);
     } catch (error) {
       console.error(error);
     }
@@ -60,7 +59,7 @@ export const DocumentSubmissionPage = ({ selectedProject }) => {
             <Card
               style={{ marginBottom: "1%", height: "100%" }}
               bodyStyle={{ padding: "0 24px" }}
-              key={e.ID}
+              key={"docsubmissiontask" + e.ID}
               title={
                 <h3
                   style={{
@@ -79,7 +78,7 @@ export const DocumentSubmissionPage = ({ selectedProject }) => {
             >
               <Descriptions layout="vertical" bordered={false} column={5}>
                 <Descriptions.Item label="Manager">
-                  {e.Manager}
+                  {e.CreatorName}
                 </Descriptions.Item>
                 <Descriptions.Item label="Status">{e.Status}</Descriptions.Item>
                 <Descriptions.Item label="Start Date">
