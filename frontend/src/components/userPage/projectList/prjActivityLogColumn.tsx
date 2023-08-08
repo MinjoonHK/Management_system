@@ -1,7 +1,16 @@
+import { ProColumns } from "@ant-design/pro-components";
 import { ColumnsType } from "antd/es/table";
 import { t } from "i18next";
 
-export const ActivityLogColumns: ColumnsType = [
+export type ActivityLogData = {
+  key: number;
+  TimeStamp: string;
+  TaskName: string;
+  FileName: string;
+  Acitivity: string;
+};
+
+export const ActivityLogColumns: ProColumns<ActivityLogData>[] = [
   {
     title: <div>{t("Name")}</div>,
     dataIndex: "FirstName",
@@ -19,12 +28,7 @@ export const ActivityLogColumns: ColumnsType = [
   },
   {
     title: <div>{t("TaskName")}</div>,
-    dataIndex: "FileName",
-    align: "center",
-  },
-  {
-    title: <div>{t("ProjectName")}</div>,
-    dataIndex: "ProjectName",
+    dataIndex: "TaskName",
     align: "center",
   },
   {

@@ -8,7 +8,6 @@ import { useState } from "react";
 import {
   DeleteOutlined,
   UserAddOutlined,
-  PlusOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 
@@ -112,7 +111,6 @@ export const ProjectList = ({
                       style={{ cursor: "pointer" }}
                     />
                   </Button>
-                  Hello
                 </Popover>
               </span>
             </div>

@@ -55,7 +55,7 @@ export default function DocumentUploadModal({
       if (res.data.status === "success") {
         onChange();
         fetchUploadTask();
-        updateActivityLog();
+
         props.onSuccess("");
       } else if (res.data.status === "error") {
         message.error("file upload failed");
@@ -63,24 +63,13 @@ export default function DocumentUploadModal({
       return;
     },
   };
-  const updateActivityLog = async () => {
-    const res = await axios.post("/dashboard/upload/updateLog", {
-      TaskID: selectedTask.ID,
-      projectID: Number(selectedProject),
-    });
-    if (res.data.status === true) {
-      console.log("successfully updated Log");
-    } else {
-      console.log("error in updating log");
-    }
-  };
+
   const fetchUploadTask = async () => {
     if (selectedTask) {
       const res = await axios.get("/dashboard/upload/uploadedTasks", {
         params: { TaskID: selectedTask.ID, projectID: selectedProject },
       });
       if (res.data.status === "true") {
-        console.log(res.data.result);
         setDefaultList(res.data.result);
       } else {
         console.log("error");
@@ -157,7 +146,9 @@ export default function DocumentUploadModal({
                   axios.defaults.baseURL
                 }/download?token=${encodeURIComponent(
                   localStorage.getItem("jwt")
-                )}&fileId=${item.ID}&projectID=${selectedProject}`}
+                )}&fileId=${item.ID}&projectID=${selectedProject} &taskID=${
+                  selectedTask.ID
+                }`}
                 className="btn"
                 style={{
                   color: "rgb(45,68,134)",

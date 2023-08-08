@@ -32,7 +32,9 @@ export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
     <div style={{ marginBottom: "2%" }}>
       <div>
         <span style={{ marginRight: "1%" }}>
-          <Button onClick={() => setOpen(true)}>Add Schedule +</Button>
+          <Button type="primary" onClick={() => setOpen(true)}>
+            Add Schedule +
+          </Button>
         </span>
         <Dropdown menu={menuProps1}>
           <Button>

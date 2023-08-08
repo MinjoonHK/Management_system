@@ -1,4 +1,4 @@
-import { Button, Row } from "antd";
+import { Button, Empty, Row } from "antd";
 import { useEffect, useState } from "react";
 import AddModal from "./prjAddModal";
 import axios from "axios";
@@ -21,7 +21,7 @@ function UserProject() {
   const fetchData = async () => {
     try {
       const res = await axios.get("/dashboard/projectList");
-      setProjectList(res.data);
+      setProjectList(res.data ?? []);
     } catch (error) {
       console.error(error);
     }
@@ -41,6 +41,24 @@ function UserProject() {
           <PlusOutlined />
         </Button>
       </div>
+      {projectList.length === 0 && (
+        <Empty
+          description={
+            <span>
+              <Button
+                style={{
+                  fontWeight: "bold",
+                  fontSize: "14px",
+                  marginRight: "0.5%",
+                }}
+                onClick={() => setOpenAddModal(true)}
+              >
+                Create Now
+              </Button>
+            </span>
+          }
+        />
+      )}
       {projectList && (
         <div
           style={{

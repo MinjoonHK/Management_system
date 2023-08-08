@@ -25,7 +25,6 @@ function SignUp() {
         phoneNumber,
         password,
       });
-      console.log(res.data.message);
       if (res.data.message === "registration Succssful") {
         Swal.fire(
           `Welcome ${firstName}`,
