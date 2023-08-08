@@ -29,11 +29,17 @@ uploadRouter.post(
       const path = req.file.path;
       const ProjectID = req.body.selectedProject;
       const TaskID = req.body.taskID;
-      let result = await pool.query(
+      let [result] = await pool.query(
         "INSERT INTO fileuploads (Name, FileType,UploadUserID,Size, Path,ProjectID,TaskID) VALUES(?,?,?,?,?,?,?)",
         [name, type, userID, size, path, ProjectID, TaskID]
       );
-      if (result) {
+      let lastInsertID = result.insertId;
+      console.log(lastInsertID);
+      let result2 = await pool.query(
+        "INSERT INTO activitylog (UserID, ProjectID, Activity,TaskID,FileID) VALUES(?,?,'Upload',?,?)",
+        [userID, ProjectID, TaskID, lastInsertID]
+      );
+      if (result && result2) {
         res.json({
           message: `${result.affectedRows} file has successfully uploaded`,
           status: "success",
@@ -141,33 +147,33 @@ uploadRouter.post("/updateApproved", async (req, res) => {
   }
 });
 
-uploadRouter.post("/updateLog", async (req, res) => {
-  const { TaskID, projectID } = req.body;
-  const userID = req.userId;
-  let form = new ActivityLogsForm();
-  form.TaskID = TaskID;
-  form.userID = userID;
-  form.projectID = projectID;
-  const errors = await validate(form);
-  if (errors.length > 0) {
-    res.status(400).json({
-      success: false,
-      error: "validation_error",
-      message: errors,
-    });
-    return;
-  }
-  const [updateLog] = await pool.execute(
-    "INSERT INTO activitylog (UserID, ProjectID, Activity) VALUES(?,?,'Upload')",
-    [userID, projectID]
-  );
-  if (updateLog) {
-    res.json({
-      message: "successfully updated logs",
-      result: updateLog.affectedRows,
-      status: true,
-    });
-  }
-});
+// uploadRouter.post("/updateLog", async (req, res) => {
+//   const { TaskID, projectID } = req.body;
+//   const userID = req.userId;
+//   let form = new ActivityLogsForm();
+//   form.TaskID = TaskID;
+//   form.userID = userID;
+//   form.projectID = projectID;
+//   const errors = await validate(form);
+//   if (errors.length > 0) {
+//     res.status(400).json({
+//       success: false,
+//       error: "validation_error",
+//       message: errors,
+//     });
+//     return;
+//   }
+//   const [updateLog] = await pool.execute(
+//     "INSERT INTO activitylog (UserID, ProjectID, Activity,TaskID) VALUES(?,?,'Upload',?)",
+//     [userID, projectID, TaskID]
+//   );
+//   if (updateLog) {
+//     res.json({
+//       message: "successfully updated logs",
+//       result: updateLog.affectedRows,
+//       status: true,
+//     });
+//   }
+// });
 
 export default uploadRouter;

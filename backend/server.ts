@@ -36,6 +36,7 @@ app.get("/download", async (req, res) => {
   const token = req.query.token;
   const fileId = req.query.fileId;
   const projectID = Number(req.query.projectID);
+  const taskID = Number(req.query.taskID);
   if (token) {
     try {
       const decoded = jwt.verify(
@@ -50,8 +51,8 @@ app.get("/download", async (req, res) => {
       );
       if (result[0].length) {
         const updateLog = await pool.execute(
-          "INSERT INTO activitylog (UserID, ProjectID, Activity) VALUES (?,?,'Download') ",
-          [userID, projectID]
+          "INSERT INTO activitylog (UserID, ProjectID, Activity,taskID,FileID) VALUES (?,?,'Download',?,?) ",
+          [userID, projectID, taskID, fileId]
         );
         res.setHeader(
           "Content-disposition",

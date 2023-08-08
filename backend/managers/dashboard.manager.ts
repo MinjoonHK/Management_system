@@ -199,19 +199,19 @@ export async function getProjectList(ID: Number) {
 
     const [result2] = await pool.query(
       `SELECT projectpeople.Role, project_ID, Joined_User_Email FROM projectpeople
-      LEFT join user on projectPeople.Joined_User_Email = user.Email
+      LEFT join user on projectpeople.Joined_User_Email = user.Email
       WHERE project_ID IN (?)`,
       [result1.map((project: any) => project.ID)]
     );
-
-    const projectList = result1.map((project: any) => {
-      const joinedUsers = result2
-        .filter((join: any) => join.project_ID === project.ID)
-        .map((join: any) => join.Joined_User_Email);
-      return { ...project, joinedUsers };
-    });
-
-    return projectList;
+    if (result1.length > 0) {
+      const projectList = result1.map((project: any) => {
+        const joinedUsers = result2
+          .filter((join: any) => join.project_ID === project.ID)
+          .map((join: any) => join.Joined_User_Email);
+        return { ...project, joinedUsers };
+      });
+      return projectList;
+    }
   } catch (err) {
     console.error(new Date(), "getProjectList", err);
     return null;
@@ -494,8 +494,8 @@ export async function addProjectTask(
     }
     if (result && result2 && affectedRows > 0) {
       const updateLogs = await pool.execute(
-        "INSERT INTO activitylog (UserID, ProjectID, Activity) VALUES (?,?,'Create Update Task')",
-        [ID, project_ID]
+        "INSERT INTO activitylog (UserID, ProjectID, Activity,TaskID) VALUES (?,?,'Create Update Task',?)",
+        [ID, project_ID, LastID[0].ID]
       );
       return affectedRows;
     }
@@ -551,12 +551,9 @@ export async function getTaskPeple(TaskID: Number) {
 export async function getActivityLogs(project_ID: Number) {
   try {
     const [result] = await pool.execute(
-      `SELECT activitylog.ID,Activity, FirstName, ProjectName,TimeStamp FROM activitylog
-       LEFT JOIN user on activitylog.UserID = user.ID
-        LEFT JOIN project on activitylog.ProjectID = project.ID
-        WHERE activitylog.Deleted_At IS NULL AND ProjectID = ?
+      `SELECT * FROM activitylogs
+        WHERE ProjectID = ?
         ORDER BY TimeStamp DESC
-
       `,
       [project_ID]
     );

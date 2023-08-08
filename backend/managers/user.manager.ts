@@ -48,7 +48,6 @@ class UserManager {
         "SELECT ID FROM user WHERE Email = ?",
         [Email]
       );
-      console.log(emailChecker.length);
       if (emailChecker.length > 0) {
         return { message: "email already exists", emailChecker };
       }
@@ -68,7 +67,6 @@ class UserManager {
   }
 
   async hashPassword(password: string) {
-    console.log("....", password);
     const salt = randomBytes(16).toString("hex");
     const buf = (await scryptSync(password, salt, 64)) as Buffer;
     return `${buf.toString("hex")}.${salt}`;
