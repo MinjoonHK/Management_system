@@ -1,32 +1,42 @@
-import { Button, Card, Form, Input, Modal } from "antd";
+import { Button, Card, DatePicker, Form, Input, Modal, Select } from "antd";
 import { SizeType } from "antd/es/config-provider/SizeContext";
 import axios from "axios";
+import dayjs from "dayjs";
 import jwtDecode from "jwt-decode";
 import { useState } from "react";
 import Swal from "sweetalert2";
 
-const AddScheduleModal = ({ open, onClose }) => {
+const { RangePicker } = DatePicker;
+
+const AddScheduleModal = ({ open, onClose, projectList, fetchSchdule }) => {
   const [componentSize, setComponentSize] = useState<SizeType | "default">(
     "default"
   );
+  const [selectedType, setSelectedType] = useState("");
 
   const onFormLayoutChange = ({ size }: { size: SizeType }) => {
     setComponentSize(size);
   };
-  const onFinish = async ({ name, startDate, endDate }) => {
+  const onFinish = async ({ name, RangePicker, Type, Dependencies }) => {
     try {
-      const decodedToken: { ID: string } = jwtDecode(
-        localStorage.getItem("jwt")
-      );
-      const userID = decodedToken.ID;
+      if (!Dependencies) {
+        Dependencies = null;
+      }
+      const startDate = dayjs(RangePicker[0]).format("YYYY-MM-DD");
+      const endDate = dayjs(RangePicker[1]).format("YYYY-MM-DD");
       const res = await axios.post("/dashboard/ganttchart/addschedule", {
         name,
         startDate,
         endDate,
-        userID,
+        Type,
+        Dependencies,
       });
-      if (res.status === 200) {
-        Swal.fire("You have successfully added the new schedule!", "success");
+      if (res.data.status === true) {
+        Swal.fire("Successfully added new schedule!", "", "success");
+        fetchSchdule();
+        onClose();
+      } else {
+        console.log("error");
       }
     } catch (err) {
       console.log(err);
@@ -42,6 +52,15 @@ const AddScheduleModal = ({ open, onClose }) => {
     onClose();
   };
 
+  const types = [
+    { Task: "task" },
+    { MileStone: "milestone" },
+    { Project: "project" },
+  ];
+  const handleTypeChanger = async (value: string) => {
+    await setSelectedType(value);
+  };
+
   return (
     <Modal
       centered
@@ -50,6 +69,7 @@ const AddScheduleModal = ({ open, onClose }) => {
       closable={false}
       onCancel={onClose}
       width={1000}
+      footer={null}
     >
       <div style={{ width: "100%", height: "100%" }}>
         <div
@@ -91,22 +111,51 @@ const AddScheduleModal = ({ open, onClose }) => {
                 <Input placeholder="Name of the Schedule" size="large" />
               </Form.Item>
               <Form.Item
-                label="Start Date"
-                name="startDate"
+                label="Task Type"
+                name="Type"
+                initialValue={"Task"}
                 rules={[
-                  { required: true, message: "Please input the Phone Number!" },
+                  {
+                    required: true,
+                    message: "Please select the type!",
+                  },
                 ]}
               >
-                <Input size="large" type="Date" />
+                <Select
+                  size="large"
+                  onChange={handleTypeChanger}
+                  placeholder="Please select the type"
+                  options={types.map((type) => {
+                    const key = Object.keys(type)[0];
+                    const value = type[key];
+                    return {
+                      label: key,
+                      value: value,
+                    };
+                  })}
+                />
               </Form.Item>
+              {selectedType === "project" || (
+                <Form.Item label="Select parent project" name="Dependencies">
+                  <Select
+                    size="large"
+                    onChange={handleTypeChanger}
+                    placeholder="Please select the parent project"
+                    options={projectList.map((projectList) => ({
+                      label: projectList.Name,
+                      value: projectList.ID,
+                    }))}
+                  />
+                </Form.Item>
+              )}
               <Form.Item
-                label="End Date"
-                name="endDate"
+                label="Select Date"
+                name="RangePicker"
                 rules={[
-                  { required: true, message: "Please input the Address!" },
+                  { required: true, message: "Please selecte the Date!" },
                 ]}
               >
-                <Input size="large" type="Date" />
+                <RangePicker size="large" />
               </Form.Item>
               <Form.Item>
                 <div style={{ width: "100%", textAlign: "center" }}>
@@ -116,6 +165,7 @@ const AddScheduleModal = ({ open, onClose }) => {
                       height: "50px",
                       color: "white",
                       backgroundColor: "rgb(45,68,134)",
+                      marginTop: "3%",
                     }}
                     type="primary"
                     htmlType="submit"

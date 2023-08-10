@@ -32,6 +32,7 @@ import {
   deleteTask,
   getTaskPeple,
   getActivityLogs,
+  deleteGanttTask,
 } from "../managers/dashboard.manager";
 import { workorderform } from "../models/forms/workorder.form";
 import { updateWorkOrder } from "../models/forms/updateworkorder.form";
@@ -290,26 +291,45 @@ dashboardRouter.post(
 dashboardRouter.post(
   "/ganttchart/addschedule",
   async (req: Request, res: Response) => {
-    const { name, startDate, endDate } = req.body;
+    const { name, startDate, endDate, Type, Dependencies } = req.body;
+    console.log(req.body);
     const userID = req.userId;
     let form = new AddScheduleForm();
     form.name = name;
     form.startDate = startDate;
+    form.Dependencies = Dependencies;
     form.endDate = endDate;
+    form.Type = Type;
+    form.userID = userID;
     const errors = await validate(form);
     if (errors.length > 0) {
       res.status(400).json({
-        success: false,
+        status: false,
         error: "validation_error",
         message: errors,
       });
       return;
     }
-    let result = await addScheduleManager(name, startDate, endDate, userID!);
+    let result = await addScheduleManager(
+      name,
+      startDate,
+      endDate,
+      userID!,
+      Type,
+      Dependencies
+    );
     if (result) {
-      res.status(200).send("registration successful");
+      res.json({
+        message: "successfully added the schedule",
+        status: true,
+        result: result,
+      });
     } else {
-      res.status(400).json("registration failed");
+      res.json({
+        message: "Failed to add schedule",
+        status: false,
+        error: result,
+      });
     }
   }
 );
@@ -614,6 +634,27 @@ dashboardRouter.get("/activityLogs", async (req, res) => {
     });
   } else {
     res.json({ message: "failed to load activity logs", error: response });
+  }
+});
+
+// dashboardRouter.get("/getProjectSchedule", async (req, res) => {
+//   const response = await getProjectSchedule();
+// });
+
+dashboardRouter.post("/deleteGantt", async (req, res) => {
+  console.log(req.body);
+  const { SelectedGantt } = req.body;
+  const userID = req.userId;
+  console.log(req.query);
+  const response = await deleteGanttTask(SelectedGantt, userID!);
+  if (response) {
+    res.json({
+      message: "successfully deleted ganttChartTask!",
+      status: true,
+      result: response,
+    });
+  } else {
+    res.json({ message: "failed to delete ganttChartTask!", error: response });
   }
 });
 

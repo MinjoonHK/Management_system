@@ -43,5 +43,11 @@
      "Uploader":"업로드한 유저",
      "UploadedDate":"업로드한 날짜",
      "FileSize":"파일 크기",
-     "Download":"다운로드"
+     "Download":"다운로드",
+      "Welcome":"환영합니다 !",
+     "DocSubPage":"문서 업로드 페이지 입니다",
+     "DocSubAddButton":"첫번째 문서를 업로드 해보세요",
+         "AddSchedule":"스케쥴 추가",
+     "ShowTaskList":"리스트 보기"
+
 }

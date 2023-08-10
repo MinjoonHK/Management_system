@@ -46,6 +46,12 @@
      "Uploader":"Uploader",
      "UploadedDate":"Uploaded Date",
      "FileSize":"File Size",
-     "Download":"Download"
+     "Download":"Download",
+     "Welcome":"Welcome !",
+     "DocSubPage":"To Document submission page",
+     "DocSubAddButton":"Add your first Task",
+     "CreateNow": "Create Now",
+     "AddSchedule":"Add Schedule",
+     "ShowTaskList":"Show Task List"
 
 }

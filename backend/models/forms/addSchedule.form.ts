@@ -1,4 +1,4 @@
-import { IsDate, IsNumber, IsString } from "class-validator";
+import { IsNumber, IsString, IsOptional, IsNotEmpty } from "class-validator";
 export class AddScheduleForm {
   @IsString()
   name?: string;
@@ -8,6 +8,13 @@ export class AddScheduleForm {
 
   @IsString()
   endDate?: string;
+
+  @IsString()
+  Type?: string;
+
+  @IsOptional()
+  @IsNotEmpty()
+  Dependencies?: number;
 
   @IsNumber()
   userID?: number;

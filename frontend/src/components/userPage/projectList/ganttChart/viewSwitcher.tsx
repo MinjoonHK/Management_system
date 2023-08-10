@@ -5,16 +5,21 @@ import { Button, Dropdown, MenuProps, Space, Switch, Modal } from "antd";
 import { items } from "./ganttChartViewList";
 import { DownOutlined } from "@ant-design/icons";
 import AddScheduleModal from "./ganttChartModal";
+import { t } from "i18next";
 
 type ViewSwitcherProps = {
   isChecked: boolean;
   onViewListChange: (isChecked: boolean) => void;
   onViewModeChange: (viewMode: ViewMode) => void;
+  projectList: string[];
+  fetchSchdule: any;
 };
 export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
   onViewModeChange,
   onViewListChange,
   isChecked,
+  projectList,
+  fetchSchdule,
 }) => {
   const [CurrentView, setCurrentView] = useState("Change View");
   const [open, setOpen] = useState(false);
@@ -33,7 +38,7 @@ export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
       <div>
         <span style={{ marginRight: "1%" }}>
           <Button type="primary" onClick={() => setOpen(true)}>
-            Add Schedule +
+            {t("AddSchedule")} +
           </Button>
         </span>
         <Dropdown menu={menuProps1}>
@@ -50,10 +55,15 @@ export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
             defaultChecked={isChecked}
             onClick={() => onViewListChange(!isChecked)}
           />
-          Show Task List
+          {t("ShowTaskList")}
         </span>
       </div>
-      <AddScheduleModal open={open} onClose={() => setOpen(false)} />
+      <AddScheduleModal
+        open={open}
+        onClose={() => setOpen(false)}
+        projectList={projectList}
+        fetchSchdule={fetchSchdule}
+      />
     </div>
   );
 };

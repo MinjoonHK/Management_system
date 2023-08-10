@@ -33,18 +33,11 @@ function UserProject() {
 
   return (
     <div>
-      <div style={{ textAlign: "right" }}>
-        <Button
-          style={{ fontWeight: "bold", fontSize: "14px", marginRight: "0.5%" }}
-          onClick={() => setOpenAddModal(true)}
-        >
-          <PlusOutlined />
-        </Button>
-      </div>
       {projectList.length === 0 && (
         <Empty
           description={
             <span>
+              <p style={{ fontWeight: "bold" }}>Project Not Found</p>
               <Button
                 style={{
                   fontWeight: "bold",
@@ -59,33 +52,47 @@ function UserProject() {
           }
         />
       )}
-      {projectList && (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-          }}
-        >
-          <Row>
-            {projectList.map((e) => (
-              <ProjectList
-                key={e.ID}
-                e={e}
-                onChange={(e) => {
-                  setSelectedProject(e);
-                }}
-                changeGuestModal={() => {
-                  setOpenAddGuestModal(true);
-                }}
-                ChangeDeleteModal={() => {
-                  setOpenDeleteModal(true);
-                }}
-                ChangeUserListModal={() => {
-                  setOpenUserListModal(true);
-                }}
-              />
-            ))}
-          </Row>
+      {projectList.length > 0 && (
+        <div>
+          <div style={{ textAlign: "right" }}>
+            <Button
+              style={{
+                fontWeight: "bold",
+                fontSize: "14px",
+                marginRight: "0.5%",
+              }}
+              onClick={() => setOpenAddModal(true)}
+            >
+              <PlusOutlined />
+            </Button>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <Row>
+              {projectList.map((e) => (
+                <ProjectList
+                  key={e.ID}
+                  e={e}
+                  onChange={(e) => {
+                    setSelectedProject(e);
+                  }}
+                  changeGuestModal={() => {
+                    setOpenAddGuestModal(true);
+                  }}
+                  ChangeDeleteModal={() => {
+                    setOpenDeleteModal(true);
+                  }}
+                  ChangeUserListModal={() => {
+                    setOpenUserListModal(true);
+                  }}
+                />
+              ))}
+            </Row>
+          </div>
         </div>
       )}
       <AddModal

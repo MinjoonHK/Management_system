@@ -9,6 +9,7 @@ import axios from "axios";
 import { DocumentSubmissionModal } from "./docSubModal";
 import DocSubDelModal from "./docSubDelModal";
 import DocumentUploadModal from "./docSubUpload";
+import { t } from "i18next";
 
 export const DocumentSubmissionPage = ({ selectedProject }) => {
   const [taskList, setTaskList] = useState([]);
@@ -108,9 +109,9 @@ export const DocumentSubmissionPage = ({ selectedProject }) => {
           title={
             <div style={{ textAlign: "left" }}>
               <div style={{ padding: 0 }}>
-                <h2>Welcome!</h2>
+                <h2>{t("Welcome")}</h2>
               </div>
-              <div>To Document submission page</div>
+              <div>{t("DocSubPage")}</div>
             </div>
           }
         >
@@ -119,7 +120,7 @@ export const DocumentSubmissionPage = ({ selectedProject }) => {
             onClick={() => setOpenAddDocumentSubmissionModal(true)}
           >
             <PlusOutlined />
-            <span style={{ fontSize: "15px" }}>Add your first Task</span>
+            <span style={{ fontSize: "15px" }}>{t("DocSubAddButton")}</span>
           </Button>
         </Card>
       )}

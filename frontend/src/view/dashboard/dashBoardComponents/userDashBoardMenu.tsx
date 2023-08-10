@@ -19,24 +19,24 @@ export const UserDashboard: MenuProps["items"] = [
     key: "/TimeSheet",
     link: "/timesheet",
   },
-  {
-    label: (
-      <div style={{ fontSize: "14px", fontWeight: "bold" }}>
-        {t("BudgetManagement")}
-      </div>
-    ),
-    key: "/Budget Management",
-    link: "/budgetmanagement",
-  },
-  {
-    label: (
-      <div style={{ fontSize: "14px", fontWeight: "bold" }}>
-        {t("MaterialInfo")}
-      </div>
-    ),
-    key: "/MaterialInfo", //key name should be uniform
-    link: "/materialinfo",
-  },
+  // {
+  //   label: (
+  //     <div style={{ fontSize: "14px", fontWeight: "bold" }}>
+  //       {t("BudgetManagement")}
+  //     </div>
+  //   ),
+  //   key: "/Budget Management",
+  //   link: "/budgetmanagement",
+  // },
+  // {
+  //   label: (
+  //     <div style={{ fontSize: "14px", fontWeight: "bold" }}>
+  //       {t("MaterialInfo")}
+  //     </div>
+  //   ),
+  //   key: "/MaterialInfo", //key name should be uniform
+  //   link: "/materialinfo",
+  // },
   {
     label: (
       <div style={{ fontSize: "14px", fontWeight: "bold" }}>

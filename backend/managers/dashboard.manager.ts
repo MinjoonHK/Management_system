@@ -24,17 +24,19 @@ export async function addScheduleManager(
   name: string,
   startDate: Date,
   endDate: Date,
-  userID: number
+  userID: number,
+  Type: string,
+  Dependencies: number | null
 ) {
   try {
     const [rows, fields] = await pool.execute(
-      "INSERT INTO ganttchart ( Name, StartDate, EndDate, user_id) VALUES( ?, ?, ?,?);",
-      [name, startDate, endDate, userID]
+      "INSERT INTO ganttchart ( Name, StartDate, EndDate,Type, user_id,Dependencies) VALUES( ?, ?,?, ?,?,?);",
+      [name, startDate, endDate, Type, userID, Dependencies]
     );
     return rows.insertId;
   } catch (err) {
     console.error(new Date(), "addScheduleManager", err);
-    return null;
+    return err;
   }
 }
 
@@ -136,7 +138,7 @@ export async function getUserList() {
 export async function getSchedule(ID: number) {
   try {
     let [result] = await pool.query(
-      "SELECT ID, StartDate, EndDate, Name, Progress, Type FROM ganttChart WHERE user_id = ?",
+      "SELECT ID, StartDate, EndDate, Name, Type,Dependencies FROM ganttChart WHERE user_id = ? AND Deleted_At IS NULL",
       [ID]
     );
     return result;
@@ -562,6 +564,23 @@ export async function getActivityLogs(project_ID: Number) {
     }
   } catch (error) {
     console.log("error at getActivityLogs", error);
+    return error;
+  }
+}
+
+export async function deleteGanttTask(SelectedGantt: number, userID: number) {
+  try {
+    const [result] = await pool.execute(
+      `UPDATE ganttchart SET Deleted_At = NOW()
+        WHERE user_ID = ? AND ID = ?`,
+      [userID, SelectedGantt]
+    );
+    if (result.affectedRows.length > 0) {
+      return result;
+    } else {
+      return new Date(), "No result get from ganttchart table!", result;
+    }
+  } catch (error) {
     return error;
   }
 }

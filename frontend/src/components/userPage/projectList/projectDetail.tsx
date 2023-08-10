@@ -9,6 +9,7 @@ import { DocumentSubmissionPage } from "./docSubPage";
 import { DocumentPool } from "./prjDocPool";
 import { FileColumns } from "./docPoolFileColumns";
 import { ActivityLog } from "./prjActivityLog";
+import { ProjectTimeSheet } from "./prjTimesheet/prjTimeSheet";
 
 export const ProjectDetail = () => {
   const [data, setData] = useState([]);
@@ -60,7 +61,7 @@ export const ProjectDetail = () => {
           {
             label: <div style={{ color: "black" }}>{t("WorkingSchedule")}</div>,
             key: "WorkingSchdule",
-            children: <Calendar />,
+            children: <ProjectTimeSheet />,
           },
           {
             label: <div style={{ color: "black" }}>{t("GanttChart")}</div>,

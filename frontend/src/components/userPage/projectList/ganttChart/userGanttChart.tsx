@@ -4,6 +4,11 @@ import { useEffect, useState } from "react";
 import { Gantt, Task, ViewMode } from "gantt-task-react";
 import { ViewSwitcher } from "./viewSwitcher";
 import axios from "axios";
+import { DeleteOutlined } from "@ant-design/icons";
+import { Button, Empty } from "antd";
+import Swal from "sweetalert2";
+import AddScheduleModal from "./ganttChartModal";
+import { t } from "i18next";
 
 function getStartEndDateForProject(tasks: Task[], projectId: string) {
   const projectTasks = tasks.filter((t) => t.project === projectId);
@@ -30,32 +35,69 @@ export function GanttChart() {
   const [view, setView] = useState<ViewMode>(ViewMode.Week);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isChecked, setIsChecked] = useState(true);
+  const [projectList, setProjectList] = useState([]);
+  const [openAddScheduleModal, setOpenAddScheduleModal] = useState(false);
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
 
-  const getSchedule = async (token: any) => {
+  const getSchedule = async () => {
     try {
-      const response = await axios.get("/dashboard/schedule", {
-        params: { Token: token },
-      });
+      const response = await axios.get("/dashboard/schedule");
       setTasks(
         response.data.map((d) => {
           return {
             end: new Date(d.EndDate),
             id: d.ID,
-            name: d.Name,
-            progress: d.Progress,
+            name: (
+              <div
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div>{d.Name}</div>
+                <Button
+                  size="small"
+                  onClick={async () => {
+                    console.log(d.ID);
+                    const response = await axios.post(
+                      "/dashboard/deleteGantt",
+                      {
+                        SelectedGantt: d.ID,
+                      }
+                    );
+                    if (response.data.status === true) {
+                      Swal.fire(
+                        `Successfully Deleted the ${d.name}!`,
+                        "",
+                        "success"
+                      );
+                      getSchedule();
+                    }
+                  }}
+                >
+                  <DeleteOutlined />
+                </Button>
+              </div>
+            ),
+            progress: 45,
             start: new Date(d.StartDate),
+            dependencies: [d.Dependencies],
             type: d.Type,
           };
         })
       );
+      const filteredList = response.data.filter((e: any) => {
+        return e.Type === "project";
+      });
+      setProjectList(filteredList);
     } catch (error) {
       console.log(error);
     }
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("jwt");
-    getSchedule(token);
+    getSchedule();
   }, []);
 
   const handleTaskChange = (task: Task) => {
@@ -84,22 +126,54 @@ export function GanttChart() {
 
   return (
     <div className="Wrapper">
-      <div style={{ textAlign: "left" }}>
-        <ViewSwitcher
-          onViewModeChange={(viewMode) => setView(viewMode)}
-          onViewListChange={setIsChecked}
-          isChecked={isChecked}
-        />
-      </div>
-      {tasks.length && (
-        <Gantt
-          tasks={tasks}
-          viewMode={view}
-          onDateChange={handleTaskChange}
-          onProgressChange={handleProgressChange}
-          listCellWidth={isChecked ? "185px" : ""}
-        />
+      {tasks.length > 0 ? (
+        <div>
+          <div style={{ textAlign: "left" }}>
+            <ViewSwitcher
+              onViewModeChange={(viewMode) => setView(viewMode)}
+              onViewListChange={setIsChecked}
+              isChecked={isChecked}
+              projectList={projectList}
+              fetchSchdule={() => getSchedule()}
+            />
+          </div>
+
+          <Gantt
+            tasks={tasks}
+            viewMode={view}
+            onDateChange={handleTaskChange}
+            onProgressChange={handleProgressChange}
+            listCellWidth={isChecked ? "185px" : ""}
+          />
+        </div>
+      ) : (
+        <div>
+          {" "}
+          <Empty
+            description={
+              <span>
+                <p style={{ fontWeight: "bold" }}>GanttChart Task Not Found</p>
+                <Button
+                  style={{
+                    fontWeight: "bold",
+                    fontSize: "14px",
+                    marginRight: "0.5%",
+                  }}
+                  onClick={() => setOpenAddScheduleModal(true)}
+                >
+                  {t("CreateNow")}
+                </Button>
+              </span>
+            }
+          />
+        </div>
       )}
+      <AddScheduleModal
+        open={openAddScheduleModal}
+        onClose={() => setOpenAddScheduleModal(false)}
+        projectList={projectList}
+        fetchSchdule={getSchedule}
+      />
     </div>
   );
 }
