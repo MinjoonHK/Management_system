@@ -48,6 +48,10 @@
      "DocSubPage":"문서 업로드 페이지 입니다",
      "DocSubAddButton":"첫번째 문서를 업로드 해보세요",
          "AddSchedule":"스케쥴 추가",
-     "ShowTaskList":"리스트 보기"
+     "ShowTaskList":"리스트 보기",
+        "Day":"일",
+     "Week":"주",
+     "Month":"월",
+     "Year":"년"
 
 }

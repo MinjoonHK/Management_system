@@ -1,19 +1,20 @@
 import { MenuProps } from "antd";
+import { t } from "i18next";
 export const items: MenuProps["items"] = [
   {
-    label: "Day",
+    label: <div>{t("Day")}</div>,
     key: "Day",
   },
   {
-    label: "Week",
+    label: <div>{t("Week")}</div>,
     key: "Week",
   },
   {
-    label: "Month",
+    label: <div>{t("Month")}</div>,
     key: "Month",
   },
   {
-    label: "Year",
+    label: <div>{t("Year")}</div>,
     key: "Year",
   },
 ];

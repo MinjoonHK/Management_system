@@ -47,6 +47,10 @@
      "DocSubPage":"前往文件提交頁面",
      "DocSubAddButton":"添加您的第一個任務",
            "AddSchedule":"添加時間表",
-     "ShowTaskList":"顯示任務列表"
+     "ShowTaskList":"顯示任務列表",
+        "Day":"日",
+     "Week":"週",
+     "Month":"月",
+     "Year":"年"
 
 }

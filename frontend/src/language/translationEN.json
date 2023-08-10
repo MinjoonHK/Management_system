@@ -52,6 +52,10 @@
      "DocSubAddButton":"Add your first Task",
      "CreateNow": "Create Now",
      "AddSchedule":"Add Schedule",
-     "ShowTaskList":"Show Task List"
+     "ShowTaskList":"Show Task List",
+     "Day":"Day",
+     "Week":"Week",
+     "Month":"Month",
+     "Year":"Year"
 
 }
