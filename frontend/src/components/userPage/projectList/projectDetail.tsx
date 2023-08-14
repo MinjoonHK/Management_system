@@ -1,4 +1,4 @@
-import { Button, Calendar, Table, Tabs } from "antd";
+import { Button, Calendar, List, Table, Tabs } from "antd";
 import GanttChart from "./ganttChart/userGanttChart";
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -10,12 +10,14 @@ import { DocumentPool } from "./prjDocPool";
 import { FileColumns } from "./docPoolFileColumns";
 import { ActivityLog } from "./prjActivityLog";
 import { ProjectTimeSheet } from "./prjTimesheet/prjTimeSheet";
+import { UserListPage } from "./prjUserListPage";
 
 export const ProjectDetail = () => {
   const [data, setData] = useState([]);
   const [currentProject, setCurrentProject] = useState("");
   const { selectedProject } = useParams();
 
+  console.log(selectedProject);
   const fetchData = async () => {
     try {
       const res = await axios.get("/dashboard/upload/fileList", {
@@ -66,7 +68,7 @@ export const ProjectDetail = () => {
           {
             label: <div style={{ color: "black" }}>{t("GanttChart")}</div>,
             key: "GanttChart",
-            children: <GanttChart />,
+            children: <GanttChart selectedProject={selectedProject} />,
           },
           {
             label: (
@@ -77,16 +79,16 @@ export const ProjectDetail = () => {
               <DocumentSubmissionPage selectedProject={selectedProject} />
             ),
           },
-
-          {
-            label: <div style={{ color: "black" }}>{t("DocumentPool")}</div>,
-            key: "Document Pool",
-            children: <DocumentPool data={data} FileColumns={FileColumns} />,
-          },
           {
             label: <div style={{ color: "black" }}>{t("ActivityLogs")}</div>,
             key: "ActivityLogs",
             children: <ActivityLog selectedProject={selectedProject} />,
+          },
+
+          {
+            label: <div style={{ color: "black" }}>{t("UserList")}</div>,
+            key: "UserList",
+            children: <UserListPage selectedProject={selectedProject} />,
           },
         ]}
       />

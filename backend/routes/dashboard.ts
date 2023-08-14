@@ -33,6 +33,8 @@ import {
   getTaskPeple,
   getActivityLogs,
   deleteGanttTask,
+  getProjectGanttTask,
+  getProjectPeople,
 } from "../managers/dashboard.manager";
 import { workorderform } from "../models/forms/workorder.form";
 import { updateWorkOrder } from "../models/forms/updateworkorder.form";
@@ -45,6 +47,9 @@ import { idForm } from "../models/forms/idforms";
 import { addsubmissiontaskForm } from "../models/forms/addSubmissiontask.form";
 import { getTaskUser } from "../models/forms/getTaskUser.form";
 import { getActivityLogsForm } from "../models/forms/getActivityLog.form";
+import { DeleteGanttTaskForm } from "../models/forms/deleteGanttTask.form";
+import { getProjectPeopleList } from "../models/forms/getProjectPeopleList";
+import c from "config";
 
 const dashboardRouter = express.Router();
 
@@ -291,7 +296,16 @@ dashboardRouter.post(
 dashboardRouter.post(
   "/ganttchart/addschedule",
   async (req: Request, res: Response) => {
-    const { name, startDate, endDate, Type, Dependencies } = req.body;
+    const {
+      name,
+      startDate,
+      endDate,
+      Type,
+      Dependencies,
+      DayofDuration,
+      Group,
+      projectID,
+    } = req.body;
     console.log(req.body);
     const userID = req.userId;
     let form = new AddScheduleForm();
@@ -301,6 +315,9 @@ dashboardRouter.post(
     form.endDate = endDate;
     form.Type = Type;
     form.userID = userID;
+    form.DurationDay = DayofDuration;
+    form.Group = Group;
+    form.ProjectID = projectID;
     const errors = await validate(form);
     if (errors.length > 0) {
       res.status(400).json({
@@ -316,7 +333,10 @@ dashboardRouter.post(
       endDate,
       userID!,
       Type,
-      Dependencies
+      Dependencies,
+      DayofDuration,
+      Group,
+      projectID
     );
     if (result) {
       res.json({
@@ -379,10 +399,26 @@ dashboardRouter.get("/userinformation", async (req, res) => {
 });
 
 dashboardRouter.get("/schedule", async (req, res) => {
-  const ID = req.userId;
+  const ProjectID = Number(req.query.ProjectID);
   try {
-    const result = await getSchedule(ID!);
+    const result = await getSchedule(ProjectID);
     res.json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+dashboardRouter.get("/getProjectGanttTask", async (req, res) => {
+  const ProjectID = Number(req.query.ProjectID);
+  try {
+    const result = await getProjectGanttTask(ProjectID);
+    console.log(result);
+    res.json({
+      message: "getProjectGanttTask success",
+      status: true,
+      result: result,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -642,11 +678,22 @@ dashboardRouter.get("/activityLogs", async (req, res) => {
 // });
 
 dashboardRouter.post("/deleteGantt", async (req, res) => {
+  const { SelectedGantt, ProjectID, Type } = req.body;
   console.log(req.body);
-  const { SelectedGantt } = req.body;
-  const userID = req.userId;
-  console.log(req.query);
-  const response = await deleteGanttTask(SelectedGantt, userID!);
+  let form = new DeleteGanttTaskForm();
+  form.ProjectID = ProjectID;
+  form.SelectedGantt = SelectedGantt;
+  form.Type = Type;
+  const errors = await validate(form);
+  if (errors.length > 0) {
+    res.status(400).json({
+      success: false,
+      error: "validation_error",
+      message: errors,
+    });
+    return;
+  }
+  const response = await deleteGanttTask(SelectedGantt, ProjectID, Type);
   if (response) {
     res.json({
       message: "successfully deleted ganttChartTask!",
@@ -655,6 +702,35 @@ dashboardRouter.post("/deleteGantt", async (req, res) => {
     });
   } else {
     res.json({ message: "failed to delete ganttChartTask!", error: response });
+  }
+});
+
+dashboardRouter.get("/getProjectPeople", async (req, res) => {
+  const ProjectID = Number(req.query.ProjectID);
+  let form = new getProjectPeopleList();
+  form.ProjectID = ProjectID;
+  let errors = await validate(form);
+  if (errors.length > 0) {
+    res.status(400).json({
+      success: false,
+      error: "validation_error",
+      message: errors,
+    });
+    return;
+  }
+  const response = await getProjectPeople(ProjectID);
+  if (response) {
+    res.json({
+      status: true,
+      message: "successfully loaded projectUserList",
+      result: response,
+    });
+  } else {
+    res.json({
+      status: false,
+      message: "failed to load projectUserList",
+      result: response,
+    });
   }
 });
 

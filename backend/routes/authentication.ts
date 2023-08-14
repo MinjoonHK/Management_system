@@ -3,6 +3,7 @@ import userManager from "../managers/user.manager";
 import { LoginForm } from "../models/forms/login.form";
 import { validate } from "class-validator";
 import { SignupForm } from "../models/forms/signup.form";
+import { UpdateLoginTime } from "../models/forms/updateLoginTime.form";
 const authenticationRouter = express.Router();
 
 //forgetpassword

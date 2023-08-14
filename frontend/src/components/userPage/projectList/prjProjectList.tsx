@@ -5,11 +5,7 @@ import { t } from "i18next";
 import dayjs from "dayjs";
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import {
-  DeleteOutlined,
-  UserAddOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
+import { DeleteOutlined } from "@ant-design/icons";
 
 export const ProjectList = ({
   e,
@@ -27,26 +23,6 @@ export const ProjectList = ({
     const url = `/projectDetail`;
     return (
       <div>
-        <div
-          className="projectAction"
-          onClick={() => {
-            onChange(e);
-            setOpenPopOver(false);
-            changeGuestModal();
-          }}
-        >
-          <UserAddOutlined /> {t("AddGuest")}
-        </div>
-        <div
-          className="projectAction"
-          onClick={() => {
-            onChange(e);
-            setOpenPopOver(false);
-            ChangeUserListModal();
-          }}
-        >
-          <UserOutlined /> {t("MemberList")}
-        </div>
         <div
           className="projectAction deleteProject"
           onClick={() => {

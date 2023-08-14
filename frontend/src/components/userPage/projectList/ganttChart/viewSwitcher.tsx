@@ -13,6 +13,7 @@ type ViewSwitcherProps = {
   onViewModeChange: (viewMode: ViewMode) => void;
   projectList: string[];
   fetchSchdule: any;
+  selectedProject: any;
 };
 export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
   onViewModeChange,
@@ -20,6 +21,7 @@ export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
   isChecked,
   projectList,
   fetchSchdule,
+  selectedProject,
 }) => {
   const [CurrentView, setCurrentView] = useState("Change View");
   const [open, setOpen] = useState(false);
@@ -63,6 +65,7 @@ export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
         onClose={() => setOpen(false)}
         projectList={projectList}
         fetchSchdule={fetchSchdule}
+        selectedProject={selectedProject}
       />
     </div>
   );

@@ -2,26 +2,47 @@ import { Button, Card, DatePicker, Form, Input, Modal, Select } from "antd";
 import { SizeType } from "antd/es/config-provider/SizeContext";
 import axios from "axios";
 import dayjs from "dayjs";
-import jwtDecode from "jwt-decode";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 
 const { RangePicker } = DatePicker;
 
-const AddScheduleModal = ({ open, onClose, projectList, fetchSchdule }) => {
+const AddScheduleModal = ({
+  open,
+  onClose,
+  projectList,
+  fetchSchdule,
+  selectedProject,
+}) => {
   const [componentSize, setComponentSize] = useState<SizeType | "default">(
     "default"
   );
-  const [selectedType, setSelectedType] = useState("");
 
+  const [modalProjectList, setModalProjectList] = useState([]);
+  const [selectedType, setSelectedType] = useState("project");
+  const [selectedMileStone, setSelectedMileStone] = useState(0);
+  const [selectedTask, setSelectedTask] = useState(0);
   const onFormLayoutChange = ({ size }: { size: SizeType }) => {
     setComponentSize(size);
   };
-  const onFinish = async ({ name, RangePicker, Type, Dependencies }) => {
+
+  const onFinish = async ({
+    name,
+    RangePicker,
+    Type,
+    Dependencies,
+    DurationDay,
+    Group,
+  }) => {
     try {
       if (!Dependencies) {
         Dependencies = null;
       }
+      if (!Group) {
+        Group = null;
+      }
+      const projectID = Number(selectedProject);
+      const DayofDuration = Number(DurationDay);
       const startDate = dayjs(RangePicker[0]).format("YYYY-MM-DD");
       const endDate = dayjs(RangePicker[1]).format("YYYY-MM-DD");
       const res = await axios.post("/dashboard/ganttchart/addschedule", {
@@ -30,6 +51,9 @@ const AddScheduleModal = ({ open, onClose, projectList, fetchSchdule }) => {
         endDate,
         Type,
         Dependencies,
+        DayofDuration,
+        Group,
+        projectID,
       });
       if (res.data.status === true) {
         Swal.fire("Successfully added new schedule!", "", "success");
@@ -47,25 +71,24 @@ const AddScheduleModal = ({ open, onClose, projectList, fetchSchdule }) => {
     console.log("Failed:", errorInfo);
   };
 
-  const onOkHandler = () => {
-    window.location.reload();
-    onClose();
-  };
-
-  const types = [
-    { Task: "task" },
-    { MileStone: "milestone" },
-    { Project: "project" },
-  ];
+  const types = [{ Task: "task" }, { MileStone: "project" }];
   const handleTypeChanger = async (value: string) => {
     await setSelectedType(value);
+  };
+
+  const handleMileStoneChanger = async (value: number) => {
+    await setSelectedMileStone(value);
+  };
+
+  const handleTaskChanger = async (value: number) => {
+    await setSelectedTask(value);
   };
 
   return (
     <Modal
       centered
+      destroyOnClose={true}
       open={open}
-      onOk={onOkHandler}
       closable={false}
       onCancel={onClose}
       width={1000}
@@ -84,7 +107,9 @@ const AddScheduleModal = ({ open, onClose, projectList, fetchSchdule }) => {
           <Card
             title={
               <div style={{ fontWeight: "bold", fontSize: "25px" }}>
-                Add New Schedule
+                {projectList.length > 0
+                  ? "Add New Schedule"
+                  : "Please Make your first MileStone"}
               </div>
             }
             bordered={false}
@@ -113,7 +138,6 @@ const AddScheduleModal = ({ open, onClose, projectList, fetchSchdule }) => {
               <Form.Item
                 label="Task Type"
                 name="Type"
-                initialValue={"Task"}
                 rules={[
                   {
                     required: true,
@@ -125,29 +149,75 @@ const AddScheduleModal = ({ open, onClose, projectList, fetchSchdule }) => {
                   size="large"
                   onChange={handleTypeChanger}
                   placeholder="Please select the type"
-                  options={types.map((type) => {
-                    const key = Object.keys(type)[0];
-                    const value = type[key];
-                    return {
-                      label: key,
-                      value: value,
-                    };
-                  })}
+                  options={
+                    projectList.length > 0
+                      ? types.map((type) => {
+                          const key = Object.keys(type)[0];
+                          const value = type[key];
+                          return {
+                            label: key,
+                            value: value,
+                          };
+                        })
+                      : [
+                          {
+                            label: "MileStone",
+                            value: "project",
+                          },
+                        ]
+                  }
                 />
               </Form.Item>
+
               {selectedType === "project" || (
-                <Form.Item label="Select parent project" name="Dependencies">
-                  <Select
-                    size="large"
-                    onChange={handleTypeChanger}
-                    placeholder="Please select the parent project"
-                    options={projectList.map((projectList) => ({
-                      label: projectList.Name,
-                      value: projectList.ID,
-                    }))}
-                  />
-                </Form.Item>
+                <div>
+                  <Form.Item label="Select Milestone" name="Group">
+                    <Select
+                      size="large"
+                      onChange={handleMileStoneChanger}
+                      placeholder="Please Select the Milestone"
+                      options={projectList.map((projectList) => ({
+                        label: projectList.Name,
+                        value: projectList.ID,
+                      }))}
+                    />
+                  </Form.Item>
+
+                  {projectList &&
+                    projectList.length &&
+                    projectList[0].tasks.length > 0 && (
+                      <Form.Item
+                        label="This task should be done after"
+                        name="Dependencies"
+                      >
+                        <Select
+                          size="large"
+                          onChange={handleTaskChanger}
+                          placeholder="Please select the prior task"
+                          options={projectList
+                            .filter((d) => d.ID == selectedMileStone)
+                            .map((d) => d.tasks)
+                            .flat()
+                            .map((projectList) => ({
+                              label: projectList.Name,
+                              value: projectList.ID,
+                            }))}
+                        />
+                      </Form.Item>
+                    )}
+
+                  <Form.Item
+                    label="Input Duration "
+                    name="DurationDay"
+                    rules={[
+                      { required: true, message: "Please selecte the Date!" },
+                    ]}
+                  >
+                    <Input size="large" />
+                  </Form.Item>
+                </div>
               )}
+
               <Form.Item
                 label="Select Date"
                 name="RangePicker"
@@ -157,6 +227,7 @@ const AddScheduleModal = ({ open, onClose, projectList, fetchSchdule }) => {
               >
                 <RangePicker size="large" />
               </Form.Item>
+
               <Form.Item>
                 <div style={{ width: "100%", textAlign: "center" }}>
                   <Button

@@ -5,7 +5,7 @@ import axios from "axios";
 import "../src/language/i18n";
 import "./assets/global.css";
 
-axios.defaults.baseURL = "http://localhost:5000";
+axios.defaults.baseURL = "http://192.168.31.137:5000";
 axios.interceptors.request.use(
   function (config) {
     // Do something before request is sent

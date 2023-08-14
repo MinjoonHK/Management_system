@@ -26,12 +26,25 @@ export async function addScheduleManager(
   endDate: Date,
   userID: number,
   Type: string,
-  Dependencies: number | null
+  Dependencies: number | null,
+  DayofDuration: number,
+  Group: number,
+  projectID: number
 ) {
   try {
     const [rows, fields] = await pool.execute(
-      "INSERT INTO ganttchart ( Name, StartDate, EndDate,Type, user_id,Dependencies) VALUES( ?, ?,?, ?,?,?);",
-      [name, startDate, endDate, Type, userID, Dependencies]
+      "INSERT INTO ganttchart (Name, StartDate, EndDate, Type, user_id, Dependencies, DurationOfDay, InGroup, Project_ID) VALUES (?, ?, ?, ?, ?, ?, ?,?, ?);",
+      [
+        name,
+        startDate,
+        endDate,
+        Type,
+        userID,
+        Dependencies,
+        DayofDuration,
+        Group,
+        projectID,
+      ]
     );
     return rows.insertId;
   } catch (err) {
@@ -138,7 +151,8 @@ export async function getUserList() {
 export async function getSchedule(ID: number) {
   try {
     let [result] = await pool.query(
-      "SELECT ID, StartDate, EndDate, Name, Type,Dependencies FROM ganttChart WHERE user_id = ? AND Deleted_At IS NULL",
+      `SELECT ID, StartDate, EndDate, Name, Type,Dependencies, DurationOfDay, InGroup FROM ganttChart 
+      WHERE Project_ID = ? AND Deleted_At IS NULL`,
       [ID]
     );
     return result;
@@ -147,7 +161,28 @@ export async function getSchedule(ID: number) {
     return null;
   }
 }
+export async function getProjectGanttTask(projectID: number) {
+  try {
+    let [result] = await pool.query(
+      "SELECT ID, StartDate, EndDate, Name, Type,Dependencies, DurationOfDay, InGroup FROM ganttChart WHERE Project_ID = ? AND Deleted_At IS NULL",
+      [projectID]
+    );
+    //Filter out the milestone
+    let firstLevels = result.filter(
+      (d: { Type: string }) => d.Type === "project"
+    );
+    //tasks that included in the milestone
+    firstLevels = firstLevels.map((p: { tasks: never[]; ID: number }) => {
+      p.tasks = result.filter((d: { InGroup: number }) => d.InGroup === p.ID);
+      return p;
+    });
 
+    return firstLevels;
+  } catch (err) {
+    console.error(new Date(), "getSchedule", err);
+    return null;
+  }
+}
 export async function getSiteList() {
   try {
     let [result] = await pool.query("SELECT LocationName FROM site");
@@ -568,19 +603,56 @@ export async function getActivityLogs(project_ID: Number) {
   }
 }
 
-export async function deleteGanttTask(SelectedGantt: number, userID: number) {
+export async function deleteGanttTask(
+  SelectedGantt: number,
+  ProjectID: number,
+  Type: string
+) {
   try {
-    const [result] = await pool.execute(
-      `UPDATE ganttchart SET Deleted_At = NOW()
-        WHERE user_ID = ? AND ID = ?`,
-      [userID, SelectedGantt]
-    );
-    if (result.affectedRows.length > 0) {
-      return result;
-    } else {
-      return new Date(), "No result get from ganttchart table!", result;
+    if (Type === "task") {
+      const [result] = await pool.execute(
+        `UPDATE ganttchart SET Deleted_At = NOW()
+          WHERE Project_ID = ? AND ID = ?`,
+        [ProjectID, SelectedGantt]
+      );
+      console.log(result);
+      if (result.affectedRows.length > 0) {
+        return result;
+      } else {
+        return new Date(), "Manager Error at delete gantt task!", result;
+      }
+    } else if (Type === "project") {
+      const [result] = await pool.execute(
+        `UPDATE ganttchart SET Deleted_At = Now()
+        WHERE Project_ID = ?  AND (ID = ? OR InGroup = ?)
+        `,
+        [ProjectID, SelectedGantt, SelectedGantt]
+      );
+      if (result.affectedRows.length > 0) {
+        return result;
+      } else {
+        return new Date(), "Fail to delete milestone!", result;
+      }
     }
   } catch (error) {
+    return error;
+  }
+}
+
+export async function getProjectPeople(ProjectID: Number) {
+  try {
+    const [result] = await pool.execute(
+      `SELECT Joined_User_Email, projectpeople.Created_At, projectpeople.Role, FirstName, LastName, LastLoginTime  FROM projectpeople
+      LEFT JOIN user on projectpeople.Joined_User_Email = user.Email
+        WHERE project_ID = ? AND projectpeople.Deleted_At IS NULL
+      `,
+      [ProjectID]
+    );
+    if (result) {
+      return result;
+    }
+  } catch (error) {
+    console.log("manager error at getting project people", error);
     return error;
   }
 }

@@ -16,6 +16,17 @@ export class AddScheduleForm {
   @IsNotEmpty()
   Dependencies?: number;
 
+  @IsOptional()
+  @IsNotEmpty()
+  Group?: number;
+
+  @IsOptional()
+  @IsNotEmpty()
+  DurationDay?: number;
+
   @IsNumber()
   userID?: number;
+
+  @IsNumber()
+  ProjectID?: number;
 }

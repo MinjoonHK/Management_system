@@ -26,6 +26,9 @@ class UserManager {
       }
       let passwordpass = await this.comparePassword(user.Password, password);
       if (passwordpass) {
+        await pool.query("UPDATE user SET LastLoginTime = NOW() WHERE ID =?", [
+          user.ID,
+        ]);
         return { success: true, data: this.generateAccessToken(user) };
       } else {
         return { success: false, error: "invalid_password" };

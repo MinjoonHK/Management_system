@@ -1,23 +1,30 @@
 import { Card, Modal, Button } from "antd";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 export default function GanttTaskDelete({
   open,
   onClose,
   selectedTask,
+  selectedProject,
   onChange,
 }) {
+  const ProjectID = Number(selectedProject);
   const handleDelete = async () => {
-    const res = await axios.post("/dashboard/deleteTaskList", {
-      TaskID: selectedTask.ID,
+    const response = await axios.post("/dashboard/deleteGantt", {
+      SelectedGantt: selectedTask.ID,
+      ProjectID: ProjectID,
+      Type: selectedTask.Type,
     });
-    if (res) {
-      try {
-        onChange();
-        onClose();
-      } catch (error) {
-        console.log("Failed to delete", error);
-      }
+    if (response.data.status === true) {
+      Swal.fire({
+        title: "Deletion Successful",
+        icon: "success",
+        timer: 2000,
+        timerProgressBar: true,
+      });
+      onChange();
+      onClose();
     }
   };
   return (
