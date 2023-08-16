@@ -108,7 +108,7 @@ export const DocumentSubmissionModal = ({ open, onClose, onChange }) => {
               >
                 <Select
                   size="large"
-                  placeholder="Please type email"
+                  placeholder="Please select user"
                   value={selectedManager}
                   labelInValue
                   onChange={setSelectedManager}

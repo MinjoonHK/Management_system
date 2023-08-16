@@ -11,7 +11,12 @@ import dashboardRouter from "./routes/dashboard";
 import jwt from "jsonwebtoken";
 import config from "config";
 import fs from "fs";
+import { sendProjectInvitation } from "./managers/mail.manager";
 import { pool } from "./db/db";
+import { sendEmailForm } from "./models/forms/sendEmail.form";
+import { validate } from "class-validator";
+import dayjs from "dayjs";
+
 declare global {
   namespace Express {
     interface Request {
@@ -31,6 +36,68 @@ app.use(
     methods: ["GET", "POST"],
   })
 );
+
+app.post("/sendEmail", async (req, res) => {
+  const { InviteEmail, Role, selectedProject, token } = req.body;
+  let form = new sendEmailForm();
+  form.InviteEmail = InviteEmail;
+  form.Role = Role;
+  form.selectedProject = selectedProject;
+  form.token = token;
+  let error = await validate(form);
+  if (error.length > 0) {
+    //if there is error
+    res.status(400).json({
+      success: false,
+      error: "validation_error",
+      message: error,
+    });
+    return;
+  }
+  if (token) {
+    try {
+      const decoded = jwt.verify(
+        token.toString(),
+        config.get("jwt.passphase")!
+      ) as DecodedToken;
+      req.userId = decoded.ID;
+      const userID = req.userId;
+      const senderEmail = decoded.Email;
+      const [projectInfo] = await pool.execute(
+        "SELECT ProjectName, End, Budget FROM project WHERE ID = ?",
+        [selectedProject]
+      );
+      console.log(projectInfo);
+      const [projectJoinedUsers] = await pool.execute(
+        "SELECT Joined_User_Email FROM projectpeople WHERE project_ID =?",
+        [selectedProject]
+      );
+      const existChecker = projectJoinedUsers.find((u: any) => {
+        return u.Joined_User_Email == InviteEmail;
+      });
+      if (existChecker != undefined) {
+        res.json({ message: "user is already in the project!", status: false });
+      } else if (existChecker === undefined) {
+        const response = await sendProjectInvitation({
+          Deadline: dayjs(projectInfo[0].End).format("YYYY-MMM-DD"),
+          TaskName: projectInfo[0].ProjectName,
+          From: senderEmail,
+          Description: projectInfo[0].Budget,
+          to: InviteEmail,
+        });
+        if (response === true) {
+          res.json({
+            message: `successfully sent invitation to ${InviteEmail}`,
+            status: true,
+          });
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      res.sendStatus(404);
+    }
+  }
+});
 
 app.get("/download", async (req, res) => {
   const token = req.query.token;
@@ -70,6 +137,8 @@ app.get("/download", async (req, res) => {
     }
   }
 });
+
+/**Routers  */
 app.use("/auth", authenticationRouter);
 app.use("/dashboard", validationIsLogggedIn, dashboardRouter);
 

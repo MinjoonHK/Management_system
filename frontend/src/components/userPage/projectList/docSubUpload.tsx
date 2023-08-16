@@ -34,7 +34,8 @@ export default function DocumentUploadModal({
 }) {
   const [defaultList, setDefaultList] = useState([]);
   const [manager, setManager] = useState(null);
-  const userToken: userToken = jwtDecode(localStorage.getItem("jwt"));
+  const getJwt = localStorage.getItem("decoded_jwt");
+  const userToken: userToken = JSON.parse(getJwt);
 
   const props: UploadProps = {
     name: "file",

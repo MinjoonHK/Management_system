@@ -35,6 +35,8 @@ import {
   deleteGanttTask,
   getProjectGanttTask,
   getProjectPeople,
+  deletePrjUser,
+  changeUserRole,
 } from "../managers/dashboard.manager";
 import { workorderform } from "../models/forms/workorder.form";
 import { updateWorkOrder } from "../models/forms/updateworkorder.form";
@@ -50,6 +52,8 @@ import { getActivityLogsForm } from "../models/forms/getActivityLog.form";
 import { DeleteGanttTaskForm } from "../models/forms/deleteGanttTask.form";
 import { getProjectPeopleList } from "../models/forms/getProjectPeopleList";
 import c from "config";
+import { DeletePrjUser } from "../models/forms/deletePrjUser.form";
+import { userRoleChangeForm } from "../models/forms/changeUserRole.form";
 
 const dashboardRouter = express.Router();
 
@@ -306,7 +310,6 @@ dashboardRouter.post(
       Group,
       projectID,
     } = req.body;
-    console.log(req.body);
     const userID = req.userId;
     let form = new AddScheduleForm();
     form.name = name;
@@ -413,7 +416,6 @@ dashboardRouter.get("/getProjectGanttTask", async (req, res) => {
   const ProjectID = Number(req.query.ProjectID);
   try {
     const result = await getProjectGanttTask(ProjectID);
-    console.log(result);
     res.json({
       message: "getProjectGanttTask success",
       status: true,
@@ -730,6 +732,64 @@ dashboardRouter.get("/getProjectPeople", async (req, res) => {
       status: false,
       message: "failed to load projectUserList",
       result: response,
+    });
+  }
+});
+
+dashboardRouter.post("/changeUserRole", async (req, res) => {
+  const { User, Role, selectedProject } = req.body;
+  console.log(req.body);
+  let form = new userRoleChangeForm();
+  form.User = User;
+  form.Role = Role;
+  form.selectedProject = selectedProject;
+  const errors = await validate(form);
+  if (errors.length > 0) {
+    res.status(400).json({
+      success: false,
+      error: "validation_error",
+      message: errors,
+    });
+    return;
+  }
+  const response = await changeUserRole(User, Role, selectedProject);
+  if (response) {
+    res.json({
+      message: "successfully changed user Role!",
+      status: true,
+      result: response,
+    });
+  } else {
+    res.json({ message: "failed to change user Role!", error: response });
+  }
+});
+
+dashboardRouter.post("/deletePrjUser", async (req, res) => {
+  const { ProjectID, UserEmail } = req.body;
+  console.log(req.body);
+  let form = new DeletePrjUser();
+  form.ProjectID = ProjectID;
+  form.UserEmail = UserEmail;
+  const errors = await validate(form);
+  if (errors.length > 0) {
+    res.status(400).json({
+      success: false,
+      error: "validation_error",
+      message: errors,
+    });
+    return;
+  }
+  const response = await deletePrjUser(ProjectID, UserEmail);
+  if (response) {
+    res.json({
+      message: "successfully deleted User From Project!",
+      status: true,
+      result: response,
+    });
+  } else {
+    res.json({
+      message: "failed to delete user form Project!",
+      error: response,
     });
   }
 });

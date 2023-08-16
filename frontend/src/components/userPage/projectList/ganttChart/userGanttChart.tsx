@@ -150,10 +150,6 @@ export function GanttChart({ selectedProject }) {
             <Gantt
               tasks={tasks}
               viewMode={view}
-              // TooltipContent={( task:Task, fontSize:string, fontFamily:string )=>{
-
-              // }}
-
               onDateChange={handleTaskChange}
               onProgressChange={handleProgressChange}
               listCellWidth={isChecked ? "185px" : ""}

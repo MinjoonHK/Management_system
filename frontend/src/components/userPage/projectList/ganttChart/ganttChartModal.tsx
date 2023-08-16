@@ -1,11 +1,13 @@
 import { Button, Card, DatePicker, Form, Input, Modal, Select } from "antd";
 import { SizeType } from "antd/es/config-provider/SizeContext";
 import axios from "axios";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 
 const { RangePicker } = DatePicker;
+
+type RangeValue = [Dayjs | null, Dayjs | null] | null;
 
 const AddScheduleModal = ({
   open,
@@ -17,9 +19,9 @@ const AddScheduleModal = ({
   const [componentSize, setComponentSize] = useState<SizeType | "default">(
     "default"
   );
-
-  const [modalProjectList, setModalProjectList] = useState([]);
+  const [dates, setDates] = useState<RangeValue>(null);
   const [selectedType, setSelectedType] = useState("project");
+  const [dateValue, setDateValue] = useState<RangeValue>(null);
   const [selectedMileStone, setSelectedMileStone] = useState(0);
   const [selectedTask, setSelectedTask] = useState(0);
   const onFormLayoutChange = ({ size }: { size: SizeType }) => {
@@ -82,6 +84,23 @@ const AddScheduleModal = ({
 
   const handleTaskChanger = async (value: number) => {
     await setSelectedTask(value);
+  };
+
+  const disabledDate = (current: Dayjs) => {
+    if (!dates) {
+      return false;
+    }
+    const tooLate = dates[0] && current.diff(dates[0], "days") >= 7;
+    const tooEarly = dates[1] && dates[1].diff(current, "days") >= 7;
+    return !!tooEarly || !!tooLate;
+  };
+
+  const onOpenChange = (open: boolean) => {
+    if (open) {
+      setDates([null, null]);
+    } else {
+      setDates(null);
+    }
   };
 
   return (
@@ -225,7 +244,18 @@ const AddScheduleModal = ({
                   { required: true, message: "Please selecte the Date!" },
                 ]}
               >
-                <RangePicker size="large" />
+                <RangePicker
+                  value={dates || dateValue}
+                  disabledDate={disabledDate}
+                  onOpenChange={onOpenChange}
+                  onCalendarChange={(val) => {
+                    setDates(val);
+                  }}
+                  onChange={(val) => {
+                    setDateValue(val);
+                  }}
+                  size="large"
+                />
               </Form.Item>
 
               <Form.Item>

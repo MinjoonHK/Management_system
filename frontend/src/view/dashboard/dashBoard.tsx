@@ -62,8 +62,8 @@ const Dashboard: React.FC = () => {
     }
   }, []);
   useEffect(() => {
-    const token = localStorage.getItem("jwt");
-    const decoded: decodedToken = jwtDecode(token);
+    const getJwt = localStorage.getItem("decoded_jwt");
+    const decoded: decodedToken = JSON.parse(getJwt);
     const hour = new Date().getHours();
     const currentTime: number = Date.now();
     const expirationTime: number = new Date(decoded.exp * 1000).getTime();
@@ -71,7 +71,7 @@ const Dashboard: React.FC = () => {
       navigate("/login");
       setTimeout(() => logout(), 100);
     }
-    if (token) {
+    if (getJwt) {
       const greetingName = decoded.Name;
       setFirstName(greetingName);
       setUserRole(decoded.Role);

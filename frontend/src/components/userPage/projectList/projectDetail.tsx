@@ -17,7 +17,6 @@ export const ProjectDetail = () => {
   const [currentProject, setCurrentProject] = useState("");
   const { selectedProject } = useParams();
 
-  console.log(selectedProject);
   const fetchData = async () => {
     try {
       const res = await axios.get("/dashboard/upload/fileList", {

@@ -13,7 +13,7 @@ import {
 import type { MenuProps, UploadFile, UploadProps } from "antd";
 import { InboxOutlined, DownOutlined, UserOutlined } from "@ant-design/icons";
 import axios from "axios";
-// import Swal from "sweetalert2";
+import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import TextArea from "antd/es/input/TextArea";
 import jwtDecode from "jwt-decode";
@@ -82,7 +82,8 @@ const AddWorkOrder: React.FC = () => {
     OrderTitle,
   }) => {
     try {
-      const decoded: decodedToken = jwtDecode(localStorage.getItem("jwt"));
+      const getJwt = localStorage.getItem("decoded_jwt");
+      const decoded: decodedToken = JSON.parse(getJwt);
       const ID: number = decoded.ID;
       const res = await axios.post("/dashboard/workorder/addworkorder", {
         ordersummary,

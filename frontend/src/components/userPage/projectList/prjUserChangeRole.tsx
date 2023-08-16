@@ -1,31 +1,33 @@
 import { Card, Modal, Button, Input, Form, Select } from "antd";
 import axios from "axios";
+import { useState } from "react";
 import Swal from "sweetalert2";
 
 const { Option } = Select;
 
-export default function AddGuestModal({ open, onClose, selectedProject }) {
-  const token = localStorage.getItem("jwt");
+export default function AddGuestModal({
+  open,
+  onClose,
+  selectedProject,
+  memberList,
+  onChange,
+}) {
+  const [selectedMember, setSelectedMember] = useState("");
   selectedProject = Number(selectedProject);
-  const onFinish = async ({ InviteEmail, Role }) => {
-    const response = await axios.post("/sendEmail", {
-      InviteEmail: InviteEmail,
+  const onFinish = async ({ User, Role }) => {
+    const response = await axios.post("/dashboard/changeUserRole", {
+      User: User.value,
       Role: Role,
       selectedProject: selectedProject,
-      token: token,
     });
     if (response.data.status === false) {
-      Swal.fire({
-        icon: "warning",
-        title: "User is already in the project!",
-        timer: 2000,
-      });
     } else if (response.data.status === true) {
       Swal.fire({
         icon: "success",
-        title: `Successfully sent invitation to ${InviteEmail}`,
+        title: "User Role has been Updated Successfully!",
         timer: 2000,
       });
+      onChange();
       onClose();
     }
   };
@@ -52,7 +54,7 @@ export default function AddGuestModal({ open, onClose, selectedProject }) {
             f.submit();
           }}
         >
-          Invite
+          Change
         </Button>,
       ]}
     >
@@ -64,7 +66,7 @@ export default function AddGuestModal({ open, onClose, selectedProject }) {
               fontSize: "20px",
             }}
           >
-            Add Member By Email
+            Change User Role
           </div>
         }
       >
@@ -77,13 +79,20 @@ export default function AddGuestModal({ open, onClose, selectedProject }) {
         >
           <Form.Item
             style={{ width: "60%" }}
-            name="InviteEmail"
-            rules={[
-              { required: true, message: "Please input the Email!" },
-              { type: "email", message: "This is not a valid Eamil address!!" },
-            ]}
+            name="User"
+            rules={[{ required: true, message: "Please select the user!" }]}
           >
-            <Input placeholder="Please input email address" size="large" />
+            <Select
+              size="large"
+              placeholder="Please select user"
+              value={selectedMember}
+              labelInValue
+              onChange={setSelectedMember}
+              options={memberList.map((item) => ({
+                value: item.Joined_User_Email,
+                label: item.FirstName + " " + item.LastName,
+              }))}
+            />
           </Form.Item>
 
           <Form.Item
@@ -92,13 +101,13 @@ export default function AddGuestModal({ open, onClose, selectedProject }) {
             rules={[{ required: true, message: "Please Select the Role!" }]}
           >
             <Select size="large" placeholder="Role">
-              <Option key="manager" value="manager">
+              <Option key="manager" value="Manager">
                 Manager
               </Option>
-              <Option key="member" value="member">
+              <Option key="member" value="Member">
                 Member
               </Option>
-              <Option key="guest" value="guest">
+              <Option key="guest" value="Guest">
                 Guest
               </Option>
             </Select>

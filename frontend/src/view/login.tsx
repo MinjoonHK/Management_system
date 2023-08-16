@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
-import jwtDecode from "jwt-decode";
+import jwt_decode from "jwt-decode";
 import { decodedToken } from "./dashboard/dashBoard";
 
 interface LoginForm {
@@ -11,6 +11,7 @@ interface LoginForm {
   password: any;
 }
 function Login() {
+  console.log("login page");
   const [form] = Form.useForm<LoginForm>();
   const navigate = useNavigate();
   const onFinish = async ({ email, password, remember }) => {
@@ -22,13 +23,18 @@ function Login() {
       } else {
         removeCookie("rememberEmail");
       }
-      const decodedToken: decodedToken = jwtDecode(localStorage.getItem("jwt"));
-      const role: string = decodedToken.Role;
-      {
-        role === "User" && navigate("/Project");
-      }
-      {
-        role === "Admin" && navigate("/Project");
+      if (localStorage.getItem("jwt")) {
+        const decodedToken: decodedToken = jwt_decode(
+          localStorage.getItem("jwt")
+        );
+        localStorage.setItem("decoded_jwt", JSON.stringify(decodedToken));
+        const role: string = decodedToken.Role;
+        {
+          role === "User" && navigate("/Project");
+        }
+        {
+          role === "Admin" && navigate("/Project");
+        }
       }
     } catch (err) {
       if (err.response.status === 400) {

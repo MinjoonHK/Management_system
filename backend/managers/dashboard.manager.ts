@@ -271,7 +271,7 @@ export async function addProjectList(
       [ID]
     );
     const [result1] = await pool.execute(
-      "INSERT INTO project (ProjectName, Start,END, User_ID,Budget, CreatorName) VALUES(?,?,?,?,?,?)",
+      "INSERT INTO project (ProjectName, Start,END, User_ID,Description, CreatorName) VALUES(?,?,?,?,?,?)",
       [ProjectName, Start, End, ID, Budget, creatorName[0].FirstName]
     );
     const [lastAddedProject] = await pool.execute(
@@ -310,7 +310,7 @@ export async function addProjectList(
       );
     }
   } catch (err) {
-    console.error(new Date(), "addTimeSheetManager", err);
+    console.error(new Date(), "addProjectList", err);
     return null;
   }
 }
@@ -653,6 +653,52 @@ export async function getProjectPeople(ProjectID: Number) {
     }
   } catch (error) {
     console.log("manager error at getting project people", error);
+    return error;
+  }
+}
+
+export async function deletePrjUser(ProjectID: Number, UserEmail: string) {
+  try {
+    const [result] = await pool.execute(
+      `
+    UPDATE projectpeople SET Deleted_At = NOW()
+    WHERE project_ID = ? AND Joined_User_Email = ?
+    `,
+      [ProjectID, UserEmail]
+    );
+    if (result) {
+      return result;
+    }
+  } catch (error) {
+    console.log(
+      "manager error at delete user from project becuase of manager error!",
+      error
+    );
+    return error;
+  }
+}
+
+export async function changeUserRole(
+  User: string,
+  Role: string,
+  ProjectID: Number
+) {
+  try {
+    const [result] = await pool.execute(
+      `
+    UPDATE projectpeople SET Role = ?
+    WHERE project_ID = ? AND Joined_User_Email = ?
+    `,
+      [Role, ProjectID, User]
+    );
+    if (result) {
+      return result;
+    }
+  } catch (error) {
+    console.log(
+      "manager error at Change User Role from project becuase of manager error!",
+      error
+    );
     return error;
   }
 }

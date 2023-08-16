@@ -5,7 +5,8 @@ import jwtDecode from "jwt-decode";
 import { decodedToken } from "../../../data/Interfaces/decodedToken";
 
 export default function AddModal({ open, onClose, onChange }) {
-  const DecodeToken: decodedToken = jwtDecode(localStorage.getItem("jwt"));
+  const getJwt = localStorage.getItem("decoded_jwt");
+  const DecodeToken: decodedToken = JSON.parse(getJwt);
   const LoggedUserEmail = DecodeToken.Email;
   const onFinish = async ({
     Name,
@@ -151,7 +152,7 @@ export default function AddModal({ open, onClose, onChange }) {
             </Form.Item>
             <Form.Item
               name={"Budget"}
-              label={"Budget"}
+              label={"Description"}
               style={{ fontSize: "15px" }}
               rules={[
                 {

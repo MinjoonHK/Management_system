@@ -10,6 +10,7 @@ interface AccessToken {
 
 function Protected({ children }) {
   const jwt = localStorage.getItem("jwt");
+
   if (!jwt) {
     return <Navigate to="/login" replace />;
   }

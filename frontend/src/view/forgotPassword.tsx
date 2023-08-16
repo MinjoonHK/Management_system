@@ -2,16 +2,11 @@ import { Button, Checkbox, Form, Input, Card } from "antd";
 import { useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
-import jwtDecode from "jwt-decode";
-
 function Login() {
   const navigate = useNavigate();
   const onFinish = async ({ email, password }) => {
     try {
       const res = await axios.post("/login", { email, password });
-      console.log(res);
-      const decoded_token = jwtDecode(res.data.accessToken);
-      console.log(decoded_token);
       localStorage.setItem("jwt", res.data.accessToken);
       navigate("/");
     } catch (err) {
