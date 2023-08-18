@@ -60,7 +60,7 @@ export const sendProjectInvitation = async (props: any & { to: string }) => {
   const info = await transporter.sendMail({
     from: `"ManageEase" <noreply@kellon.net>`, // sender address
     to: props.to, // list of receivers
-    subject: `Invitation to project${ranNum}`, // Subject line
+    subject: `Invitation to project ${props.TaskName}`, // Subject line
     html: html, // html body
   });
   if (info) {

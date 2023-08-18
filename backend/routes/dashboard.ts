@@ -37,6 +37,11 @@ import {
   getProjectPeople,
   deletePrjUser,
   changeUserRole,
+  addProjectCalendar,
+  getProjectCalendarList,
+  getProjectCalendarTaskPeople,
+  updateGanttDate,
+  getSharedCalendarList,
 } from "../managers/dashboard.manager";
 import { workorderform } from "../models/forms/workorder.form";
 import { updateWorkOrder } from "../models/forms/updateworkorder.form";
@@ -51,9 +56,12 @@ import { getTaskUser } from "../models/forms/getTaskUser.form";
 import { getActivityLogsForm } from "../models/forms/getActivityLog.form";
 import { DeleteGanttTaskForm } from "../models/forms/deleteGanttTask.form";
 import { getProjectPeopleList } from "../models/forms/getProjectPeopleList";
-import c from "config";
 import { DeletePrjUser } from "../models/forms/deletePrjUser.form";
 import { userRoleChangeForm } from "../models/forms/changeUserRole.form";
+import { addProjectCalendarSchedule } from "../models/forms/addProjectCalendar.form";
+import { getProjectCalendar } from "../models/forms/getProjectCalendar";
+import { getProjectCalendarPeople } from "../models/forms/getProjectCalendarPeople";
+import { updateGanttDateForm } from "../models/forms/updateGanttDate.form";
 
 const dashboardRouter = express.Router();
 
@@ -309,7 +317,10 @@ dashboardRouter.post(
       DayofDuration,
       Group,
       projectID,
+      Member,
+      Manager,
     } = req.body;
+    console.log(req.body);
     const userID = req.userId;
     let form = new AddScheduleForm();
     form.name = name;
@@ -321,6 +332,8 @@ dashboardRouter.post(
     form.DurationDay = DayofDuration;
     form.Group = Group;
     form.ProjectID = projectID;
+    form.Member = Member;
+    form.Manager = Manager;
     const errors = await validate(form);
     if (errors.length > 0) {
       res.status(400).json({
@@ -339,7 +352,9 @@ dashboardRouter.post(
       Dependencies,
       DayofDuration,
       Group,
-      projectID
+      projectID,
+      Manager,
+      Member
     );
     if (result) {
       res.json({
@@ -681,7 +696,6 @@ dashboardRouter.get("/activityLogs", async (req, res) => {
 
 dashboardRouter.post("/deleteGantt", async (req, res) => {
   const { SelectedGantt, ProjectID, Type } = req.body;
-  console.log(req.body);
   let form = new DeleteGanttTaskForm();
   form.ProjectID = ProjectID;
   form.SelectedGantt = SelectedGantt;
@@ -738,7 +752,6 @@ dashboardRouter.get("/getProjectPeople", async (req, res) => {
 
 dashboardRouter.post("/changeUserRole", async (req, res) => {
   const { User, Role, selectedProject } = req.body;
-  console.log(req.body);
   let form = new userRoleChangeForm();
   form.User = User;
   form.Role = Role;
@@ -766,7 +779,6 @@ dashboardRouter.post("/changeUserRole", async (req, res) => {
 
 dashboardRouter.post("/deletePrjUser", async (req, res) => {
   const { ProjectID, UserEmail } = req.body;
-  console.log(req.body);
   let form = new DeletePrjUser();
   form.ProjectID = ProjectID;
   form.UserEmail = UserEmail;
@@ -791,6 +803,158 @@ dashboardRouter.post("/deletePrjUser", async (req, res) => {
       message: "failed to delete user form Project!",
       error: response,
     });
+  }
+});
+
+dashboardRouter.get("/getProjectCalendarSchedule", async (req, res) => {
+  const ProjectID = Number(req.query.ProjectID);
+  let form = new getProjectCalendar();
+  form.projectID = ProjectID;
+  const errors = await validate(form);
+  if (errors.length > 0) {
+    res.status(400).json({
+      success: false,
+      error: "validation_error",
+      message: errors,
+    });
+    return;
+  }
+  const response = await getProjectCalendarList(ProjectID);
+  if (response) {
+    res.json({
+      message: "successfully get Project Calendar List from projectcalendar!",
+      status: true,
+      result: response,
+    });
+  } else {
+    res.json({
+      message: "failed to get project Calendar List form projectcalendar!",
+      error: response,
+    });
+  }
+});
+
+dashboardRouter.post("/addProjectCalendarSchedule", async (req, res) => {
+  const { Name, Start, End, ProjectID, Description, Member } = req.body;
+  let form = new addProjectCalendarSchedule();
+  form.Name = Name;
+  form.Start = Start;
+  form.End = End;
+  form.ProjectID = ProjectID;
+  form.Description = Description;
+  form.Member = Member;
+  const errors = await validate(form);
+  if (errors.length > 0) {
+    res.status(400).json({
+      success: false,
+      error: "validation_error",
+      message: errors,
+    });
+    return;
+  }
+  const response = await addProjectCalendar(
+    Name,
+    Start,
+    End,
+    ProjectID,
+    Description,
+    Member
+  );
+  if (response) {
+    res.json({
+      message: "successfully deleted User From Project!",
+      status: true,
+      result: response,
+    });
+  } else {
+    res.json({
+      message: "failed to delete user form Project!",
+      status: false,
+      error: response,
+    });
+  }
+});
+
+dashboardRouter.get("/getProjectCalendarPeople", async (req, res) => {
+  const ProjectID = Number(req.query.ProjectID);
+  const CalendarTaskID = Number(req.query.selectedTask);
+  let form = new getProjectCalendarPeople();
+  form.projectID = ProjectID;
+  form.selectedTask = CalendarTaskID;
+  const errors = await validate(form);
+  if (errors.length > 0) {
+    res.status(400).json({
+      success: false,
+      error: "validation_error",
+      message: errors,
+    });
+    return;
+  }
+  const response = await getProjectCalendarTaskPeople(
+    ProjectID,
+    CalendarTaskID
+  );
+  if (response) {
+    res.json({
+      message:
+        "successfully get Project Calendar mebmer List from projectcalendarpeople!",
+      status: true,
+      result: response,
+    });
+  } else {
+    res.json({
+      message:
+        "failed to get Project Calendar mebmer List form projectcalendarpeople!",
+      error: response,
+    });
+  }
+});
+
+dashboardRouter.post(
+  "/updateGanttDate",
+  async (req: Request, res: Response) => {
+    const { TaskID, NewStart, NewEnd } = req.body;
+
+    const ID = req.userId;
+    let form = new updateGanttDateForm();
+    form.TaskID = TaskID;
+    form.NewStart = NewStart;
+    form.NewEnd = NewEnd;
+    const errors = await validate(form);
+    if (errors.length > 0) {
+      //if there is error
+      res.status(400).json({
+        success: false,
+        error: "validation_error",
+        message: errors,
+      });
+      return;
+    }
+    let result = await updateGanttDate(TaskID, NewStart, NewEnd);
+    if (result) {
+      res.json({
+        message: "succesfully update Gantt Date",
+        status: true,
+        result: result,
+      });
+    } else {
+      res.json({
+        message: "failed to update Gantt Date",
+        status: false,
+        error: result,
+      });
+    }
+  }
+);
+
+dashboardRouter.get("/sharedCalendarList", async (req, res) => {
+  const ID = req.userId;
+  try {
+    const result = await getTimeSheet(ID!);
+    res.json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 

@@ -16,24 +16,33 @@ import dayjs from "dayjs";
 import TextArea from "antd/es/input/TextArea";
 
 const { RangePicker } = DatePicker;
-const SlotModal = ({ open, onClose, calendarList, start, onChange }) => {
+
+export const TeamSlotModal = ({ open, onClose, selectedProject, onChange }) => {
   const [componentSize, setComponentSize] = useState<SizeType | "default">(
     "default"
   );
+  const [selectedMember, setSelectedMember] = useState<string[]>([]);
+  const [selectedManager, setSelectedManager] = useState("");
   const [size, setSize] = useState<SizeType>("small");
+  const [managerList, setManagerList] = useState([]);
+  const [memberList, setMemberList] = useState([]);
+  const [form] = Form.useForm();
 
+  useEffect(() => {
+    fetchProjectPeople();
+  }, []);
   const onFormLayoutChange = ({ size }: { size: SizeType }) => {
     setComponentSize(size);
   };
   const onFinish = async ({
-    Title,
+    Name,
     RangePicker,
-    SelectCalendar,
     SelectTime,
     Description,
+    Member,
   }) => {
     try {
-      const CalendarID = SelectCalendar;
+      const ProjectID = Number(selectedProject);
       let Start = RangePicker[0].toDate();
       let End = RangePicker[1].toDate();
 
@@ -46,14 +55,16 @@ const SlotModal = ({ open, onClose, calendarList, start, onChange }) => {
       Start = Start.toISOString().replace("T", " ").replace("Z", "");
       End = End.toISOString().replace("T", " ").replace("Z", "");
 
-      const res = await axios.post("/dashboard/timesheet", {
-        CalendarID,
-        Title,
+      const res = await axios.post("/dashboard/addProjectCalendarSchedule", {
+        Name,
         Start,
         End,
+        ProjectID,
         Description,
+        Member,
       });
-      if (res.status === 200) {
+      if (res.data.status === true) {
+        form.resetFields();
         onChange();
         onClose();
       }
@@ -63,6 +74,23 @@ const SlotModal = ({ open, onClose, calendarList, start, onChange }) => {
   };
   const onFinishFailed = (errorInfo: never) => {
     console.log("Failed:", errorInfo);
+  };
+
+  const fetchProjectPeople = async () => {
+    if (selectedProject) {
+      const response = await axios.get("dashboard/getProjectPeople", {
+        params: { ProjectID: selectedProject },
+      });
+      if (response.data.status === true) {
+        setMemberList(response.data.result);
+        const managerFilter = response.data.result.filter((users) => {
+          return users.Role === "Manager";
+        });
+        if (managerFilter) {
+          setManagerList(managerFilter);
+        }
+      }
+    }
   };
 
   return (
@@ -98,6 +126,7 @@ const SlotModal = ({ open, onClose, calendarList, start, onChange }) => {
                 }}
               >
                 <Form
+                  form={form}
                   layout="vertical"
                   initialValues={{ size: componentSize }}
                   onValuesChange={onFormLayoutChange}
@@ -106,10 +135,6 @@ const SlotModal = ({ open, onClose, calendarList, start, onChange }) => {
                   onFinishFailed={onFinishFailed}
                   fields={[
                     {
-                      name: ["RangePicker"],
-                      value: [dayjs(start), null],
-                    },
-                    {
                       name: ["SelectTime"],
                       value: [dayjs("12:00", "HH:mm"), null],
                     },
@@ -117,7 +142,7 @@ const SlotModal = ({ open, onClose, calendarList, start, onChange }) => {
                 >
                   <Form.Item
                     label="Name"
-                    name="Title"
+                    name="Name"
                     rules={[
                       {
                         required: true,
@@ -126,22 +151,6 @@ const SlotModal = ({ open, onClose, calendarList, start, onChange }) => {
                     ]}
                   >
                     <Input placeholder="Name of the Schedule" size="large" />
-                  </Form.Item>
-                  <Form.Item
-                    name="SelectCalendar"
-                    label="Select Calendar"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please pick the calendar!",
-                      },
-                    ]}
-                  >
-                    <Select
-                      placeholder="Select Calendar"
-                      size={"large"}
-                      options={calendarList}
-                    />
                   </Form.Item>
                   <Form.Item
                     name="RangePicker"
@@ -155,7 +164,40 @@ const SlotModal = ({ open, onClose, calendarList, start, onChange }) => {
                   >
                     <RangePicker size="large" />
                   </Form.Item>
-                  <Form.Item name="SelectTime" label="Select Time">
+                  <Form.Item
+                    name={"Member"}
+                    label="Joined Member List"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please Select the members!",
+                      },
+                    ]}
+                  >
+                    <Select
+                      mode="tags"
+                      size="large"
+                      placeholder="Please select members"
+                      value={selectedMember}
+                      onChange={setSelectedMember}
+                      options={memberList.map((item) => ({
+                        value: item.Joined_User_Email,
+                        label: item.FirstName + " " + item.LastName,
+                      }))}
+                      style={{ width: "100%" }}
+                      tokenSeparators={[","]}
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    name="SelectTime"
+                    label="Select Time"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please Select the time!",
+                      },
+                    ]}
+                  >
                     <TimePicker.RangePicker
                       minuteStep={15}
                       format={"HH:mm"}
@@ -202,5 +244,3 @@ const SlotModal = ({ open, onClose, calendarList, start, onChange }) => {
     </Modal>
   );
 };
-
-export default SlotModal;

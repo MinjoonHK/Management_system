@@ -66,15 +66,17 @@ const Dashboard: React.FC = () => {
     const decoded: decodedToken = JSON.parse(getJwt);
     const hour = new Date().getHours();
     const currentTime: number = Date.now();
-    const expirationTime: number = new Date(decoded.exp * 1000).getTime();
-    if (currentTime > expirationTime) {
-      navigate("/login");
-      setTimeout(() => logout(), 100);
-    }
-    if (getJwt) {
-      const greetingName = decoded.Name;
-      setFirstName(greetingName);
-      setUserRole(decoded.Role);
+    if (decoded) {
+      const expirationTime: number = new Date(decoded.exp * 1000).getTime();
+      if (currentTime > expirationTime) {
+        navigate("/login");
+        setTimeout(() => logout(), 100);
+      }
+      if (getJwt) {
+        const greetingName = decoded.Name;
+        setFirstName(greetingName);
+        setUserRole(decoded.Role);
+      }
     }
   }, []);
 

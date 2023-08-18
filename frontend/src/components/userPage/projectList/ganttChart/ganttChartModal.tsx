@@ -19,15 +19,18 @@ const AddScheduleModal = ({
   const [componentSize, setComponentSize] = useState<SizeType | "default">(
     "default"
   );
+  const [selectedMember, setSelectedMember] = useState<string[]>([]);
   const [dates, setDates] = useState<RangeValue>(null);
   const [selectedType, setSelectedType] = useState("project");
   const [dateValue, setDateValue] = useState<RangeValue>(null);
   const [selectedMileStone, setSelectedMileStone] = useState(0);
   const [selectedTask, setSelectedTask] = useState(0);
+  const [managerList, setManagerList] = useState([]);
+  const [memberList, setMemberList] = useState([]);
+  const [form] = Form.useForm();
   const onFormLayoutChange = ({ size }: { size: SizeType }) => {
     setComponentSize(size);
   };
-
   const onFinish = async ({
     name,
     RangePicker,
@@ -35,6 +38,8 @@ const AddScheduleModal = ({
     Dependencies,
     DurationDay,
     Group,
+    Manager,
+    Member,
   }) => {
     try {
       if (!Dependencies) {
@@ -56,9 +61,12 @@ const AddScheduleModal = ({
         DayofDuration,
         Group,
         projectID,
+        Manager,
+        Member,
       });
       if (res.data.status === true) {
         Swal.fire("Successfully added new schedule!", "", "success");
+        form.resetFields();
         fetchSchdule();
         onClose();
       } else {
@@ -69,31 +77,62 @@ const AddScheduleModal = ({
     }
   };
 
+  const fetchProjectPeople = async () => {
+    if (selectedProject) {
+      const response = await axios.get("dashboard/getProjectPeople", {
+        params: { ProjectID: selectedProject },
+      });
+      if (response.data.status === true) {
+        setMemberList(response.data.result);
+        const managerFilter = response.data.result.filter((users) => {
+          return users.Role === "Manager";
+        });
+        if (managerFilter) {
+          setManagerList(managerFilter);
+        }
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchProjectPeople();
+  }, []);
+
   const onFinishFailed = (errorInfo: never) => {
     console.log("Failed:", errorInfo);
   };
 
   const types = [{ Task: "task" }, { MileStone: "project" }];
   const handleTypeChanger = async (value: string) => {
-    await setSelectedType(value);
+    setSelectedType(value);
   };
 
   const handleMileStoneChanger = async (value: number) => {
-    await setSelectedMileStone(value);
+    setSelectedMileStone(value);
+    console.log(selectedMileStone);
   };
 
   const handleTaskChanger = async (value: number) => {
-    await setSelectedTask(value);
+    setSelectedTask(value);
   };
 
-  const disabledDate = (current: Dayjs) => {
-    if (!dates) {
-      return false;
-    }
-    const tooLate = dates[0] && current.diff(dates[0], "days") >= 7;
-    const tooEarly = dates[1] && dates[1].diff(current, "days") >= 7;
-    return !!tooEarly || !!tooLate;
-  };
+  const selectedMileStoneStart = projectList.filter((p) => {
+    return p.ID === selectedMileStone;
+  });
+  const selectedMileStoneEnd = projectList.filter((p) => {
+    return (p.ID = selectedMileStone);
+  });
+  const format = "DD.MM.YYYY HH:mm";
+  const disabledDates = [
+    {
+      start: selectedMileStoneStart.Start,
+      end: selectedMileStoneEnd,
+    },
+    {
+      start: selectedMileStoneStart.Start,
+      end: selectedMileStoneEnd,
+    },
+  ];
 
   const onOpenChange = (open: boolean) => {
     if (open) {
@@ -135,6 +174,7 @@ const AddScheduleModal = ({
             style={{ width: "100%", border: "solid rgb(226, 226, 226) 1.5px" }}
           >
             <Form
+              form={form}
               layout="vertical"
               initialValues={{ size: componentSize }}
               onValuesChange={onFormLayoutChange}
@@ -145,6 +185,7 @@ const AddScheduleModal = ({
               <Form.Item
                 label="Name"
                 name="name"
+                style={{ display: "inline-block", width: "50%" }}
                 rules={[
                   {
                     required: true,
@@ -157,6 +198,11 @@ const AddScheduleModal = ({
               <Form.Item
                 label="Task Type"
                 name="Type"
+                style={{
+                  display: "inline-block",
+                  width: "49%",
+                  marginLeft: "8px",
+                }}
                 rules={[
                   {
                     required: true,
@@ -190,7 +236,16 @@ const AddScheduleModal = ({
 
               {selectedType === "project" || (
                 <div>
-                  <Form.Item label="Select Milestone" name="Group">
+                  <Form.Item
+                    label="Select Milestone"
+                    name="Group"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select the MileStone!",
+                      },
+                    ]}
+                  >
                     <Select
                       size="large"
                       onChange={handleMileStoneChanger}
@@ -208,6 +263,12 @@ const AddScheduleModal = ({
                       <Form.Item
                         label="This task should be done after"
                         name="Dependencies"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Please select the prior task!",
+                          },
+                        ]}
                       >
                         <Select
                           size="large"
@@ -234,6 +295,54 @@ const AddScheduleModal = ({
                   >
                     <Input size="large" />
                   </Form.Item>
+                  <Form.Item
+                    name={"Manager"}
+                    label="Joined Manager list"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please Select the Managers!",
+                      },
+                    ]}
+                  >
+                    <Select
+                      mode="tags"
+                      size="large"
+                      placeholder="Please select managers"
+                      value={selectedMember}
+                      onChange={setSelectedMember}
+                      options={managerList.map((item) => ({
+                        value: item.Joined_User_Email,
+                        label: item.FirstName + " " + item.LastName,
+                      }))}
+                      style={{ width: "100%" }}
+                      tokenSeparators={[","]}
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    name={"Member"}
+                    label="Joined Member List"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please Select the members!",
+                      },
+                    ]}
+                  >
+                    <Select
+                      mode="tags"
+                      size="large"
+                      placeholder="Please select members"
+                      value={selectedMember}
+                      onChange={setSelectedMember}
+                      options={memberList.map((item) => ({
+                        value: item.Joined_User_Email,
+                        label: item.FirstName + " " + item.LastName,
+                      }))}
+                      style={{ width: "100%" }}
+                      tokenSeparators={[","]}
+                    />
+                  </Form.Item>
                 </div>
               )}
 
@@ -246,7 +355,13 @@ const AddScheduleModal = ({
               >
                 <RangePicker
                   value={dates || dateValue}
-                  disabledDate={disabledDate}
+                  disabledDate={(current) => {
+                    return disabledDates.some(
+                      (dd) =>
+                        dayjs(current).isBefore(dayjs(dd["end"], format)) &&
+                        dayjs(current).isAfter(dayjs(dd["start"], format))
+                    );
+                  }}
                   onOpenChange={onOpenChange}
                   onCalendarChange={(val) => {
                     setDates(val);

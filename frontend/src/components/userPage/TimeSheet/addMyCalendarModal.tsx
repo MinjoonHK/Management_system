@@ -14,6 +14,7 @@ import Swal from "sweetalert2";
 import { ColorList } from "../../../data/colorList";
 
 export default function AddMyCalendar({ open, onClose, onChange }) {
+  const [form] = Form.useForm();
   const onFinish = async ({ Name, Color }) => {
     try {
       let color = "#CCCCCC";
@@ -27,6 +28,7 @@ export default function AddMyCalendar({ open, onClose, onChange }) {
         Color: color,
       });
       if (res.status === 200) {
+        form.resetFields();
         onChange();
         onClose();
       }
@@ -69,7 +71,17 @@ export default function AddMyCalendar({ open, onClose, onChange }) {
         }
       >
         <div>
-          <Form onFinish={onFinish} onFinishFailed={onFinishFailed}>
+          <Form
+            form={form}
+            onFinish={onFinish}
+            onFinishFailed={onFinishFailed}
+            fields={[
+              {
+                name: ["Color"],
+                value: "#aee4ff",
+              },
+            ]}
+          >
             <Row gutter={16}>
               <Col span={22}>
                 <Form.Item name="Name">

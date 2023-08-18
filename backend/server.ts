@@ -64,10 +64,9 @@ app.post("/sendEmail", async (req, res) => {
       const userID = req.userId;
       const senderEmail = decoded.Email;
       const [projectInfo] = await pool.execute(
-        "SELECT ProjectName, End, Budget FROM project WHERE ID = ?",
+        "SELECT ProjectName, End, Description FROM project WHERE ID = ?",
         [selectedProject]
       );
-      console.log(projectInfo);
       const [projectJoinedUsers] = await pool.execute(
         "SELECT Joined_User_Email FROM projectpeople WHERE project_ID =?",
         [selectedProject]
@@ -81,11 +80,18 @@ app.post("/sendEmail", async (req, res) => {
         const response = await sendProjectInvitation({
           Deadline: dayjs(projectInfo[0].End).format("YYYY-MMM-DD"),
           TaskName: projectInfo[0].ProjectName,
+          Description: projectInfo[0].Description,
           From: senderEmail,
-          Description: projectInfo[0].Budget,
           to: InviteEmail,
+          URL: process.env.URL,
         });
         if (response === true) {
+          await pool.execute(
+            `
+          INSERT INTO projectpeople (Joined_User_Email,project_ID) VALUES(?,?)
+          `,
+            [InviteEmail, selectedProject]
+          );
           res.json({
             message: `successfully sent invitation to ${InviteEmail}`,
             status: true,

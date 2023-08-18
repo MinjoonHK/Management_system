@@ -1,13 +1,11 @@
-import { Button, Calendar, List, Table, Tabs } from "antd";
+import { Tabs } from "antd";
 import GanttChart from "./ganttChart/userGanttChart";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import dayjs from "dayjs";
-import { Link, Route, Routes, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { t } from "i18next";
 import { DocumentSubmissionPage } from "./docSubPage";
-import { DocumentPool } from "./prjDocPool";
-import { FileColumns } from "./docPoolFileColumns";
 import { ActivityLog } from "./prjActivityLog";
 import { ProjectTimeSheet } from "./prjTimesheet/prjTimeSheet";
 import { UserListPage } from "./prjUserListPage";
@@ -62,7 +60,7 @@ export const ProjectDetail = () => {
           {
             label: <div style={{ color: "black" }}>{t("WorkingSchedule")}</div>,
             key: "WorkingSchdule",
-            children: <ProjectTimeSheet />,
+            children: <ProjectTimeSheet selectedProject={selectedProject} />,
           },
           {
             label: <div style={{ color: "black" }}>{t("GanttChart")}</div>,

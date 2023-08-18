@@ -1,53 +1,59 @@
 import axios from "axios";
-import dayjs, { Dayjs } from "dayjs";
 import moment from "moment";
 import { useCallback, useEffect, useState } from "react";
 import { Calendar, momentLocalizer, Views, SlotInfo } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
+import { TeamSlotModal } from "./slotModal";
+import TeamEventModal from "./eventModal";
+
 const localizer = momentLocalizer(moment);
-export const ProjectTimeSheet = () => {
+export interface DataType {
+  id: number;
+  title: string;
+  start: string;
+  end: string;
+}
+
+export const ProjectTimeSheet = ({ selectedProject }) => {
   const [view, setView] = useState(Views.Month);
   const [calCurrDate, setCalCurrDate] = useState(new Date());
   const onView = useCallback((newView) => setView(newView), [setView]);
-  const [myCalendarList, setMyCalendarList] = useState([]);
+  const [openSlotModal, setOpenSlotModal] = useState(false);
+  const [openEventModal, setOpenEventModal] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
 
+  const [event, setEvent] = useState([]);
   const fetchData = async (date: Date) => {
-    const response = await axios.get("/dashboard/getProjectSchedule");
+    const response = await axios.get("/dashboard/getProjectCalendarSchedule", {
+      params: { ProjectID: selectedProject },
+    });
     if (response.data.status === true) {
+      try {
+        const newData: DataType[] = response.data.result.map((items: any) => ({
+          ...items,
+          id: items.ID,
+          title: items.Name,
+          start: new Date(items.Start),
+          end: new Date(items.End),
+          Description: items.Description,
+        }));
+        setEvent(newData);
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      console.log("failed to get project calednar list");
     }
   };
 
   useEffect(() => {
-    // fetchData(new Date());
+    fetchData(new Date());
   }, []);
 
   /** Returning the Current Date Value */
   const onNavigate = (newDate: Date) => {
     setCalCurrDate(newDate);
-    // fetchData(newDate);
-  };
-
-  // /** Action when the slot box has selected */
-  // const handleSelectSlot = (SlotInfo: SlotInfo) => {
-  //   setSelect(SlotInfo.start);
-  //   setOpen(true);
-  // };
-  // /** Action when Event cell has been clicked */
-  // const handleSelectEvent = (evt: Event) => {
-  //   console.log(evt);
-  //   setOpenDetail(true);
-  //   setEvtTitle(evt);
-  // };
-
-  // const handleSelecting = (range: { start: Date; end: Date }) => {
-  //   console.log("range", range);
-
-  //   return false;
-  // };
-
-  const handleAntdSelect = (newDate: Dayjs) => {
-    setCalCurrDate(newDate.toDate());
-    setView(Views.DAY);
+    fetchData(newDate);
   };
 
   function contrastingColor(color) {
@@ -74,16 +80,15 @@ export const ProjectTimeSheet = () => {
   }
 
   // /** Action when the slot box has selected */
-  // const handleSelectSlot = (SlotInfo: SlotInfo) => {
-  //   setSelect(SlotInfo.start);
-  //   setOpen(true);
-  // };
+  const handleSelectSlot = (SlotInfo: SlotInfo) => {
+    // setSelect(SlotInfo.start);
+    setOpenSlotModal(true);
+  };
   // /** Action when Event cell has been clicked */
-  // const handleSelectEvent = (evt: Event) => {
-  //   console.log(evt);
-  //   setOpenDetail(true);
-  //   setEvtTitle(evt);
-  // };
+  const handleSelectEvent = async (evt: Event) => {
+    setOpenEventModal(true);
+    setSelectedTask(evt);
+  };
 
   return (
     <div
@@ -96,22 +101,11 @@ export const ProjectTimeSheet = () => {
     >
       <Calendar
         localizer={localizer}
-        events={myCalendarList
-          .filter((c) => c.selected)
-          .map((d) => {
-            let schedules = [...d.schedules];
-            schedules = schedules.map((c) => {
-              c.color = d.Color;
-              return c;
-            });
-            console.log("schedules", schedules);
-            return schedules;
-          })
-          .flat()}
+        events={event}
         startAccessor="start"
         endAccessor="end"
-        // onSelectEvent={handleSelectEvent}
-        // onSelectSlot={handleSelectSlot}
+        onSelectEvent={handleSelectEvent}
+        onSelectSlot={handleSelectSlot}
         // onSelecting={handleSelecting}
         selectable
         step={15}
@@ -120,7 +114,7 @@ export const ProjectTimeSheet = () => {
         view={view}
         onNavigate={onNavigate}
         eventPropGetter={(event: any) => {
-          var backgroundColor = event.color;
+          var backgroundColor = event.Color;
           if (backgroundColor != null) {
             var style = {
               backgroundColor: backgroundColor,
@@ -135,6 +129,26 @@ export const ProjectTimeSheet = () => {
         }}
         date={calCurrDate}
       />
+      <TeamSlotModal
+        open={openSlotModal}
+        onClose={() => {
+          setOpenSlotModal(false);
+        }}
+        selectedProject={selectedProject}
+        onChange={() => {
+          fetchData(calCurrDate);
+        }}
+      />
+      {selectedTask && (
+        <TeamEventModal
+          open={openEventModal}
+          onClose={() => {
+            setOpenEventModal(false);
+          }}
+          selectedProject={selectedProject}
+          selectedTask={selectedTask}
+        />
+      )}
     </div>
   );
 };

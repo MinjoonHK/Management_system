@@ -29,11 +29,13 @@ export async function addScheduleManager(
   Dependencies: number | null,
   DayofDuration: number,
   Group: number,
-  projectID: number
+  projectID: number,
+  Manager: string[],
+  Member: string[]
 ) {
   try {
     const [rows, fields] = await pool.execute(
-      "INSERT INTO ganttchart (Name, StartDate, EndDate, Type, user_id, Dependencies, DurationOfDay, InGroup, Project_ID) VALUES (?, ?, ?, ?, ?, ?, ?,?, ?);",
+      "INSERT INTO ganttchart (Name, StartDate, EndDate, Type, user_id, Dependencies, DurationOfDay, InGroup, Project_ID, Color) VALUES (?, ?, ?, ?, ?, ?, ?,?, ?,'#e2ffaf');",
       [
         name,
         startDate,
@@ -46,6 +48,23 @@ export async function addScheduleManager(
         projectID,
       ]
     );
+    const [lastID] = await pool.execute(
+      `SELECT LAST_INSERT_ID() as ID FROM ganttchart`
+    );
+    for (let i = 0; i < Manager.length; i++) {
+      await pool.execute(
+        `
+      INSERT INTO projectcalendarpeople (ProjectID, CalendarTaskID, Joined_User_Email,Role) VALUES(?,?,?,"Manager")`,
+        [projectID, lastID[0].ID, Manager[i]]
+      );
+    }
+    for (let i = 0; i < Member.length; i++) {
+      await pool.execute(
+        `
+      INSERT INTO projectcalendarpeople (ProjectID, CalendarTaskID, Joined_User_Email) VALUES(?,?,?)`,
+        [projectID, lastID[0].ID, Member[i]]
+      );
+    }
     return rows.insertId;
   } catch (err) {
     console.error(new Date(), "addScheduleManager", err);
@@ -281,21 +300,21 @@ export async function addProjectList(
     let affectedRows = 0;
     for (const email of TeamMembers) {
       const [result2, fields] = await pool.execute(
-        "INSERT INTO projectpeople (Joined_User_Email,project_ID) VALUES(?,?)",
+        "INSERT INTO projectpeople (Joined_User_Email,project_ID,Status) VALUES(?,?,'Active')",
         [email, lastAddedProject[0].ID]
       );
       affectedRows += result2.affectedRows;
     }
     for (const email of TeamManagers) {
       const [result3, fields] = await pool.execute(
-        "INSERT INTO projectpeople (Joined_User_Email,project_ID,Role) VALUES(?,?,'Manager')",
+        "INSERT INTO projectpeople (Joined_User_Email,project_ID,Role,Status) VALUES(?,?,'Manager','Active')",
         [email, lastAddedProject[0].ID]
       );
       affectedRows += result3.affectedRows;
     }
     for (const email of Guests) {
       const [result4, fields] = await pool.execute(
-        "INSERT INTO projectpeople (Joined_User_Email,project_ID,Role) VALUES(?,?,'Guest')",
+        "INSERT INTO projectpeople (Joined_User_Email,project_ID,Role,Status) VALUES(?,?,'Guest','Active')",
         [email, lastAddedProject[0].ID]
       );
       affectedRows += result4.affectedRows;
@@ -642,7 +661,7 @@ export async function deleteGanttTask(
 export async function getProjectPeople(ProjectID: Number) {
   try {
     const [result] = await pool.execute(
-      `SELECT Joined_User_Email, projectpeople.Created_At, projectpeople.Role, FirstName, LastName, LastLoginTime  FROM projectpeople
+      `SELECT Joined_User_Email, projectpeople.Created_At, projectpeople.Role, FirstName, LastName, LastLoginTime,Status  FROM projectpeople
       LEFT JOIN user on projectpeople.Joined_User_Email = user.Email
         WHERE project_ID = ? AND projectpeople.Deleted_At IS NULL
       `,
@@ -700,5 +719,106 @@ export async function changeUserRole(
       error
     );
     return error;
+  }
+}
+
+export async function addProjectCalendar(
+  Name: string,
+  Start: string,
+  End: string,
+  ProjectID: number,
+  Description: string,
+  Member: string[]
+) {
+  try {
+    const [result] = await pool.execute(
+      "INSERT INTO projectcalendar ( Name, Start, End, ProjectID,Description) VALUES( ?,?,?,?,?);",
+      [Name, Start, End, ProjectID, Description]
+    );
+    const [lastID] = await pool.execute(
+      `SELECT LAST_INSERT_ID() as ID FROM projectcalendar`
+    );
+    for (let i = 0; i < Member.length; i++) {
+      await pool.execute(
+        `
+      INSERT INTO projectcalendarpeople (ProjectID, CalendarTaskID, Joined_User_Email) VALUES(?,?,?)`,
+        [ProjectID, lastID[0].ID, Member[i]]
+      );
+    }
+    return result;
+  } catch (err) {
+    console.error(new Date(), "addTimeSheetManager", err);
+    return err;
+  }
+}
+
+export async function getProjectCalendarList(ProjectID: Number) {
+  try {
+    const [result] = await pool.execute(
+      `SELECT ID, Name , Start, End, Description, Color FROM projectcalendar
+      WHERE ProjectID =? AND Deleted_At IS NULL
+      `,
+      [ProjectID]
+    );
+    const [result2] = await pool.execute(
+      `SELECT ID, Name, StartDate as Start,EndDate as End, Color FROM ganttchart
+      WHERE Project_ID = ? AND Type = 'task' AND Deleted_At IS NULL
+      `,
+      [ProjectID]
+    );
+    const finalResult = [...result, ...result2];
+    if (result && result2) {
+      return finalResult;
+    }
+  } catch (error) {
+    console.log("manager error at getting project Calendar List", error);
+    return error;
+  }
+}
+
+export async function getProjectCalendarTaskPeople(
+  ProjectID: Number,
+  CalendarTaskID: Number
+) {
+  try {
+    const [response] = await pool.execute(
+      `SELECT FirstName, LastName FROM projectcalendarpeople
+      LEFT JOIN user on projectcalendarpeople.Joined_User_Email = user.Email
+      WHERE Deleted_At IS NULL AND ProjectID =? AND CalendarTaskID =?
+      `,
+      [ProjectID, CalendarTaskID]
+    );
+    if (response) {
+      return response;
+    }
+  } catch (error) {
+    console.log("manager error at getting project Calendar List", error);
+    return error;
+  }
+}
+
+export async function updateGanttDate(ID: number, Start: string, End: string) {
+  try {
+    const [result] = await pool.execute(
+      "UPDATE ganttchart SET StartDate = ?, EndDate =? WHERE ID = ?",
+      [Start, End, ID]
+    );
+    if (result) {
+      return result;
+    }
+  } catch (error) {
+    return new Date(), "update Gantt Date Error", error;
+  }
+}
+
+export async function getSharedCalendarList(ID: number) {
+  try {
+    const resultQuery =
+      "SELECT Start,End, Title,CalendarID, Description FROM timesheet WHERE UserID = ?";
+    let [result] = await pool.query(resultQuery, [ID]);
+    return result;
+  } catch (err) {
+    console.error(new Date(), "getTimeSheet", err);
+    return null;
   }
 }

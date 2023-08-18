@@ -1,4 +1,4 @@
-import { Card, Timeline, Modal, Button } from "antd";
+import { Card, Timeline, Modal, Button, Divider } from "antd";
 
 export default function EventModal({ open, onClose, evtTitle }) {
   return (
@@ -24,14 +24,21 @@ export default function EventModal({ open, onClose, evtTitle }) {
               fontSize: "20px",
               fontWeight: "bold",
               display: "flex",
-              justifyContent: "space-between",
+              justifyContent: "center",
             }}
           >
             <span>{evtTitle.title && evtTitle.title}</span>
           </div>
         }
       >
-        <div style={{ fontSize: "15px" }}>
+        <Divider>Time Slot</Divider>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            fontSize: "15px",
+          }}
+        >
           {evtTitle.start &&
             new Date(evtTitle.start).toISOString().slice(0, 10)}
           ~{evtTitle.end && new Date(evtTitle.end).toISOString().slice(0, 10)}

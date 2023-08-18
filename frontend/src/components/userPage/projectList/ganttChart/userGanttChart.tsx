@@ -10,6 +10,7 @@ import AddScheduleModal from "./ganttChartModal";
 import "../../../../assets/project/ganttChartOverride.css";
 import { t } from "i18next";
 import GanttTaskDelete from "./ganttChartDeleteModal";
+import dayjs from "dayjs";
 
 function getStartEndDateForProject(tasks: Task[], projectId: string) {
   const projectTasks = tasks.filter((t) => t.project === projectId);
@@ -33,7 +34,7 @@ function getStartEndDateForProject(tasks: Task[], projectId: string) {
 }
 
 export function GanttChart({ selectedProject }) {
-  const [view, setView] = useState<ViewMode>(ViewMode.Week);
+  const [view, setView] = useState<ViewMode>(ViewMode.Day);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedTask, setSelectedTask] = useState(null);
   const [isChecked, setIsChecked] = useState(true);
@@ -109,25 +110,16 @@ export function GanttChart({ selectedProject }) {
   }, [tasks]);
 
   const handleTaskChange = (task: Task) => {
-    console.log("On date change Id:" + task.id);
-    let newTasks = tasks.map((t) => (t.id === task.id ? task : t));
-    if (task.project) {
-      const [start, end] = getStartEndDateForProject(newTasks, task.project);
-      const project =
-        newTasks[newTasks.findIndex((t) => t.id === task.project)];
-      if (
-        project.start.getTime() !== start.getTime() ||
-        project.end.getTime() !== end.getTime()
-      ) {
-        const changedProject = { ...project, start, end };
-        newTasks = newTasks.map((t) =>
-          t.id === task.project ? changedProject : t
-        );
-      }
-    }
-    setTasks(newTasks);
+    const TaskID = Number(task.id);
+    const NewStart = dayjs(task.start).format("YYYY-MM-DD");
+    const NewEnd = dayjs(task.end).format("YYYY-MM-DD");
+    axios.post("/dashboard/updateGanttDate", {
+      TaskID: TaskID,
+      NewStart: NewStart,
+      NewEnd: NewEnd,
+    });
+    getTask();
   };
-
   const handleProgressChange = async (task: Task) => {
     setTasks(tasks.map((t) => (t.id === task.id ? task : t)));
   };

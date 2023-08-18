@@ -67,7 +67,7 @@ export const UserListPage = ({ selectedProject }) => {
         const managerChecker = managerFilter.find(
           (m) => m.Joined_User_Email == userToken.Email
         );
-        if (managerChecker != undefined) {
+        if (managerChecker !== undefined) {
           setIsManager(true);
         }
       }
@@ -121,7 +121,11 @@ export const UserListPage = ({ selectedProject }) => {
                       />
                     }
                     title={item.FirstName + " " + item.LastName}
-                    description={item.Joined_User_Email}
+                    description={
+                      <div style={{ width: "73%", wordWrap: "break-word" }}>
+                        {item.Joined_User_Email}
+                      </div>
+                    }
                   />
 
                   <List.Item.Meta
@@ -140,6 +144,11 @@ export const UserListPage = ({ selectedProject }) => {
                     style={{ textAlign: "left" }}
                     title={"Role"}
                     description={item.Role}
+                  />
+                  <List.Item.Meta
+                    style={{ textAlign: "left" }}
+                    title={"Status"}
+                    description={item.Status}
                   />
                   {isManager === true && (
                     <ul style={{ padding: 0 }}>

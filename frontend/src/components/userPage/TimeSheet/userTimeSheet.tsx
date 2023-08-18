@@ -28,6 +28,7 @@ import { ColorList } from "../../../data/colorList";
 import axios from "axios";
 import { Color } from "antd/es/color-picker";
 import ShareModal from "./shareModal";
+import { SharedCalendarList } from "../../../data/sharedCalendar";
 const localizer = momentLocalizer(moment);
 
 interface Event {
@@ -51,6 +52,7 @@ export default function TimeSheet() {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [selectedCalendar, setSelectedCalendar] = useState();
   const [openShareModal, setOpenShareModal] = useState(false);
+  const [sharedCalendarList, setSharedCalendarList] = useState([]);
 
   const fetchData = async (date: Date) => {
     try {
@@ -64,8 +66,23 @@ export default function TimeSheet() {
       console.error(error);
     }
   };
+
+  const fetchSharedCalendar = async (date: Date) => {
+    try {
+      const calendarList = await SharedCalendarList(
+        dayjs(date).startOf("month"),
+        dayjs(date).endOf("month")
+      );
+      setSharedCalendarList(calendarList);
+      console.log(JSON.stringify(calendarList));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     fetchData(new Date());
+    // fetchSharedCalendar(new Date());
   }, []);
   function contrastingColor(color) {
     return luma(color) >= 165 ? "000" : "fff";
@@ -302,7 +319,7 @@ export default function TimeSheet() {
               }
               style={{ marginTop: "1.5%", flex: 1, minWidth: "100%" }}
             >
-              {myCalendarList && (
+              {/* {myCalendarList && (
                 <ul
                   style={{
                     padding: 0,
@@ -331,7 +348,7 @@ export default function TimeSheet() {
                         }}
                       >
                         {/* {e.Name} */}
-                      </Checkbox>
+              {/* </Checkbox>
                       <DeleteOutlined
                         className="delete-icon"
                         onClick={() => {
@@ -342,7 +359,7 @@ export default function TimeSheet() {
                     </li>
                   ))}
                 </ul>
-              )}
+              )} */}
             </Card>
           </div>
         </div>
@@ -364,7 +381,7 @@ export default function TimeSheet() {
                   c.color = d.Color;
                   return c;
                 });
-                console.log("schedules", schedules);
+
                 return schedules;
               })
               .flat()}

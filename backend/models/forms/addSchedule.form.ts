@@ -29,4 +29,14 @@ export class AddScheduleForm {
 
   @IsNumber()
   ProjectID?: number;
+
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString({ each: true })
+  Member: string[] = [];
+
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString({ each: true })
+  Manager: string[] = [];
 }

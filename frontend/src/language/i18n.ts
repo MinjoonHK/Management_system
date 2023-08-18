@@ -6,11 +6,9 @@ import translationCN from "./translationCN.json";
 import translationTCN from "./translationTCN.json";
 import React from "react";
 
-// the translations
-// (tip move them in a JSON file and import them,
-// or even better, manage them separated from your code: https://react.i18next.com/guides/multiple-translation-files)
 const resources = {
   en: {
+    //translation: FileName
     translation: translationEN,
   },
   ko: {
