@@ -42,6 +42,8 @@ import {
   getProjectCalendarTaskPeople,
   updateGanttDate,
   getSharedCalendarList,
+  getExistingGanttData,
+  fetchGanttData,
 } from "../managers/dashboard.manager";
 import { workorderform } from "../models/forms/workorder.form";
 import { updateWorkOrder } from "../models/forms/updateworkorder.form";
@@ -319,6 +321,7 @@ dashboardRouter.post(
       projectID,
       Member,
       Manager,
+      Description,
     } = req.body;
     console.log(req.body);
     const userID = req.userId;
@@ -354,7 +357,8 @@ dashboardRouter.post(
       Group,
       projectID,
       Manager,
-      Member
+      Member,
+      Description
     );
     if (result) {
       res.json({
@@ -955,6 +959,44 @@ dashboardRouter.get("/sharedCalendarList", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+dashboardRouter.get("/getExistingGanttData", async (req, res) => {
+  const ganttTaskID = Number(req.query.ganttTaskID);
+  try {
+    const result = await getExistingGanttData(ganttTaskID!);
+    res.json({
+      message: "Successfully loaded existing gantt data",
+      status: true,
+      result: result,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Failed to load exsiting gantt data",
+      status: false,
+      result: error,
+    });
+  }
+});
+
+dashboardRouter.get("/getGanttData", async (req, res) => {
+  const ganttTaskID = Number(req.query.ganttTaskID);
+  try {
+    const result = await fetchGanttData(ganttTaskID);
+    res.json({
+      message: "Successfully loaded existing gantt data",
+      status: true,
+      result: result,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Failed to load exsiting gantt data",
+      status: false,
+      result: error,
+    });
   }
 });
 

@@ -5,33 +5,34 @@ import { Gantt, Task, ViewMode } from "gantt-task-react";
 import { ViewSwitcher } from "./viewSwitcher";
 import axios from "axios";
 import { DeleteOutlined } from "@ant-design/icons";
-import { Button, Empty } from "antd";
+import { Button, Divider, Empty } from "antd";
 import AddScheduleModal from "./ganttChartModal";
 import "../../../../assets/project/ganttChartOverride.css";
 import { t } from "i18next";
 import GanttTaskDelete from "./ganttChartDeleteModal";
 import dayjs from "dayjs";
+import UpdateModal from "./ganttChartUpdateModal";
 
-function getStartEndDateForProject(tasks: Task[], projectId: string) {
-  const projectTasks = tasks.filter((t) => t.project === projectId);
-  if (projectTasks.length) {
-    let start = projectTasks[0].start;
-    let end = projectTasks[0].end;
+// function getStartEndDateForProject(tasks: Task[], projectId: string) {
+//   const projectTasks = tasks.filter((t) => t.project === projectId);
+//   if (projectTasks.length) {
+//     let start = projectTasks[0].start;
+//     let end = projectTasks[0].end;
 
-    for (let i = 0; i < projectTasks.length; i++) {
-      const task = projectTasks[i];
-      if (start.getTime() > task.start.getTime()) {
-        start = task.start;
-      }
-      if (end.getTime() < task.end.getTime()) {
-        end = task.end;
-      }
-    }
-    return [start, end];
-  } else {
-    return [new Date(), new Date()];
-  }
-}
+//     for (let i = 0; i < projectTasks.length; i++) {
+//       const task = projectTasks[i];
+//       if (start.getTime() > task.start.getTime()) {
+//         start = task.start;
+//       }
+//       if (end.getTime() < task.end.getTime()) {
+//         end = task.end;
+//       }
+//     }
+//     return [start, end];
+//   } else {
+//     return [new Date(), new Date()];
+//   }
+// }
 
 export function GanttChart({ selectedProject }) {
   const [view, setView] = useState<ViewMode>(ViewMode.Day);
@@ -41,13 +42,16 @@ export function GanttChart({ selectedProject }) {
   const [projectList, setProjectList] = useState([]);
   const [openAddScheduleModal, setOpenAddScheduleModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [openUpdateModal, setOpenUpdateModal] = useState(false);
 
   const getSchedule = async () => {
     try {
       const response = await axios.get("/dashboard/schedule", {
         params: { ProjectID: selectedProject },
       });
-
+      // const sortedResponse = response.data.sort(() => {
+      //   return;
+      // });
       setTasks(
         response.data.map((d) => {
           return {
@@ -57,20 +61,65 @@ export function GanttChart({ selectedProject }) {
               <div
                 style={{
                   width: "100%",
-                  display: "flex",
-                  justifyContent: "space-between",
                 }}
               >
-                <div style={{ width: "100%", marginLeft: "17%" }}>{d.Name}</div>
-                <Button
-                  size="small"
-                  onClick={async () => {
-                    setSelectedTask(d);
-                    setOpenDeleteModal(true);
-                  }}
-                >
-                  <DeleteOutlined />
-                </Button>
+                {d.Type === "project" ? (
+                  <div style={{ width: "100%" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <span style={{ marginLeft: "10%" }}>{d.Name}</span>
+                      <span>
+                        <Button
+                          size="small"
+                          onClick={async () => {
+                            setSelectedTask(d);
+                            setOpenDeleteModal(true);
+                          }}
+                        >
+                          <DeleteOutlined />
+                        </Button>
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ width: "100%" }}>
+                    <ul>
+                      <li>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <span
+                            style={{ cursor: "pointer" }}
+                            onClick={() => {
+                              setSelectedTask(d);
+                              setOpenUpdateModal(true);
+                            }}
+                          >
+                            {d.Name}
+                          </span>
+                          <span>
+                            <Button
+                              size="small"
+                              onClick={async () => {
+                                setSelectedTask(d);
+                                setOpenDeleteModal(true);
+                              }}
+                            >
+                              <DeleteOutlined />
+                            </Button>
+                          </span>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+                )}
               </div>
             ),
             progress: 45,
@@ -191,6 +240,21 @@ export function GanttChart({ selectedProject }) {
         }}
         selectedProject={selectedProject}
       />
+      {selectedTask && (
+        <UpdateModal
+          open={openUpdateModal}
+          onClose={() => {
+            setOpenUpdateModal(false);
+          }}
+          projectList={projectList}
+          fetchSchdule={() => {
+            getSchedule();
+            getTask();
+          }}
+          selectedProject={selectedProject}
+          selectedGantt={selectedTask}
+        />
+      )}
     </div>
   );
 }

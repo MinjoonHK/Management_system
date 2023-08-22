@@ -1,5 +1,6 @@
 import { Button, Card, DatePicker, Form, Input, Modal, Select } from "antd";
 import { SizeType } from "antd/es/config-provider/SizeContext";
+import TextArea from "antd/es/input/TextArea";
 import axios from "axios";
 import dayjs, { Dayjs } from "dayjs";
 import { useEffect, useState } from "react";
@@ -40,6 +41,7 @@ const AddScheduleModal = ({
     Group,
     Manager,
     Member,
+    Description,
   }) => {
     try {
       if (!Dependencies) {
@@ -63,6 +65,7 @@ const AddScheduleModal = ({
         projectID,
         Manager,
         Member,
+        Description,
       });
       if (res.data.status === true) {
         Swal.fire("Successfully added new schedule!", "", "success");
@@ -120,7 +123,7 @@ const AddScheduleModal = ({
     return p.ID === selectedMileStone;
   });
   const selectedMileStoneEnd = projectList.filter((p) => {
-    return (p.ID = selectedMileStone);
+    return p.ID === selectedMileStone;
   });
   const format = "DD.MM.YYYY HH:mm";
   const disabledDates = [
@@ -287,15 +290,6 @@ const AddScheduleModal = ({
                     )}
 
                   <Form.Item
-                    label="Input Duration "
-                    name="DurationDay"
-                    rules={[
-                      { required: true, message: "Please selecte the Date!" },
-                    ]}
-                  >
-                    <Input size="large" />
-                  </Form.Item>
-                  <Form.Item
                     name={"Manager"}
                     label="Joined Manager list"
                     rules={[
@@ -342,6 +336,18 @@ const AddScheduleModal = ({
                       style={{ width: "100%" }}
                       tokenSeparators={[","]}
                     />
+                  </Form.Item>
+                  <Form.Item
+                    name="Description"
+                    label="Description"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please describe your task!",
+                      },
+                    ]}
+                  >
+                    <TextArea size="large" />
                   </Form.Item>
                 </div>
               )}

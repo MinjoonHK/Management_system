@@ -1,3 +1,5 @@
+import { faCrown } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Card, Modal, Button, Divider } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -86,7 +88,22 @@ export default function TeamEventModal({
                   <div
                     style={{ display: "flex", justifyContent: "center" }}
                     key={index}
-                  >{`${member.FirstName}  ${member.LastName}`}</div>
+                  >
+                    {member.Role ? (
+                      <div>
+                        {member.Role === "Manager" ? (
+                          <div>
+                            {`${member.FirstName}  ${member.LastName}   `}
+                            <FontAwesomeIcon icon={faCrown} />
+                          </div>
+                        ) : (
+                          <div>{`${member.FirstName}  ${member.LastName}`}</div>
+                        )}
+                      </div>
+                    ) : (
+                      <div>{`${member.FirstName}  ${member.LastName}`}</div>
+                    )}
+                  </div>
                 );
               })}
             </div>

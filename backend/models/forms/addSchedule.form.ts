@@ -39,4 +39,9 @@ export class AddScheduleForm {
   @IsNotEmpty()
   @IsString({ each: true })
   Manager: string[] = [];
+
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  Description?: string;
 }

@@ -109,9 +109,9 @@ export const UserListPage = ({ selectedProject }) => {
             }}
             renderItem={(item, index) => (
               <div style={{ marginLeft: "3%" }}>
-                <List.Item>
+                <List.Item style={{ width: "100%" }}>
                   <List.Item.Meta
-                    style={{ textAlign: "left" }}
+                    style={{ textAlign: "left", width: "200px" }}
                     avatar={
                       <ReactAvatar
                         round
@@ -120,16 +120,20 @@ export const UserListPage = ({ selectedProject }) => {
                         maxInitials={2}
                       />
                     }
-                    title={item.FirstName + " " + item.LastName}
+                    title={
+                      item.FirstName && item.LastName
+                        ? item.FirstName + " " + item.LastName
+                        : `Invited User`
+                    }
                     description={
-                      <div style={{ width: "73%", wordWrap: "break-word" }}>
+                      <div style={{ wordWrap: "break-word" }}>
                         {item.Joined_User_Email}
                       </div>
                     }
                   />
 
                   <List.Item.Meta
-                    style={{ textAlign: "left" }}
+                    style={{ textAlign: "left", marginLeft: "5%" }}
                     title={"Last Login Time"}
                     description={dayjs(item.LastLoginTime).format(
                       "YYYY-MM-DD HH:MM"
@@ -137,16 +141,16 @@ export const UserListPage = ({ selectedProject }) => {
                   />
                   <List.Item.Meta
                     title={"Joined Date"}
-                    style={{ textAlign: "left" }}
+                    style={{ textAlign: "left", marginLeft: "5%" }}
                     description={dayjs(item.Created_At).format("YYYY-MM-DD")}
                   />
                   <List.Item.Meta
-                    style={{ textAlign: "left" }}
+                    style={{ textAlign: "left", marginLeft: "5%" }}
                     title={"Role"}
                     description={item.Role}
                   />
                   <List.Item.Meta
-                    style={{ textAlign: "left" }}
+                    style={{ textAlign: "left", marginLeft: "5%" }}
                     title={"Status"}
                     description={item.Status}
                   />

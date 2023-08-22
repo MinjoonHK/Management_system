@@ -31,41 +31,67 @@ export async function addScheduleManager(
   Group: number,
   projectID: number,
   Manager: string[],
-  Member: string[]
+  Member: string[],
+  Description: string
 ) {
   try {
-    const [rows, fields] = await pool.execute(
-      "INSERT INTO ganttchart (Name, StartDate, EndDate, Type, user_id, Dependencies, DurationOfDay, InGroup, Project_ID, Color) VALUES (?, ?, ?, ?, ?, ?, ?,?, ?,'#e2ffaf');",
-      [
-        name,
-        startDate,
-        endDate,
-        Type,
-        userID,
-        Dependencies,
-        DayofDuration,
-        Group,
-        projectID,
-      ]
-    );
-    const [lastID] = await pool.execute(
-      `SELECT LAST_INSERT_ID() as ID FROM ganttchart`
-    );
-    for (let i = 0; i < Manager.length; i++) {
-      await pool.execute(
-        `
-      INSERT INTO projectcalendarpeople (ProjectID, CalendarTaskID, Joined_User_Email,Role) VALUES(?,?,?,"Manager")`,
-        [projectID, lastID[0].ID, Manager[i]]
+    if (Type === "project") {
+      const [rows] = await pool.execute(
+        "INSERT INTO ganttchart (Name, StartDate, EndDate, Type, user_id, Dependencies, DurationOfDay, Project_ID, Color) VALUES ( ?, ?, ?, ?, ?, ?,?, ?,'#e2ffaf');",
+        [
+          name,
+          startDate,
+          endDate,
+          Type,
+          userID,
+          Dependencies,
+          DayofDuration,
+          projectID,
+        ]
       );
-    }
-    for (let i = 0; i < Member.length; i++) {
-      await pool.execute(
-        `
-      INSERT INTO projectcalendarpeople (ProjectID, CalendarTaskID, Joined_User_Email) VALUES(?,?,?)`,
-        [projectID, lastID[0].ID, Member[i]]
+      const [lastID] = await pool.execute(
+        `SELECT LAST_INSERT_ID() as ID FROM ganttchart`
       );
+      await pool.execute(`UPDATE ganttchart SET InGroup = ? WHERE ID = ?`, [
+        lastID[0].ID,
+        lastID[0].ID,
+      ]);
+      return rows.insertId;
+    } else if (Type === "task") {
+      const [rows] = await pool.execute(
+        "INSERT INTO ganttchart (Name, StartDate, EndDate, Type, user_id, Dependencies, DurationOfDay, InGroup, Project_ID, Color,Description) VALUES (?, ?, ?, ?, ?, ?, ?,?, ?,'#e2ffaf',?);",
+        [
+          name,
+          startDate,
+          endDate,
+          Type,
+          userID,
+          Dependencies,
+          DayofDuration,
+          Group,
+          projectID,
+          Description,
+        ]
+      );
+      const [lastID] = await pool.execute(
+        `SELECT LAST_INSERT_ID() as ID FROM ganttchart`
+      );
+      for (let i = 0; i < Manager.length; i++) {
+        await pool.execute(
+          `
+      INSERT INTO ganttchartpeople (ProjectID, GanttTaskID, Joined_User_Email,Role) VALUES(?,?,?,"Manager")`,
+          [projectID, lastID[0].ID, Manager[i]]
+        );
+      }
+      for (let i = 0; i < Member.length; i++) {
+        await pool.execute(
+          `
+      INSERT INTO ganttchartpeople (ProjectID, GanttTaskID, Joined_User_Email) VALUES(?,?,?)`,
+          [projectID, lastID[0].ID, Member[i]]
+        );
+      }
+      return rows.insertId;
     }
-    return rows.insertId;
   } catch (err) {
     console.error(new Date(), "addScheduleManager", err);
     return err;
@@ -186,16 +212,19 @@ export async function getProjectGanttTask(projectID: number) {
       "SELECT ID, StartDate, EndDate, Name, Type,Dependencies, DurationOfDay, InGroup FROM ganttChart WHERE Project_ID = ? AND Deleted_At IS NULL",
       [projectID]
     );
+
     //Filter out the milestone
     let firstLevels = result.filter(
       (d: { Type: string }) => d.Type === "project"
     );
-    //tasks that included in the milestone
-    firstLevels = firstLevels.map((p: { tasks: never[]; ID: number }) => {
-      p.tasks = result.filter((d: { InGroup: number }) => d.InGroup === p.ID);
-      return p;
-    });
 
+    //tasks that included in the milestone
+    firstLevels.forEach((p: { tasks: never[]; ID: number }) => {
+      p.tasks = result.filter(
+        (d: { InGroup: number; Type: string }) =>
+          d.Type !== "project" && d.InGroup === p.ID
+      );
+    });
     return firstLevels;
   } catch (err) {
     console.error(new Date(), "getSchedule", err);
@@ -761,7 +790,7 @@ export async function getProjectCalendarList(ProjectID: Number) {
       [ProjectID]
     );
     const [result2] = await pool.execute(
-      `SELECT ID, Name, StartDate as Start,EndDate as End, Color FROM ganttchart
+      `SELECT ID, Name, StartDate as Start,EndDate as End, Color,Description FROM ganttchart
       WHERE Project_ID = ? AND Type = 'task' AND Deleted_At IS NULL
       `,
       [ProjectID]
@@ -788,8 +817,16 @@ export async function getProjectCalendarTaskPeople(
       `,
       [ProjectID, CalendarTaskID]
     );
-    if (response) {
-      return response;
+    const [response2] = await pool.execute(
+      `SELECT FirstName, LastName,ganttchartpeople.Role FROM ganttchartpeople
+      LEFT JOIN user on ganttchartpeople.Joined_User_Email = user.Email
+      WHERE ganttchartpeople.Deleted_At IS NULL AND ProjectID =? AND GanttTaskID =?
+      `,
+      [ProjectID, CalendarTaskID]
+    );
+    const finalResult = [...response, ...response2];
+    if (response || response2) {
+      return finalResult;
     }
   } catch (error) {
     console.log("manager error at getting project Calendar List", error);
@@ -819,6 +856,34 @@ export async function getSharedCalendarList(ID: number) {
     return result;
   } catch (err) {
     console.error(new Date(), "getTimeSheet", err);
+    return null;
+  }
+}
+
+export async function getExistingGanttData(ganttTaskID: number) {
+  try {
+    const [getPeople] = await pool.execute(
+      `SELECT ganttchartpeople.ID,Joined_User_Email,FirstName,LastName, ganttchartpeople.Role FROM ganttchartpeople 
+      LEFT JOIN user on ganttchartpeople.Joined_User_Email = user.Email
+      WHERE GanttTaskID = ?`,
+      [ganttTaskID]
+    );
+    return getPeople;
+  } catch (error) {
+    console.error(new Date(), "get Existing Gantt data error", error);
+    return null;
+  }
+}
+
+export async function fetchGanttData(ganttTaskID: number) {
+  try {
+    const [getGanttData] = await pool.execute(
+      `SELECT Description FROM ganttchart WHERE ID =?`,
+      [ganttTaskID]
+    );
+    return getGanttData;
+  } catch (error) {
+    console.error(new Date(), "get Existing Gantt data error", error);
     return null;
   }
 }

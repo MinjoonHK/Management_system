@@ -3,6 +3,7 @@ import { User } from "../models/usermodel";
 import jwt from "jsonwebtoken";
 import { pool } from "../db/db";
 import config from "config";
+import e from "express";
 const TAG = "UserManager";
 class UserManager {
   async findUserByEmail(email: string): Promise<User | null> {
@@ -48,10 +49,11 @@ class UserManager {
     try {
       const hashedPassword = await this.hashPassword(Password);
       const [emailChecker] = await pool.execute(
-        "SELECT ID FROM user WHERE Email = ?",
+        "SELECT ID, Invited FROM user WHERE Email = ?",
         [Email]
       );
-      if (emailChecker.length > 0) {
+      console.log(emailChecker[0]);
+      if (emailChecker.length > 0 && emailChecker[0].Invited == 0) {
         return { message: "email already exists", emailChecker };
       }
       const [companyID] = await pool.execute(
