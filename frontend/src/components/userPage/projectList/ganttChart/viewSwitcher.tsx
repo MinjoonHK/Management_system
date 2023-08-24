@@ -29,7 +29,7 @@ export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
     onViewModeChange(e.key as ViewMode);
     setCurrentView(e.key as ViewMode);
   };
-
+  const userMode = localStorage.getItem("Mode");
   const menuProps1 = {
     items,
     onClick: handleMenuClick,
@@ -38,11 +38,14 @@ export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
   return (
     <div style={{ marginBottom: "2%" }}>
       <div>
-        <span style={{ marginRight: "1%" }}>
-          <Button type="primary" onClick={() => setOpen(true)}>
-            {t("AddSchedule")} +
-          </Button>
-        </span>
+        {userMode === "Guest" || (
+          <span style={{ marginRight: "1%" }}>
+            <Button type="primary" onClick={() => setOpen(true)}>
+              {t("AddSchedule")} +
+            </Button>
+          </span>
+        )}
+
         <Dropdown menu={menuProps1}>
           <Button>
             <Space>

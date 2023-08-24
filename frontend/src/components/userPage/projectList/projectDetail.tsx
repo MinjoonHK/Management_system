@@ -9,11 +9,59 @@ import { DocumentSubmissionPage } from "./docSubPage";
 import { ActivityLog } from "./prjActivityLog";
 import { ProjectTimeSheet } from "./prjTimesheet/prjTimeSheet";
 import { UserListPage } from "./prjUserListPage";
+import jwtDecode from "jwt-decode";
+
+interface successResponse {
+  data: {
+    status: true;
+    message: string;
+    result: [
+      {
+        Joined_User_Email: string;
+        Created_At: Date;
+        Role: string;
+        FirstName: string;
+        LastName: string;
+      }
+    ];
+  };
+}
+
+interface userToken {
+  Email: string;
+  ID: number;
+  Role: string;
+  exp: number;
+  iat: number;
+}
 
 export const ProjectDetail = () => {
   const [data, setData] = useState([]);
   const [currentProject, setCurrentProject] = useState("");
   const { selectedProject } = useParams();
+
+  const userToken: userToken = localStorage.getItem("jwt")
+    ? jwtDecode(localStorage.getItem("jwt"))
+    : null;
+
+  const fetchProjectPeople = async () => {
+    try {
+      const response: successResponse = await axios.get(
+        "dashboard/getProjectPeople",
+        {
+          params: { ProjectID: selectedProject },
+        }
+      );
+      if (response.data.status === true) {
+        const findUser = response.data.result.find(
+          (users) => users.Joined_User_Email == userToken.Email
+        );
+        localStorage.setItem("Mode", findUser.Role);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -47,48 +95,87 @@ export const ProjectDetail = () => {
       console.log(error);
     }
   };
-
   useEffect(() => {
     fetchData();
+    fetchProjectPeople();
     setCurrentProject(selectedProject);
   }, []);
+
+  const userMode = localStorage.getItem("Mode");
+
   return (
     <div>
-      <Tabs
-        type="card"
-        items={[
-          {
-            label: <div style={{ color: "black" }}>{t("WorkingSchedule")}</div>,
-            key: "WorkingSchdule",
-            children: <ProjectTimeSheet selectedProject={selectedProject} />,
-          },
-          {
-            label: <div style={{ color: "black" }}>{t("GanttChart")}</div>,
-            key: "GanttChart",
-            children: <GanttChart selectedProject={selectedProject} />,
-          },
-          {
-            label: (
-              <div style={{ color: "black" }}>{t("DocumentSubmission")}</div>
-            ),
-            key: "Document Submission",
-            children: (
-              <DocumentSubmissionPage selectedProject={selectedProject} />
-            ),
-          },
-          {
-            label: <div style={{ color: "black" }}>{t("ActivityLogs")}</div>,
-            key: "ActivityLogs",
-            children: <ActivityLog selectedProject={selectedProject} />,
-          },
+      {userMode === "Guest" ? (
+        <div>
+          <Tabs
+            type="card"
+            items={[
+              {
+                label: <div style={{ color: "black" }}>{t("GanttChart")}</div>,
+                key: "GanttChart",
+                children: <GanttChart selectedProject={selectedProject} />,
+              },
+              {
+                label: (
+                  <div style={{ color: "black" }}>
+                    {t("DocumentSubmission")}
+                  </div>
+                ),
+                key: "Document Submission",
+                children: (
+                  <DocumentSubmissionPage selectedProject={selectedProject} />
+                ),
+              },
+            ]}
+          />
+        </div>
+      ) : (
+        <div>
+          <Tabs
+            type="card"
+            items={[
+              {
+                label: (
+                  <div style={{ color: "black" }}>{t("WorkingSchedule")}</div>
+                ),
+                key: "WorkingSchdule",
+                children: (
+                  <ProjectTimeSheet selectedProject={selectedProject} />
+                ),
+              },
+              {
+                label: <div style={{ color: "black" }}>{t("GanttChart")}</div>,
+                key: "GanttChart",
+                children: <GanttChart selectedProject={selectedProject} />,
+              },
+              {
+                label: (
+                  <div style={{ color: "black" }}>
+                    {t("DocumentSubmission")}
+                  </div>
+                ),
+                key: "Document Submission",
+                children: (
+                  <DocumentSubmissionPage selectedProject={selectedProject} />
+                ),
+              },
+              {
+                label: (
+                  <div style={{ color: "black" }}>{t("ActivityLogs")}</div>
+                ),
+                key: "ActivityLogs",
+                children: <ActivityLog selectedProject={selectedProject} />,
+              },
 
-          {
-            label: <div style={{ color: "black" }}>{t("UserList")}</div>,
-            key: "UserList",
-            children: <UserListPage selectedProject={selectedProject} />,
-          },
-        ]}
-      />
+              {
+                label: <div style={{ color: "black" }}>{t("UserList")}</div>,
+                key: "UserList",
+                children: <UserListPage selectedProject={selectedProject} />,
+              },
+            ]}
+          />
+        </div>
+      )}
     </div>
   );
 };

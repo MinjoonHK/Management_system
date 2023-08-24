@@ -34,6 +34,8 @@ export const DocumentSubmissionPage = ({ selectedProject }) => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const userMode = localStorage.getItem("Mode");
   return (
     <div>
       {taskList.length > 0 ? (
@@ -42,18 +44,20 @@ export const DocumentSubmissionPage = ({ selectedProject }) => {
             <span>
               <h2>Submission Tasks</h2>
             </span>
-            <span>
-              <Button
-                onClick={() => {
-                  setOpenAddDocumentSubmissionModal(true);
-                }}
-                style={{ marginTop: "15%" }}
-                shape="round"
-              >
-                <PlusOutlined />
-                <span style={{ fontSize: "15px" }}>Add Task</span>
-              </Button>
-            </span>
+            {userMode === "Guest" || (
+              <span>
+                <Button
+                  onClick={() => {
+                    setOpenAddDocumentSubmissionModal(true);
+                  }}
+                  style={{ marginTop: "15%" }}
+                  shape="round"
+                >
+                  <PlusOutlined />
+                  <span style={{ fontSize: "15px" }}>Add Task</span>
+                </Button>
+              </span>
+            )}
           </div>
           {taskList.map((e) => (
             <Card
@@ -87,19 +91,21 @@ export const DocumentSubmissionPage = ({ selectedProject }) => {
                 <Descriptions.Item label="Due Date">
                   {e.DueDate.substring(0, 10)}
                 </Descriptions.Item>
-                <Descriptions.Item
-                  style={{ textAlign: "center" }}
-                  label="Drop Task"
-                >
-                  <Button>
-                    <DeleteOutlined
-                      onClick={() => {
-                        setSelectedTask(e);
-                        setOpenDelModal(true);
-                      }}
-                    />
-                  </Button>
-                </Descriptions.Item>
+                {userMode === "Manager" && (
+                  <Descriptions.Item
+                    style={{ textAlign: "center" }}
+                    label="Drop Task"
+                  >
+                    <Button>
+                      <DeleteOutlined
+                        onClick={() => {
+                          setSelectedTask(e);
+                          setOpenDelModal(true);
+                        }}
+                      />
+                    </Button>
+                  </Descriptions.Item>
+                )}
               </Descriptions>
             </Card>
           ))}
@@ -115,13 +121,19 @@ export const DocumentSubmissionPage = ({ selectedProject }) => {
             </div>
           }
         >
-          <Button
-            shape="round"
-            onClick={() => setOpenAddDocumentSubmissionModal(true)}
-          >
-            <PlusOutlined />
-            <span style={{ fontSize: "15px" }}>{t("DocSubAddButton")}</span>
-          </Button>
+          {userMode === "Guest" ? (
+            <div style={{ fontWeight: "bold", fontSize: "18px" }}>
+              You are invited as Guest and no tasks ongoing now
+            </div>
+          ) : (
+            <Button
+              shape="round"
+              onClick={() => setOpenAddDocumentSubmissionModal(true)}
+            >
+              <PlusOutlined />
+              <span style={{ fontSize: "15px" }}>{t("DocSubAddButton")}</span>
+            </Button>
+          )}
         </Card>
       )}
       <DocumentSubmissionModal

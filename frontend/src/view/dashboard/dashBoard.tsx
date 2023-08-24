@@ -21,7 +21,7 @@ import UserEnergyPerformance from "../../components/userPage/userEnergyPerforman
 import { AdminDashboard } from "./dashBoardComponents/adminDashBoardMenu";
 import { DashboardDropdown } from "./dashBoardComponents/dashBoardDropDown";
 import { UserDashboard } from "./dashBoardComponents/userDashBoardMenu";
-import WorkOrderDetail from "../../components/workOrderDetail";
+import { WorkOrderDetail } from "../../components/workOrderDetail";
 import TimeSheet from "../../components/userPage/TimeSheet/userTimeSheet";
 import { t } from "i18next";
 import UserProject from "../../components/userPage/projectList/userProjectList";
@@ -234,7 +234,10 @@ const Dashboard: React.FC = () => {
                 <Route path="/addcompany" element={<AddCompany />}></Route>
                 <Route path="/addDevice" element={<AddDevice />}></Route>
                 <Route path="/addworkorder" element={<AddWorkOrder />}></Route>
-
+                <Route
+                  path="/workorderdetail"
+                  element={<WorkOrderDetail />}
+                ></Route>
                 <Route path="/project" element={<UserProject />}></Route>
                 <Route
                   path="/userinformation"

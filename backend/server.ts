@@ -61,41 +61,75 @@ app.post("/sendEmail", async (req, res) => {
         config.get("jwt.passphase")!
       ) as DecodedToken;
       req.userId = decoded.ID;
-      const userID = req.userId;
       const senderEmail = decoded.Email;
+      const [existingUserList] = await pool.execute(
+        `SELECT ID FROM user WHERE Email = ?`,
+        [InviteEmail]
+      );
       const [projectInfo] = await pool.execute(
         "SELECT ProjectName, End, Description FROM project WHERE ID = ?",
         [selectedProject]
       );
       const [projectJoinedUsers] = await pool.execute(
-        "SELECT Joined_User_Email FROM projectpeople WHERE project_ID =?",
+        "SELECT Joined_User_Email,Deleted_At FROM projectpeople WHERE project_ID =?",
         [selectedProject]
       );
       const existChecker = projectJoinedUsers.find((u: any) => {
         return u.Joined_User_Email == InviteEmail;
       });
       if (existChecker != undefined) {
-        res.json({ message: "user is already in the project!", status: false });
-      } else if (existChecker === undefined) {
-        const response = await sendProjectInvitation({
-          Deadline: dayjs(projectInfo[0].End).format("YYYY-MMM-DD"),
-          TaskName: projectInfo[0].ProjectName,
-          Description: projectInfo[0].Description,
-          From: senderEmail,
-          to: InviteEmail,
-          URL: process.env.URL,
-        });
-        if (response === true) {
-          await pool.execute(
-            `
-          INSERT INTO projectpeople (Joined_User_Email,project_ID) VALUES(?,?)
-          `,
-            [InviteEmail, selectedProject]
+        //if user exist in project
+        if (existChecker.Deleted_At != null) {
+          const [reJoinProject] = await pool.execute(
+            `UPDATE projectpeople SET Deleted_At = NULL WHERE Joined_User_Email = ?`,
+            [existChecker.Joined_User_Email]
           );
+          if (reJoinProject) {
+            res.json({
+              message: "user has rejoined the project!",
+              status: true,
+            });
+          }
+        } else {
           res.json({
-            message: `successfully sent invitation to ${InviteEmail}`,
-            status: true,
+            message: "user is already in the project!",
+            status: false,
           });
+        }
+      } else if (existChecker === undefined) {
+        //if user does not exist in project
+        if (existingUserList.length > 0) {
+          console.log(existChecker);
+          //if user is in system but not in project
+          const response = await pool.execute(
+            `
+                  INSERT INTO projectpeople (Joined_User_Email,project_ID,Role,Status) VALUES(?,?,?,"Active")
+                  `,
+            [InviteEmail, selectedProject, Role]
+          );
+          console.log(response);
+          if (response) {
+            res.json({
+              message: "user successfully joined the project!",
+              status: true,
+            });
+          }
+        } else if ((existingUserList.length = 0)) {
+          //if user does not exist in system
+          const response = await sendProjectInvitation({
+            Deadline: dayjs(projectInfo[0].End).format("YYYY-MMM-DD"),
+            TaskName: projectInfo[0].ProjectName,
+            Description: projectInfo[0].Description,
+            From: senderEmail,
+            to: InviteEmail,
+            URL: process.env.URL,
+          });
+          if (response) {
+            res.json({
+              message: "user has susccessfully invited to the project!",
+              status: true,
+            });
+          }
         }
       }
     } catch (err) {

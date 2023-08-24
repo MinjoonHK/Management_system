@@ -44,6 +44,9 @@ import {
   getSharedCalendarList,
   getExistingGanttData,
   fetchGanttData,
+  UpdateGanttData,
+  getGanttPeople,
+  getOgGanttPeople,
 } from "../managers/dashboard.manager";
 import { workorderform } from "../models/forms/workorder.form";
 import { updateWorkOrder } from "../models/forms/updateworkorder.form";
@@ -64,6 +67,8 @@ import { addProjectCalendarSchedule } from "../models/forms/addProjectCalendar.f
 import { getProjectCalendar } from "../models/forms/getProjectCalendar";
 import { getProjectCalendarPeople } from "../models/forms/getProjectCalendarPeople";
 import { updateGanttDateForm } from "../models/forms/updateGanttDate.form";
+import { updateGanttData } from "../models/forms/updateGanttData.form";
+import { getGanttPeopleForm } from "../models/forms/getGanttPeople.form";
 
 const dashboardRouter = express.Router();
 
@@ -323,7 +328,7 @@ dashboardRouter.post(
       Manager,
       Description,
     } = req.body;
-    console.log(req.body);
+
     const userID = req.userId;
     let form = new AddScheduleForm();
     form.name = name;
@@ -754,11 +759,40 @@ dashboardRouter.get("/getProjectPeople", async (req, res) => {
   }
 });
 
+dashboardRouter.get("/getganttpeople", async (req, res) => {
+  const GanttID = Number(req.query.GanttID);
+  let form = new getGanttPeopleForm();
+  form.GanttID = GanttID;
+  let errors = await validate(form);
+  if (errors.length > 0) {
+    res.status(400).json({
+      success: false,
+      error: "validation_error",
+      message: errors,
+    });
+    return;
+  }
+  const response = await getGanttPeople(GanttID);
+  if (response) {
+    res.json({
+      status: true,
+      message: "successfully loaded projectUserList",
+      result: response,
+    });
+  } else {
+    res.json({
+      status: false,
+      message: "failed to load projectUserList",
+      result: response,
+    });
+  }
+});
+
 dashboardRouter.post("/changeUserRole", async (req, res) => {
-  const { User, Role, selectedProject } = req.body;
+  const { selectedUser, Role, selectedProject } = req.body;
   let form = new userRoleChangeForm();
-  form.User = User;
   form.Role = Role;
+  form.selectedUser = selectedUser;
   form.selectedProject = selectedProject;
   const errors = await validate(form);
   if (errors.length > 0) {
@@ -769,7 +803,7 @@ dashboardRouter.post("/changeUserRole", async (req, res) => {
     });
     return;
   }
-  const response = await changeUserRole(User, Role, selectedProject);
+  const response = await changeUserRole(selectedUser, Role, selectedProject);
   if (response) {
     res.json({
       message: "successfully changed user Role!",
@@ -981,6 +1015,25 @@ dashboardRouter.get("/getExistingGanttData", async (req, res) => {
   }
 });
 
+dashboardRouter.get("/getOgGanttPeople", async (req, res) => {
+  const GanttID = Number(req.query.GanttID);
+  try {
+    const result = await getOgGanttPeople(GanttID);
+    res.json({
+      message: "Successfully loaded original gantt people data",
+      status: true,
+      result: result,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Failed to loaded original gantt people data",
+      status: false,
+      result: error,
+    });
+  }
+});
+
 dashboardRouter.get("/getGanttData", async (req, res) => {
   const ganttTaskID = Number(req.query.ganttTaskID);
   try {
@@ -999,5 +1052,53 @@ dashboardRouter.get("/getGanttData", async (req, res) => {
     });
   }
 });
+
+dashboardRouter.post(
+  "/updateganttdata",
+  async (req: Request, res: Response) => {
+    const { name, Group, projectID, Manager, Member, Description, GanttID } =
+      req.body;
+    let form = new updateGanttData();
+    form.name = name;
+    form.Group = Group;
+    form.ProjectID = projectID;
+    form.GanttID = GanttID;
+    form.Manager = Manager;
+    form.Member = Member;
+    form.Description = Description;
+    const errors = await validate(form);
+    if (errors.length > 0) {
+      //if there is error
+      res.status(400).json({
+        success: false,
+        error: "validation_error",
+        message: errors,
+      });
+      return;
+    }
+    let result = await UpdateGanttData(
+      name,
+      Group,
+      projectID,
+      GanttID,
+      Member,
+      Manager,
+      Description
+    );
+    if (result) {
+      res.json({
+        message: "succesfully update Gantt Date",
+        status: true,
+        result: result,
+      });
+    } else {
+      res.json({
+        message: "failed to update Gantt Date",
+        status: false,
+        error: result,
+      });
+    }
+  }
+);
 
 export default dashboardRouter;

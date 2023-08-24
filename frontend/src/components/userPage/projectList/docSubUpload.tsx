@@ -100,6 +100,8 @@ export default function DocumentUploadModal({
       fetchTaskPeople();
     }
   }, [selectedTask]);
+
+  const userMode = localStorage.getItem("Mode");
   return (
     <Modal
       centered
@@ -115,16 +117,21 @@ export default function DocumentUploadModal({
         </Button>,
       ]}
     >
-      <Dragger {...props}>
-        <p className="ant-upload-drag-icon">
-          <InboxOutlined />
-        </p>
-        <p className="ant-upload-text">Drag and Drop file here</p>
-        <p>OR</p>
-        <p style={{ textDecoration: "underline" }} className="ant-upload-text">
-          Choose from computer
-        </p>
-      </Dragger>
+      {userMode === "Guest" || (
+        <Dragger {...props}>
+          <p className="ant-upload-drag-icon">
+            <InboxOutlined />
+          </p>
+          <p className="ant-upload-text">Drag and Drop file here</p>
+          <p>OR</p>
+          <p
+            style={{ textDecoration: "underline" }}
+            className="ant-upload-text"
+          >
+            Choose from computer
+          </p>
+        </Dragger>
+      )}
       <Divider orientation="left">Recent Uploads</Divider>
       <List
         size="small"
@@ -137,96 +144,159 @@ export default function DocumentUploadModal({
         }}
         dataSource={defaultList}
         renderItem={(item) => (
-          <List.Item
-            style={{ textAlign: "center" }}
-            key={`taskitem` + item.ID}
-            actions={[
-              <a
-                download={true}
-                href={`${
-                  axios.defaults.baseURL
-                }/download?token=${encodeURIComponent(
-                  localStorage.getItem("jwt")
-                )}&fileId=${item.ID}&projectID=${selectedProject} &taskID=${
-                  selectedTask.ID
-                }`}
-                className="btn"
-                style={{
-                  color: "rgb(45,68,134)",
-                  textDecoration: "underline",
-                }}
-              >
-                <Button>download</Button>
-              </a>,
-            ]}
-          >
-            <div>
-              <Descriptions layout="vertical" column={5}>
-                <Descriptions.Item label="Upload Date">
-                  {item.UploadDate.substring(0, 10)}
-                </Descriptions.Item>
-                <Descriptions.Item label="Uploader">
-                  {item.FirstName}
-                </Descriptions.Item>
-                <Descriptions.Item label="Status">
-                  {item.Status}
-                </Descriptions.Item>
-                {manager?.Email === userToken.Email && (
-                  <Descriptions.Item label="Approval">
-                    <div style={{ textAlign: "left", width: "100%" }}>
-                      <Button
-                        onClick={async () => {
-                          const res = await axios.post(
-                            "/dashboard/upload/updateApproved",
-                            {
-                              ItemID: item.ID,
-                            }
-                          );
-                          if (res.data.status === "success") {
-                            fetchUploadTask();
-                          }
+          <>
+            {userMode === "Guest" ? (
+              <div>
+                {item.Status === "Approved" && (
+                  <List.Item
+                    style={{ textAlign: "center" }}
+                    key={`taskitem` + item.ID}
+                    actions={[
+                      <a
+                        download={true}
+                        href={`${
+                          axios.defaults.baseURL
+                        }/download?token=${encodeURIComponent(
+                          localStorage.getItem("jwt")
+                        )}&fileId=${
+                          item.ID
+                        }&projectID=${selectedProject} &taskID=${
+                          selectedTask.ID
+                        }`}
+                        className="btn"
+                        style={{
+                          color: "rgb(45,68,134)",
+                          textAlign: "left",
                         }}
-                        size="small"
                       >
-                        <FontAwesomeIcon icon={faCheck} />
-                      </Button>{" "}
-                      |{" "}
-                      <Button
-                        onClick={async () => {
-                          const res = await axios.post(
-                            "/dashboard/upload/updateReject",
-                            {
-                              ItemID: item.ID,
-                            }
-                          );
-                          if (res.data.status === "success") {
-                            fetchUploadTask();
-                          }
-                        }}
-                        size="small"
-                      >
-                        <FontAwesomeIcon icon={faX} />
-                      </Button>
-                    </div>
-                  </Descriptions.Item>
-                )}
-                <Descriptions.Item label="File Name">
-                  <div
-                    style={{
-                      textOverflow: "ellipsis",
-                      textAlign: "left",
-                      overflowX: "hidden",
-                      whiteSpace: "nowrap",
-                      display: "inline-block",
-                      width: "100px",
-                    }}
+                        <Button>download</Button>
+                      </a>,
+                    ]}
                   >
-                    {item.Name}
-                  </div>
-                </Descriptions.Item>
-              </Descriptions>
-            </div>
-          </List.Item>
+                    <Descriptions layout="vertical" column={5}>
+                      <Descriptions.Item label="Upload Date">
+                        {item.UploadDate.substring(0, 10)}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Uploader">
+                        {item.FirstName}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Status">
+                        {item.Status}
+                      </Descriptions.Item>
+
+                      <Descriptions.Item label="File Name">
+                        <div
+                          style={{
+                            textOverflow: "ellipsis",
+                            textAlign: "left",
+                            overflowX: "hidden",
+                            whiteSpace: "nowrap",
+                            display: "inline-block",
+                            width: "100px",
+                          }}
+                        >
+                          {item.Name}
+                        </div>
+                      </Descriptions.Item>
+                    </Descriptions>
+                  </List.Item>
+                )}
+              </div>
+            ) : (
+              <>
+                <List.Item
+                  style={{ textAlign: "center" }}
+                  key={`taskitem` + item.ID}
+                  actions={[
+                    <a
+                      download={true}
+                      href={`${
+                        axios.defaults.baseURL
+                      }/download?token=${encodeURIComponent(
+                        localStorage.getItem("jwt")
+                      )}&fileId=${
+                        item.ID
+                      }&projectID=${selectedProject} &taskID=${
+                        selectedTask.ID
+                      }`}
+                      className="btn"
+                      style={{
+                        color: "rgb(45,68,134)",
+                        textDecoration: "underline",
+                      }}
+                    >
+                      <Button>download</Button>
+                    </a>,
+                  ]}
+                >
+                  <Descriptions layout="vertical" column={5}>
+                    <Descriptions.Item label="Upload Date">
+                      {item.UploadDate.substring(0, 10)}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Uploader">
+                      {item.FirstName}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Status">
+                      {item.Status}
+                    </Descriptions.Item>
+                    {userMode === "Manager" && (
+                      <Descriptions.Item label="Approval">
+                        <div style={{ textAlign: "left", width: "100%" }}>
+                          <Button
+                            onClick={async () => {
+                              const res = await axios.post(
+                                "/dashboard/upload/updateApproved",
+                                {
+                                  ItemID: item.ID,
+                                }
+                              );
+                              if (res.data.status === "success") {
+                                fetchUploadTask();
+                              }
+                            }}
+                            size="small"
+                          >
+                            <FontAwesomeIcon icon={faCheck} />
+                          </Button>{" "}
+                          |{" "}
+                          <Button
+                            onClick={async () => {
+                              const res = await axios.post(
+                                "/dashboard/upload/updateReject",
+                                {
+                                  ItemID: item.ID,
+                                }
+                              );
+                              if (res.data.status === "success") {
+                                fetchUploadTask();
+                              }
+                            }}
+                            size="small"
+                          >
+                            <FontAwesomeIcon icon={faX} />
+                          </Button>
+                        </div>
+                      </Descriptions.Item>
+                    )}
+                    <Descriptions.Item label="File Name">
+                      <div
+                        style={{
+                          textOverflow: "ellipsis",
+                          textAlign: "left",
+                          overflowX: "hidden",
+                          whiteSpace: "nowrap",
+                          display: "inline-block",
+                          width: "100px",
+                        }}
+                      >
+                        {item.Name}
+                      </div>
+                    </Descriptions.Item>
+                  </Descriptions>
+                </List.Item>
+              </>
+            )}
+          </>
         )}
       />
     </Modal>

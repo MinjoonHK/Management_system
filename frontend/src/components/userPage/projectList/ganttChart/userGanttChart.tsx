@@ -12,27 +12,7 @@ import { t } from "i18next";
 import GanttTaskDelete from "./ganttChartDeleteModal";
 import dayjs from "dayjs";
 import UpdateModal from "./ganttChartUpdateModal";
-
-// function getStartEndDateForProject(tasks: Task[], projectId: string) {
-//   const projectTasks = tasks.filter((t) => t.project === projectId);
-//   if (projectTasks.length) {
-//     let start = projectTasks[0].start;
-//     let end = projectTasks[0].end;
-
-//     for (let i = 0; i < projectTasks.length; i++) {
-//       const task = projectTasks[i];
-//       if (start.getTime() > task.start.getTime()) {
-//         start = task.start;
-//       }
-//       if (end.getTime() < task.end.getTime()) {
-//         end = task.end;
-//       }
-//     }
-//     return [start, end];
-//   } else {
-//     return [new Date(), new Date()];
-//   }
-// }
+import jwtDecode from "jwt-decode";
 
 export function GanttChart({ selectedProject }) {
   const [view, setView] = useState<ViewMode>(ViewMode.Day);
@@ -43,20 +23,32 @@ export function GanttChart({ selectedProject }) {
   const [openAddScheduleModal, setOpenAddScheduleModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [openUpdateModal, setOpenUpdateModal] = useState(false);
+  const [taskName, setTaskName] = useState("");
 
+  const userMode = localStorage.getItem("Mode");
+  const CustomTooltipContent: React.FC<{
+    task: Task;
+    fontSize: string;
+    fontFamily: string;
+  }> = ({ task, fontSize, fontFamily }) => {
+    return null;
+  };
   const getSchedule = async () => {
     try {
       const response = await axios.get("/dashboard/schedule", {
         params: { ProjectID: selectedProject },
       });
+      console.log(response);
       // const sortedResponse = response.data.sort(() => {
       //   return;
       // });
+      setTaskName(response.data);
       setTasks(
         response.data.map((d) => {
           return {
             end: new Date(d.EndDate),
             id: d.ID,
+            isDisabled: userMode === "Guest" ? true : false,
             name: (
               <div
                 style={{
@@ -72,17 +64,19 @@ export function GanttChart({ selectedProject }) {
                       }}
                     >
                       <span style={{ marginLeft: "10%" }}>{d.Name}</span>
-                      <span>
-                        <Button
-                          size="small"
-                          onClick={async () => {
-                            setSelectedTask(d);
-                            setOpenDeleteModal(true);
-                          }}
-                        >
-                          <DeleteOutlined />
-                        </Button>
-                      </span>
+                      {userMode === "Guest" || (
+                        <span>
+                          <Button
+                            size="small"
+                            onClick={async () => {
+                              setSelectedTask(d);
+                              setOpenDeleteModal(true);
+                            }}
+                          >
+                            <DeleteOutlined />
+                          </Button>
+                        </span>
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -104,17 +98,19 @@ export function GanttChart({ selectedProject }) {
                           >
                             {d.Name}
                           </span>
-                          <span>
-                            <Button
-                              size="small"
-                              onClick={async () => {
-                                setSelectedTask(d);
-                                setOpenDeleteModal(true);
-                              }}
-                            >
-                              <DeleteOutlined />
-                            </Button>
-                          </span>
+                          {userMode === "Guest" || (
+                            <span>
+                              <Button
+                                size="small"
+                                onClick={async () => {
+                                  setSelectedTask(d);
+                                  setOpenDeleteModal(true);
+                                }}
+                              >
+                                <DeleteOutlined />
+                              </Button>
+                            </span>
+                          )}
                         </div>
                       </li>
                     </ul>
@@ -187,8 +183,10 @@ export function GanttChart({ selectedProject }) {
               selectedProject={selectedProject}
             />
           </div>
+
           <div style={{ backgroundColor: "white" }}>
             <Gantt
+              TooltipContent={CustomTooltipContent}
               tasks={tasks}
               viewMode={view}
               onDateChange={handleTaskChange}

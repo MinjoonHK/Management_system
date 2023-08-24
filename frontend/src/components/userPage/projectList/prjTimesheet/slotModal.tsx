@@ -14,6 +14,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import TextArea from "antd/es/input/TextArea";
+import { t } from "i18next";
 
 const { RangePicker } = DatePicker;
 
@@ -110,13 +111,13 @@ export const TeamSlotModal = ({ open, onClose, selectedProject, onChange }) => {
         size={size}
         items={[
           {
-            label: <div style={{ color: "black" }}>Add Schedule</div>,
+            label: <div style={{ color: "black" }}>{t("AddNewSchedule")}</div>,
             key: "AddSchedule",
             children: (
               <Card
                 title={
                   <div style={{ fontWeight: "bold", fontSize: "25px" }}>
-                    Add New Schedule
+                    {t("AddNewSchedule")}
                   </div>
                 }
                 bordered={false}
@@ -141,7 +142,7 @@ export const TeamSlotModal = ({ open, onClose, selectedProject, onChange }) => {
                   ]}
                 >
                   <Form.Item
-                    label="Name"
+                    label={t("Name")}
                     name="Name"
                     rules={[
                       {
@@ -154,7 +155,7 @@ export const TeamSlotModal = ({ open, onClose, selectedProject, onChange }) => {
                   </Form.Item>
                   <Form.Item
                     name="RangePicker"
-                    label="Select Date"
+                    label={t("SelectDate")}
                     rules={[
                       {
                         required: true,
@@ -165,8 +166,8 @@ export const TeamSlotModal = ({ open, onClose, selectedProject, onChange }) => {
                     <RangePicker size="large" />
                   </Form.Item>
                   <Form.Item
-                    name={"Member"}
-                    label="Joined Member List"
+                    name="Member"
+                    label={t("JoinedMemberList")}
                     rules={[
                       {
                         required: true,
@@ -190,7 +191,7 @@ export const TeamSlotModal = ({ open, onClose, selectedProject, onChange }) => {
                   </Form.Item>
                   <Form.Item
                     name="SelectTime"
-                    label="Select Time"
+                    label={t("SelectTime")}
                     rules={[
                       {
                         required: true,
@@ -204,7 +205,7 @@ export const TeamSlotModal = ({ open, onClose, selectedProject, onChange }) => {
                       size={"large"}
                     />
                   </Form.Item>
-                  <Form.Item name="Description" label="Description">
+                  <Form.Item name="Description" label={t("Description")}>
                     <TextArea size="large" />
                   </Form.Item>
 
@@ -220,7 +221,7 @@ export const TeamSlotModal = ({ open, onClose, selectedProject, onChange }) => {
                         type="primary"
                         htmlType="submit"
                       >
-                        Add Schedule
+                        {t("AddSchedule")}
                       </Button>
                     </div>
                   </Form.Item>

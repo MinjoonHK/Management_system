@@ -4,7 +4,12 @@ import Swal from "sweetalert2";
 
 const { Option } = Select;
 
-export default function AddGuestModal({ open, onClose, selectedProject }) {
+export default function AddUserModal({
+  open,
+  onChange,
+  onClose,
+  selectedProject,
+}) {
   const token = localStorage.getItem("jwt");
   selectedProject = Number(selectedProject);
   const onFinish = async ({ InviteEmail, Role }) => {
@@ -26,6 +31,7 @@ export default function AddGuestModal({ open, onClose, selectedProject }) {
         title: `Successfully sent invitation to ${InviteEmail}`,
         timer: 2000,
       });
+      onChange();
       onClose();
     }
   };
@@ -92,13 +98,13 @@ export default function AddGuestModal({ open, onClose, selectedProject }) {
             rules={[{ required: true, message: "Please Select the Role!" }]}
           >
             <Select size="large" placeholder="Role">
-              <Option key="manager" value="manager">
+              <Option key="manager" value="Manager">
                 Manager
               </Option>
-              <Option key="member" value="member">
+              <Option key="member" value="Member">
                 Member
               </Option>
-              <Option key="guest" value="guest">
+              <Option key="guest" value="Guest">
                 Guest
               </Option>
             </Select>

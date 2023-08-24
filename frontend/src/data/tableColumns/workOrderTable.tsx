@@ -64,17 +64,17 @@ export const columns: ColumnsType<DataType> = [
       </>
     ),
   },
-  {
-    title: "See Detail",
-    key: "Status",
-    dataIndex: "Status",
-    align: "center",
-    render: (text) => (
-      <Link to="/workorderdetail">
-        <Button>
-          <FileSearchOutlined />
-        </Button>
-      </Link>
-    ),
-  },
+  // {
+  //   title: "See Detail",
+  //   key: "Status",
+  //   dataIndex: "Status",
+  //   align: "center",
+  //   render: (text) => (
+  //     <Link to="/workorderdetail">
+  //       <Button>
+  //         <FileSearchOutlined />
+  //       </Button>
+  //     </Link>
+  //   ),
+  // },
 ];

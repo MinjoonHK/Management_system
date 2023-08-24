@@ -1,7 +1,7 @@
 import { endOfDay, format, startOfDay } from "date-fns";
 import { pool } from "../db/db";
 import { User } from "../models/usermodel";
-
+import mysql from "mysql2";
 export async function addCompanyManager(
   company: string,
   owner: string,
@@ -37,7 +37,7 @@ export async function addScheduleManager(
   try {
     if (Type === "project") {
       const [rows] = await pool.execute(
-        "INSERT INTO ganttchart (Name, StartDate, EndDate, Type, user_id, Dependencies, DurationOfDay, Project_ID, Color) VALUES ( ?, ?, ?, ?, ?, ?,?, ?,'#e2ffaf');",
+        "INSERT INTO ganttchart (Name, StartDate, EndDate, Type, CreatorID, Dependencies, DurationOfDay, Project_ID, Color) VALUES ( ?, ?, ?, ?, ?, ?,?, ?,'#e2ffaf');",
         [
           name,
           startDate,
@@ -59,7 +59,7 @@ export async function addScheduleManager(
       return rows.insertId;
     } else if (Type === "task") {
       const [rows] = await pool.execute(
-        "INSERT INTO ganttchart (Name, StartDate, EndDate, Type, user_id, Dependencies, DurationOfDay, InGroup, Project_ID, Color,Description) VALUES (?, ?, ?, ?, ?, ?, ?,?, ?,'#e2ffaf',?);",
+        "INSERT INTO ganttchart (Name, StartDate, EndDate, Type, CreatorID, Dependencies, DurationOfDay, InGroup, Project_ID, Color,Description) VALUES (?, ?, ?, ?, ?, ?, ?,?, ?,'#e2ffaf',?);",
         [
           name,
           startDate,
@@ -83,6 +83,7 @@ export async function addScheduleManager(
           [projectID, lastID[0].ID, Manager[i]]
         );
       }
+
       for (let i = 0; i < Member.length; i++) {
         await pool.execute(
           `
@@ -277,7 +278,7 @@ export async function getProjectList(ID: Number) {
 
     const [result1] = await pool.query(
       `SELECT * FROM project WHERE
-      (User_ID = ? OR ID IN (SELECT project_ID FROM electrictracker.projectpeople WHERE Joined_User_Email = ? AND Deleted_At IS NULL))
+      (CreatorID = ? OR ID IN (SELECT project_ID FROM electrictracker.projectpeople WHERE Joined_User_Email = ? AND Deleted_At IS NULL))
       AND Deleted_At IS NULL`,
       [ID, userEmail[0].Email]
     );
@@ -319,14 +320,18 @@ export async function addProjectList(
       [ID]
     );
     const [result1] = await pool.execute(
-      "INSERT INTO project (ProjectName, Start,END, User_ID,Description, CreatorName) VALUES(?,?,?,?,?,?)",
+      "INSERT INTO project (ProjectName, Start,END, CreatorID,Description, CreatorName) VALUES(?,?,?,?,?,?)",
       [ProjectName, Start, End, ID, Budget, creatorName[0].FirstName]
     );
     const [lastAddedProject] = await pool.execute(
-      "SELECT ID FROM project WHERE User_ID =? ORDER BY ID DESC LIMIT 1",
+      "SELECT ID FROM project WHERE CreatorID =? ORDER BY ID DESC LIMIT 1",
       [ID]
     );
     let affectedRows = 0;
+    const [creatorEmail] = await pool.execute(
+      `SELECT Email FROM user WHERE ID =?`,
+      [ID]
+    );
     for (const email of TeamMembers) {
       const [result2, fields] = await pool.execute(
         "INSERT INTO projectpeople (Joined_User_Email,project_ID,Status) VALUES(?,?,'Active')",
@@ -335,11 +340,19 @@ export async function addProjectList(
       affectedRows += result2.affectedRows;
     }
     for (const email of TeamManagers) {
-      const [result3, fields] = await pool.execute(
-        "INSERT INTO projectpeople (Joined_User_Email,project_ID,Role,Status) VALUES(?,?,'Manager','Active')",
-        [email, lastAddedProject[0].ID]
-      );
-      affectedRows += result3.affectedRows;
+      if (email === creatorEmail[0].Email) {
+        const [result4, fields] = await pool.execute(
+          "INSERT INTO projectpeople (Joined_User_Email,project_ID,Role,Status) VALUES(?,?,'Creator','Active')",
+          [email, lastAddedProject[0].ID]
+        );
+        affectedRows += result4.affectedRows;
+      } else {
+        const [result3, fields] = await pool.execute(
+          "INSERT INTO projectpeople (Joined_User_Email,project_ID,Role,Status) VALUES(?,?,'Manager','Active')",
+          [email, lastAddedProject[0].ID]
+        );
+        affectedRows += result3.affectedRows;
+      }
     }
     for (const email of Guests) {
       const [result4, fields] = await pool.execute(
@@ -516,7 +529,7 @@ export async function deleteCalenderListManager(
 export async function deleteProjectList(ProjectID: Number, ID: Number) {
   try {
     const result = await pool.execute(
-      "UPDATE project SET Deleted_At = NOW() WHERE ID = ? AND User_ID = ?",
+      "UPDATE project SET Deleted_At = NOW() WHERE ID = ? AND CreatorID = ?",
       [ProjectID, ID]
     );
     return result;
@@ -689,12 +702,37 @@ export async function deleteGanttTask(
 
 export async function getProjectPeople(ProjectID: Number) {
   try {
+    const [updateStatus] = await pool.execute(
+      `UPDATE projectpeople LEFT JOIN user on projectpeople.Joined_User_Email = user.Email
+      SET projectpeople.Status = "Active"
+      WHERE projectpeople.Status = "Pending" AND user.LastLoginTime IS NOT NULL AND project_ID = ?
+      `,
+      [ProjectID]
+    );
     const [result] = await pool.execute(
       `SELECT Joined_User_Email, projectpeople.Created_At, projectpeople.Role, FirstName, LastName, LastLoginTime,Status  FROM projectpeople
       LEFT JOIN user on projectpeople.Joined_User_Email = user.Email
         WHERE project_ID = ? AND projectpeople.Deleted_At IS NULL
       `,
       [ProjectID]
+    );
+    if (result) {
+      return result;
+    }
+  } catch (error) {
+    console.log("manager error at getting project people", error);
+    return error;
+  }
+}
+
+export async function getGanttPeople(GanttID: Number) {
+  try {
+    const [result] = await pool.execute(
+      `SELECT Joined_User_Email, ganttchartpeople.Role, FirstName, LastName FROM ganttchartpeople
+      LEFT JOIN user on ganttchartpeople.Joined_User_Email = user.Email
+        WHERE GanttTaskID = ? AND ganttchartpeople.Deleted_At IS NULL
+      `,
+      [GanttID]
     );
     if (result) {
       return result;
@@ -727,7 +765,7 @@ export async function deletePrjUser(ProjectID: Number, UserEmail: string) {
 }
 
 export async function changeUserRole(
-  User: string,
+  selectedUser: string,
   Role: string,
   ProjectID: Number
 ) {
@@ -737,7 +775,7 @@ export async function changeUserRole(
     UPDATE projectpeople SET Role = ?
     WHERE project_ID = ? AND Joined_User_Email = ?
     `,
-      [Role, ProjectID, User]
+      [Role, ProjectID, selectedUser]
     );
     if (result) {
       return result;
@@ -878,10 +916,132 @@ export async function getExistingGanttData(ganttTaskID: number) {
 export async function fetchGanttData(ganttTaskID: number) {
   try {
     const [getGanttData] = await pool.execute(
-      `SELECT Description FROM ganttchart WHERE ID =?`,
+      `SELECT Description, InGroup FROM ganttchart WHERE ID =?`,
       [ganttTaskID]
     );
     return getGanttData;
+  } catch (error) {
+    console.error(new Date(), "get Existing Gantt data error", error);
+    return null;
+  }
+}
+
+export async function getOgGanttPeople(ganttTaskID: number) {
+  try {
+    const [getGanttData] = await pool.execute(
+      `SELECT Joined_User_Email, ganttchartpeople.Role, FirstName, LastName FROM ganttchartpeople 
+      LEFT JOIN user on ganttchartpeople.Joined_User_Email = user.Email
+      WHERE ganttTaskID =?`,
+      [ganttTaskID]
+    );
+    return getGanttData;
+  } catch (error) {
+    console.error(new Date(), "get original gantt people data error", error);
+    return null;
+  }
+}
+
+export async function UpdateGanttData(
+  name: string,
+  Group: number,
+  project_ID: number,
+  GanttID: Number,
+  Member: string[],
+  Manager: string[],
+  Description: string
+) {
+  try {
+    const [updateGanttData] = await pool.execute(
+      `
+    UPDATE ganttchart SET Name =?, InGroup =?,  Description =?
+     WHERE ID = ?`,
+      [name, Group, Description, GanttID]
+    );
+    const [SELECTEDMANAGER, fields] = await pool.execute(
+      `
+    SELECT Joined_User_Email FROM ganttchartpeople 
+     WHERE GanttTaskID = ? AND Role = "Manager"`,
+      [GanttID]
+    );
+    const [SELECTEDMEMBER, _] = await pool.execute(
+      `
+    SELECT Joined_User_Email FROM ganttchartpeople 
+     WHERE GanttTaskID = ? AND Role = "Member"`,
+      [GanttID]
+    );
+
+    const [deleteManager] = await pool.execute(
+      `
+    UPDATE ganttchartpeople SET Deleted_At =NOW()
+     WHERE GanttTaskID = ? AND Role = "Manager"`,
+      [GanttID]
+    );
+
+    const [deleteMember] = await pool.execute(
+      `
+    UPDATE ganttchartpeople SET Deleted_At =NOW()
+     WHERE GanttTaskID = ? AND Role = "Member"`,
+      [GanttID]
+    );
+
+    const updatesql = mysql.format(
+      `UPDATE ganttchartpeople SET Deleted_At =NULL
+     WHERE GanttTaskID = ? AND \`Role\` = "Member" AND Joined_User_Email IN (?)`,
+      [GanttID, Member]
+    );
+
+    const updatesql2 = mysql.format(
+      `UPDATE ganttchartpeople SET Deleted_At =NULL
+     WHERE GanttTaskID = ? AND \`Role\` = "Manager" AND Joined_User_Email IN (?)`,
+      [GanttID, Manager]
+    );
+    const [updateMemebers] = await pool.execute(updatesql);
+    const [updateManagers] = await pool.execute(updatesql2);
+
+    const newMember = Member.filter(
+      (d) =>
+        !SELECTEDMEMBER.map(
+          (p: { Joined_User_Email: String }) => p.Joined_User_Email
+        ).some((c: string) => c == d)
+    ).map((d) => {
+      return [d, "Member", GanttID, project_ID];
+    });
+    if (newMember.length) {
+      const statement = mysql.format(
+        `
+    INSERT INTO ganttchartpeople (
+      Joined_User_Email,
+      Role,
+      GanttTaskID,
+      ProjectID )
+      VALUES ?`,
+        [newMember]
+      );
+      const [upsert] = await pool.execute(statement);
+    }
+
+    const newManager = Manager.filter(
+      (d) =>
+        !SELECTEDMANAGER.map(
+          (p: { Joined_User_Email: String }) => p.Joined_User_Email
+        ).some((c: string) => c == d)
+    ).map((d) => {
+      return [d, "Manager", GanttID, project_ID];
+    });
+    if (newManager.length) {
+      const statement = mysql.format(
+        `
+    INSERT INTO ganttchartpeople (
+      Joined_User_Email,
+      Role,
+      GanttTaskID,
+      ProjectID )
+      VALUES ?`,
+        [newManager]
+      );
+      const [upsert] = await pool.execute(statement);
+    }
+    return true;
   } catch (error) {
     console.error(new Date(), "get Existing Gantt data error", error);
     return null;

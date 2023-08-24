@@ -3,6 +3,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import jwtDecode from "jwt-decode";
 import { decodedToken } from "../../../data/Interfaces/decodedToken";
+import { t } from "i18next";
 
 export default function AddModal({ open, onClose, onChange }) {
   const getJwt = localStorage.getItem("decoded_jwt");
@@ -55,7 +56,7 @@ export default function AddModal({ open, onClose, onChange }) {
       <Card
         title={
           <div style={{ fontSize: "20px ", fontWeight: "bold" }}>
-            Create Other Project
+            {t("CreateOtherProject")}
           </div>
         }
       >
@@ -81,7 +82,7 @@ export default function AddModal({ open, onClose, onChange }) {
           >
             <Form.Item
               name={"Name"}
-              label={"Project Name"}
+              label={t("ProjectName")}
               style={{ fontSize: "15px" }}
               rules={[
                 {
@@ -94,7 +95,7 @@ export default function AddModal({ open, onClose, onChange }) {
             </Form.Item>
             <Form.Item
               name={"TeamManagers"}
-              label={"Invite person as manager"}
+              label={t("InvitePersonAsManager")}
               style={{ fontSize: "15px" }}
               rules={[
                 {
@@ -113,8 +114,14 @@ export default function AddModal({ open, onClose, onChange }) {
             </Form.Item>
             <Form.Item
               name={"TeamMembers"}
-              label={"Invite person as members"}
+              label={t("InvitePersonAsMember")}
               style={{ fontSize: "15px" }}
+              rules={[
+                {
+                  required: true,
+                  message: "Please invite members!",
+                },
+              ]}
             >
               <Select
                 mode="tags"
@@ -126,7 +133,7 @@ export default function AddModal({ open, onClose, onChange }) {
             </Form.Item>
             <Form.Item
               name={"Guests"}
-              label={"Invite person as guests"}
+              label={t("InvitePersonAsGuest")}
               style={{ fontSize: "15px" }}
             >
               <Select
@@ -139,7 +146,7 @@ export default function AddModal({ open, onClose, onChange }) {
             </Form.Item>
             <Form.Item
               name={"DateRange"}
-              label={"Project Start Date"}
+              label={t("ProjectStartDate")}
               style={{ fontSize: "15px" }}
               rules={[
                 {
@@ -152,7 +159,7 @@ export default function AddModal({ open, onClose, onChange }) {
             </Form.Item>
             <Form.Item
               name={"Budget"}
-              label={"Description"}
+              label={t("Description")}
               style={{ fontSize: "15px" }}
               rules={[
                 {
@@ -174,7 +181,7 @@ export default function AddModal({ open, onClose, onChange }) {
                   width: "50%",
                 }}
               >
-                Create Project
+                {t("CreateProject")}
               </Button>
             </Form.Item>
           </Form>

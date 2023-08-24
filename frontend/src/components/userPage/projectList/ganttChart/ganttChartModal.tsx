@@ -86,7 +86,15 @@ const AddScheduleModal = ({
         params: { ProjectID: selectedProject },
       });
       if (response.data.status === true) {
-        setMemberList(response.data.result);
+        const memberFilter = response.data.result.filter((users) => {
+          return users.Role === "Member";
+        });
+        const removeGuest = memberFilter.filter((users) => {
+          return users.FirstName != null;
+        });
+        if (removeGuest) {
+          setMemberList(removeGuest);
+        }
         const managerFilter = response.data.result.filter((users) => {
           return users.Role === "Manager";
         });

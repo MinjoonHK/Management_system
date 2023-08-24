@@ -1,6 +1,6 @@
 import { Card, Modal, Button } from "antd";
 import axios from "axios";
-import Swal from "sweetalert2";
+import { t } from "i18next";
 
 export default function DeleteModal({
   open,
@@ -32,7 +32,7 @@ export default function DeleteModal({
       bodyStyle={{ height: "100%" }}
       footer={[
         <Button type="default" key="Cancel" onClick={onClose}>
-          Cancel
+          {t("Cancel")}
         </Button>,
         <Button
           type="primary"
@@ -41,7 +41,7 @@ export default function DeleteModal({
           onClick={handleDelete}
           style={{ color: "white" }}
         >
-          Delete
+          {t("Delete")}
         </Button>,
       ]}
     >
@@ -53,7 +53,7 @@ export default function DeleteModal({
               fontSize: "20px",
             }}
           >
-            Confirmation
+            {t("Confirmation")}
           </div>
         }
       >

@@ -17,7 +17,7 @@ const UpdateModal = ({
   const [componentSize, setComponentSize] = useState<SizeType | "default">(
     "default"
   );
-  console.log(selectedGantt);
+  console.log(projectList);
   const [selectedMember, setSelectedMember] = useState<string[]>([]);
   const [selectedMileStone, setSelectedMileStone] = useState(0);
   const [selectedTask, setSelectedTask] = useState(0);
@@ -25,47 +25,44 @@ const UpdateModal = ({
   const [existingData, setExistingData] = useState([]);
   const [managerList, setManagerList] = useState([]);
   const [memberList, setMemberList] = useState([]);
+  const [ogList, setOgList] = useState(null);
   const [form] = Form.useForm();
   const onFormLayoutChange = ({ size }: { size: SizeType }) => {
     setComponentSize(size);
   };
-  const onFinish = async ({
-    name,
-    RangePicker,
-    Type,
-    Dependencies,
-    DurationDay,
-    Group,
-    Manager,
-    Member,
-    Description,
-  }) => {
+  const onFinish = async ({ name, Group, Manager, Member, Description }) => {
     try {
-      if (!Dependencies) {
-        Dependencies = null;
-      }
-      if (!Group) {
-        Group = null;
-      }
+      const member = Member.map((d) => {
+        if (d.value) {
+          return d.value;
+        } else {
+          return d;
+        }
+      });
+      const manager = Manager.map((d) => {
+        if (d.value) {
+          return d.value;
+        } else {
+          return d;
+        }
+      });
       const projectID = Number(selectedProject);
-      const DayofDuration = Number(DurationDay);
-      const startDate = dayjs(RangePicker[0]).format("YYYY-MM-DD");
-      const endDate = dayjs(RangePicker[1]).format("YYYY-MM-DD");
-      const res = await axios.post("/dashboard/ganttchart/addschedule", {
+      const GanttID = Number(selectedGantt.ID);
+      const res = await axios.post("/dashboard/updateganttdata", {
         name,
-        startDate,
-        endDate,
-        Type,
-        Dependencies,
-        DayofDuration,
         Group,
         projectID,
-        Manager,
-        Member,
+        Manager: manager,
+        Member: member,
         Description,
+        GanttID,
       });
       if (res.data.status === true) {
-        Swal.fire("Successfully added new schedule!", "", "success");
+        Swal.fire({
+          html: "<h2>You have successfully updated information!</h2>",
+          timer: 2000,
+          icon: "success",
+        });
         form.resetFields();
         fetchSchdule();
         onClose();
@@ -92,7 +89,6 @@ const UpdateModal = ({
     const response = await axios.get("/dashboard/getGanttData", {
       params: { ganttTaskID: selectedGantt.ID },
     });
-    console.log(response.data.result);
     if (response.data.status === true) {
       setExistingGanttData(response.data.result);
     } else {
@@ -100,10 +96,41 @@ const UpdateModal = ({
     }
   };
 
+  const fetchganttPeople = async () => {
+    if (selectedGantt) {
+      const response = await axios.get("dashboard/getganttpeople", {
+        params: { GanttID: selectedGantt.ID },
+      });
+      if (response.data.status === true) {
+        console.log(response.data.result);
+        setOgList(response.data.result);
+      }
+    }
+  };
+
+  const fetchOgGanttPeople = async () => {
+    const response = await axios.get("dashboard/getOgGanttPeople", {
+      params: { GanttID: selectedGantt.ID },
+    });
+    if (response.data.status === true) {
+      const ogManagers = response.data.result.filter((users: any) => {
+        return users.Role === "Manager";
+      });
+      const ogMembers = response.data.result.filter((users: any) => {
+        return users.Role === "Member";
+      });
+      setManagerList(ogManagers);
+      setMemberList(ogMembers);
+    }
+  };
+
   useEffect(() => {
     fetchExistingGanttData();
     fetchGanttData();
+    fetchganttPeople();
+    fetchOgGanttPeople();
   }, [selectedGantt]);
+
   useEffect(() => {
     if (open === true) {
       fetchExistingGanttData();
@@ -112,36 +139,38 @@ const UpdateModal = ({
   }, [open]);
 
   useEffect(() => {
-    const Members = existingData.filter((people) => {
-      return people.Role === "Member";
-    });
-    form.setFieldValue(
-      "Member",
-      Members.map((items, index) => {
-        let option = {
-          label: `${items.FirstName} ${items.LastName}`,
-          key: items.ID,
-        };
-        return option;
-      })
-    );
-    const Managers = existingData.filter((people) => {
-      return people.Role === "Manager";
-    });
+    if (ogList) {
+      const Members = ogList.filter((people) => {
+        return people.Role === "Member";
+      });
+      form.setFieldValue(
+        "Member",
+        Members.map((items) => {
+          let option = {
+            label: `${items.FirstName} ${items.LastName}`,
+            value: items.Joined_User_Email,
+            key: items.ID,
+          };
+          return option;
+        })
+      );
+      const Managers = ogList.filter((people) => {
+        return people.Role === "Manager";
+      });
 
-    form.setFieldValue(
-      "Manager",
-      Managers.map((items, index) => {
-        let option = {
-          label: `${items.FirstName} ${items.LastName}`,
-          key: items.ID,
-        };
-        return option;
-      })
-    );
-    console.log(existingGanttData);
-    if (existingGanttData) {
-      form.setFieldValue("Description", existingGanttData[0].Description);
+      form.setFieldValue(
+        "Manager",
+        Managers.map((items) => {
+          let option = {
+            label: `${items.FirstName} ${items.LastName}`,
+            value: items.Joined_User_Email,
+            key: items.ID,
+          };
+          return option;
+        })
+      );
+    } else {
+      console.log("ogList does not exist!", ogList);
     }
   }, [existingData, existingGanttData]);
 
@@ -154,27 +183,23 @@ const UpdateModal = ({
     console.log(selectedMileStone);
   };
 
-  const handleTaskChanger = async (value: number) => {
-    setSelectedTask(value);
-  };
-
-  const selectedMileStoneStart = projectList.filter((p) => {
-    return p.ID === selectedMileStone;
-  });
-  const selectedMileStoneEnd = projectList.filter((p) => {
-    return p.ID === selectedMileStone;
-  });
-  const format = "DD.MM.YYYY HH:mm";
-  const disabledDates = [
-    {
-      start: selectedMileStoneStart.Start,
-      end: selectedMileStoneEnd,
-    },
-    {
-      start: selectedMileStoneStart.Start,
-      end: selectedMileStoneEnd,
-    },
-  ];
+  //   const selectedMileStoneStart = projectList.filter((p) => {
+  //     return p.ID === selectedMileStone;
+  //   });
+  //   const selectedMileStoneEnd = projectList.filter((p) => {
+  //     return p.ID === selectedMileStone;
+  //   });
+  //   const format = "DD.MM.YYYY HH:mm";
+  //   const disabledDates = [
+  //     {
+  //       start: selectedMileStoneStart.Start,
+  //       end: selectedMileStoneEnd,
+  //     },
+  //     {
+  //       start: selectedMileStoneStart.Start,
+  //       end: selectedMileStoneEnd,
+  //     },
+  //   ];
 
   return (
     <Modal
@@ -210,7 +235,6 @@ const UpdateModal = ({
               layout="vertical"
               initialValues={{
                 size: componentSize,
-                Group: "Milestone1",
               }}
               onValuesChange={onFormLayoutChange}
               size={componentSize as SizeType}
@@ -222,8 +246,16 @@ const UpdateModal = ({
                   value: selectedGantt.Name,
                 },
                 {
+                  name: ["Group"],
+                  value: existingGanttData
+                    ? existingGanttData[0].InGroup
+                    : undefined,
+                },
+                {
                   name: ["Description"],
-                  value: existingGanttData.Description,
+                  value: existingGanttData
+                    ? existingGanttData[0].Description
+                    : undefined,
                 },
               ]}
             >
@@ -247,29 +279,6 @@ const UpdateModal = ({
                     }))}
                   />
                 </Form.Item>
-
-                {projectList &&
-                  projectList.length &&
-                  projectList[0].tasks.length > 0 && (
-                    <Form.Item
-                      label="This task should be done after"
-                      name="Dependencies"
-                    >
-                      <Select
-                        size="large"
-                        onChange={handleTaskChanger}
-                        placeholder="Please select the prior task"
-                        options={projectList
-                          .filter((d) => d.ID == selectedMileStone)
-                          .map((d) => d.tasks)
-                          .flat()
-                          .map((projectList) => ({
-                            label: projectList.Name,
-                            value: projectList.ID,
-                          }))}
-                      />
-                    </Form.Item>
-                  )}
 
                 <Form.Item name="Manager" label="Joined Manager list">
                   <Select

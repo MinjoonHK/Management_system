@@ -4,6 +4,7 @@ import { Card, Modal, Button, Divider } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
+import { t } from "i18next";
 
 interface TeamEventModal {
   open: boolean;
@@ -73,14 +74,14 @@ export default function TeamEventModal({
         }
       >
         <div style={{ fontSize: "15px" }}>
-          <Divider>Time Slot</Divider>
+          <Divider>{t("TimeSlot")}</Divider>
           <div style={{ display: "flex", justifyContent: "center" }}>{`${dayjs(
             selectedTask.Start
           ).format("YYYY-MMM-DD HH:mm")}  -  ${dayjs(selectedTask.End).format(
             "YYYY-MMM-DD HH:mm"
           )}`}</div>
 
-          <Divider>Joined Member List </Divider>
+          <Divider>{t("JoinedMemberList")}</Divider>
           {memberList && (
             <div>
               {memberList.map((member, index) => {
@@ -108,7 +109,7 @@ export default function TeamEventModal({
               })}
             </div>
           )}
-          <Divider>Description</Divider>
+          <Divider>{t("Description")}</Divider>
           <div style={{ display: "flex", justifyContent: "center" }}>
             {selectedTask.Description}
           </div>

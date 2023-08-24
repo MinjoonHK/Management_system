@@ -4,7 +4,7 @@ export class userRoleChangeForm {
   selectedProject?: Number;
 
   @IsString()
-  User?: String;
+  selectedUser?: String;
 
   @IsString()
   Role?: String;

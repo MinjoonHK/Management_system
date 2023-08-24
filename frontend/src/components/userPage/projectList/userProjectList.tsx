@@ -6,7 +6,6 @@ import "../../../assets/project/project-override.css";
 import { PlusOutlined } from "@ant-design/icons";
 import "../../../assets/project/projectAction.css";
 import DeleteModal from "./prjListDelModal";
-import AddGuestModal from "./prjAddGuestModal";
 import MemberListModal from "./memberListModal";
 import { ProjectList } from "./prjProjectList";
 
@@ -105,13 +104,6 @@ function UserProject() {
         onClose={() => setOpenDeleteModal(false)}
         selectedProject={selectedProject}
         onChange={fetchData}
-      />
-      <AddGuestModal
-        open={openAddGuestModal}
-        onClose={() => {
-          setOpenAddGuestModal(false);
-        }}
-        selectedProject={selectedProject}
       />
       <MemberListModal
         open={openUserListModal}

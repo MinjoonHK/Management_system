@@ -9,14 +9,14 @@ export default function AddGuestModal({
   open,
   onClose,
   selectedProject,
-  memberList,
+  selectedMember,
   onChange,
 }) {
-  const [selectedMember, setSelectedMember] = useState("");
   selectedProject = Number(selectedProject);
-  const onFinish = async ({ User, Role }) => {
+  const selectedUser = selectedMember.Joined_User_Email;
+  const onFinish = async ({ Role }) => {
     const response = await axios.post("/dashboard/changeUserRole", {
-      User: User.value,
+      selectedUser,
       Role: Role,
       selectedProject: selectedProject,
     });
@@ -58,62 +58,46 @@ export default function AddGuestModal({
         </Button>,
       ]}
     >
-      <Card
-        title={
-          <div
-            style={{
-              fontWeight: "bold",
-              fontSize: "20px",
-            }}
-          >
-            Change User Role
-          </div>
-        }
-      >
-        <Form
-          form={f}
-          onFinish={(props) => {
-            onFinish(props);
-          }}
-          layout="inline"
+      {selectedMember && (
+        <Card
+          title={
+            <div
+              style={{
+                fontWeight: "bold",
+                fontSize: "20px",
+              }}
+            >
+              {`${selectedMember.FirstName} ${selectedMember.LastName}'s Role`}
+            </div>
+          }
         >
-          <Form.Item
-            style={{ width: "60%" }}
-            name="User"
-            rules={[{ required: true, message: "Please select the user!" }]}
+          <Form
+            form={f}
+            onFinish={(props) => {
+              onFinish(props);
+            }}
+            layout="inline"
           >
-            <Select
-              size="large"
-              placeholder="Please select user"
-              value={selectedMember}
-              labelInValue
-              onChange={setSelectedMember}
-              options={memberList.map((item) => ({
-                value: item.Joined_User_Email,
-                label: item.FirstName + " " + item.LastName,
-              }))}
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="Role"
-            style={{ width: "30%" }}
-            rules={[{ required: true, message: "Please Select the Role!" }]}
-          >
-            <Select size="large" placeholder="Role">
-              <Option key="manager" value="Manager">
-                Manager
-              </Option>
-              <Option key="member" value="Member">
-                Member
-              </Option>
-              <Option key="guest" value="Guest">
-                Guest
-              </Option>
-            </Select>
-          </Form.Item>
-        </Form>
-      </Card>
+            <Form.Item
+              style={{ width: "100%" }}
+              name="Role"
+              rules={[{ required: true, message: "Please Select the Role!" }]}
+            >
+              <Select size="large" placeholder="Please Change the user Role">
+                <Option key="manager" value="Manager">
+                  Manager
+                </Option>
+                <Option key="member" value="Member">
+                  Member
+                </Option>
+                <Option key="guest" value="Guest">
+                  Guest
+                </Option>
+              </Select>
+            </Form.Item>
+          </Form>
+        </Card>
+      )}
     </Modal>
   );
 }
