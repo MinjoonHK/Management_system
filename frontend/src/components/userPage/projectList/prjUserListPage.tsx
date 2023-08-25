@@ -156,24 +156,24 @@ export const UserListPage = ({ selectedProject }) => {
 
                   <List.Item.Meta
                     style={{ textAlign: "left", marginLeft: "5%" }}
-                    title={"Last Login Time"}
+                    title={t("LastLoginTime")}
                     description={dayjs(item.LastLoginTime).format(
                       "YYYY-MM-DD HH:MM"
                     )}
                   />
                   <List.Item.Meta
-                    title={"Joined Date"}
+                    title={t("JoinedDate")}
                     style={{ textAlign: "left", marginLeft: "5%" }}
                     description={dayjs(item.Created_At).format("YYYY-MM-DD")}
                   />
                   <List.Item.Meta
                     style={{ textAlign: "left", marginLeft: "5%" }}
-                    title={"Role"}
+                    title={t("Role")}
                     description={item.Role}
                   />
                   <List.Item.Meta
                     style={{ textAlign: "left", marginLeft: "5%" }}
-                    title={"Status"}
+                    title={t("Status")}
                     description={item.Status}
                   />
 

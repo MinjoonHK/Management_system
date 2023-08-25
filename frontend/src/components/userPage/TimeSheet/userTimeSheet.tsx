@@ -67,18 +67,18 @@ export default function TimeSheet() {
     }
   };
 
-  const fetchSharedCalendar = async (date: Date) => {
-    try {
-      const calendarList = await SharedCalendarList(
-        dayjs(date).startOf("month"),
-        dayjs(date).endOf("month")
-      );
-      setSharedCalendarList(calendarList);
-      console.log(JSON.stringify(calendarList));
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  // const fetchSharedCalendar = async (date: Date) => {
+  //   try {
+  //     const calendarList = await SharedCalendarList(
+  //       dayjs(date).startOf("month"),
+  //       dayjs(date).endOf("month")
+  //     );
+  //     setSharedCalendarList(calendarList);
+  //     console.log(JSON.stringify(calendarList));
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
 
   useEffect(() => {
     fetchData(new Date());
@@ -147,7 +147,7 @@ export default function TimeSheet() {
           onClick={() => setOpenShareModal(true)}
         >
           <FontAwesomeIcon icon={faShare} style={{ marginRight: "3%" }} />
-          <span style={{ textAlign: "left" }}>Share to other</span>
+          <span style={{ textAlign: "left" }}>{t("ShareToOther")}</span>
         </div>
         <div
           className="projectAction deleteCalendar"
@@ -157,7 +157,7 @@ export default function TimeSheet() {
             setOpenDeleteModal(true);
           }}
         >
-          <DeleteOutlined /> Delete Selected Calendar
+          <DeleteOutlined /> {t("DeleteSelectCalendar")}
         </div>
       </div>
     );
@@ -256,7 +256,7 @@ export default function TimeSheet() {
                               <div
                                 style={{ fontWeight: "bold", fontSize: "18px" }}
                               >
-                                Actions
+                                {t("Actions")}
                               </div>
                               <div>
                                 <ColorPicker

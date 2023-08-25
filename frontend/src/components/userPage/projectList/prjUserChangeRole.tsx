@@ -1,6 +1,6 @@
 import { Card, Modal, Button, Input, Form, Select } from "antd";
 import axios from "axios";
-import { useState } from "react";
+import { t } from "i18next";
 import Swal from "sweetalert2";
 
 const { Option } = Select;
@@ -43,7 +43,7 @@ export default function AddGuestModal({
       bodyStyle={{ height: "100%" }}
       footer={[
         <Button type="default" key="Cancel" onClick={onClose}>
-          Cancel
+          {t("Cancel")}
         </Button>,
         <Button
           type="primary"
@@ -54,7 +54,7 @@ export default function AddGuestModal({
             f.submit();
           }}
         >
-          Change
+          {t("Change")}
         </Button>,
       ]}
     >
@@ -85,13 +85,13 @@ export default function AddGuestModal({
             >
               <Select size="large" placeholder="Please Change the user Role">
                 <Option key="manager" value="Manager">
-                  Manager
+                  {t("Manager")}
                 </Option>
                 <Option key="member" value="Member">
-                  Member
+                  {t("Member")}
                 </Option>
                 <Option key="guest" value="Guest">
-                  Guest
+                  {t("Guest")}
                 </Option>
               </Select>
             </Form.Item>

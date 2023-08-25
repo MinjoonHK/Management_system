@@ -1,6 +1,5 @@
 import { Card, Modal, Button, Form, Input, Select } from "antd";
-import axios from "axios";
-import Swal from "sweetalert2";
+import { t } from "i18next";
 
 export default function ShareModal({ open, onClose }) {
   return (
@@ -14,7 +13,7 @@ export default function ShareModal({ open, onClose }) {
       bodyStyle={{ height: "100%" }}
       footer={[
         <Button type="default" key="Cancel" onClick={onClose}>
-          Cancel
+          {t("Cancel")}
         </Button>,
       ]}
     >
@@ -26,7 +25,7 @@ export default function ShareModal({ open, onClose }) {
               fontSize: "20px",
             }}
           >
-            Share by email
+            {t("ShareByEmail")}
           </div>
         }
       >
@@ -49,7 +48,7 @@ export default function ShareModal({ open, onClose }) {
                 width: "50%",
               }}
             >
-              Share
+              {t("Share")}
             </Button>
           </Form.Item>
         </Form>

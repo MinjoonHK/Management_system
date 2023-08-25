@@ -1,6 +1,7 @@
 import { Card, Modal, Button } from "antd";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { t } from "i18next";
 
 export default function GanttTaskDelete({
   open,
@@ -39,7 +40,7 @@ export default function GanttTaskDelete({
       bodyStyle={{ height: "100%" }}
       footer={[
         <Button type="default" key="Cancel" onClick={onClose}>
-          Cancel
+          {t("Cancel")}
         </Button>,
         <Button
           type="primary"
@@ -48,7 +49,7 @@ export default function GanttTaskDelete({
           onClick={handleDelete}
           style={{ color: "white" }}
         >
-          Delete
+          {t("Delete")}
         </Button>,
       ]}
     >
@@ -60,7 +61,7 @@ export default function GanttTaskDelete({
               fontSize: "20px",
             }}
           >
-            Confirmation
+            {t("Confirmation")}
           </div>
         }
       >

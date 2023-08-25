@@ -12,6 +12,7 @@ import {
 import axios from "axios";
 import Swal from "sweetalert2";
 import { ColorList } from "../../../data/colorList";
+import { t } from "i18next";
 
 export default function AddMyCalendar({ open, onClose, onChange }) {
   const [form] = Form.useForm();
@@ -59,14 +60,14 @@ export default function AddMyCalendar({ open, onClose, onChange }) {
       bodyStyle={{ height: "100%" }}
       footer={[
         <Button key="cancel" onClick={onClose}>
-          Cancel
+          {t("Cancel")}
         </Button>,
       ]}
     >
       <Card
         title={
           <div style={{ fontSize: "20px ", fontWeight: "bold" }}>
-            Add Other Calendar
+            {t("AddOtherCalendar")}
           </div>
         }
       >
@@ -105,7 +106,7 @@ export default function AddMyCalendar({ open, onClose, onChange }) {
                   width: "50%",
                 }}
               >
-                Add Calendar
+                {t("AddCalendar")}
               </Button>
             </Form.Item>
           </Form>

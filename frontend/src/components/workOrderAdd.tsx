@@ -22,6 +22,7 @@ import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { RcFile } from "antd/es/upload";
 import { items } from "../data/tableColumns/workOrderCategory";
+import { t } from "i18next";
 
 dayjs.extend(customParseFormat);
 const dateFormat = "YYYY/MM/DD";
@@ -165,7 +166,7 @@ const AddWorkOrder: React.FC = () => {
         <Card
           title={
             <div style={{ fontWeight: "bold", fontSize: "25px" }}>
-              Add New Work Order
+              {t("AddNewWorkOrder")}
             </div>
           }
           bordered={false}
@@ -201,7 +202,7 @@ const AddWorkOrder: React.FC = () => {
             onFinishFailed={onFinishFailed}
           >
             <Form.Item
-              label="Orderer Name"
+              label={t("OrdererName")}
               name="Name"
               rules={[
                 { required: true, message: "Please input your Company Name!" },
@@ -210,7 +211,7 @@ const AddWorkOrder: React.FC = () => {
               <Input />
             </Form.Item>
             <Form.Item
-              label="Company"
+              label={t("Company")}
               name="Company"
               rules={[
                 { required: true, message: "Please input your Company Name!" },
@@ -219,7 +220,7 @@ const AddWorkOrder: React.FC = () => {
               <Input />
             </Form.Item>
             <Form.Item
-              label="Email"
+              label={t("Email")}
               name="Email"
               rules={[
                 { required: true, message: "Please input your Company Name!" },
@@ -229,7 +230,7 @@ const AddWorkOrder: React.FC = () => {
             </Form.Item>
 
             <Form.Item
-              label="Contact"
+              label={t("Contact")}
               name="Contact"
               rules={[
                 {
@@ -242,7 +243,7 @@ const AddWorkOrder: React.FC = () => {
             </Form.Item>
             <Form.Item style={{ textAlign: "left" }}>
               <Form.Item
-                label="Order Title"
+                label={t("OrderTitle")}
                 name="OrderTitle"
                 rules={[{ required: true }]}
                 style={{
@@ -254,7 +255,7 @@ const AddWorkOrder: React.FC = () => {
                 <Input placeholder="Please input order title" />
               </Form.Item>
               <Form.Item
-                label="Category"
+                label={t("Category")}
                 name="Category"
                 rules={[
                   { required: true, message: "Please Select the Cateogry!" },
@@ -285,7 +286,7 @@ const AddWorkOrder: React.FC = () => {
               </Form.Item>
             </Form.Item>
             <Form.Item
-              label="Order Summary"
+              label={t("OrderSummary")}
               name="ordersummary"
               style={{ textAlign: "left" }}
               rules={[
@@ -295,7 +296,7 @@ const AddWorkOrder: React.FC = () => {
               <TextArea rows={4} />
             </Form.Item>
 
-            <Form.Item label="Upload Photo">
+            <Form.Item label={t("UploadPhoto")}>
               <Form.Item
                 name="UploadImage"
                 valuePropName="fileList"
@@ -306,17 +307,19 @@ const AddWorkOrder: React.FC = () => {
                   <p className="ant-upload-drag-icon">
                     <InboxOutlined />
                   </p>
-                  <p className="ant-upload-text">
-                    Click or drag file to this area to upload
-                  </p>
-                  <p className="ant-upload-hint">
-                    Support for a single or bulk upload.
+                  <p className="ant-upload-text">{t("DragAndDropFileHere")}</p>
+                  <p>{t("OR")}</p>
+                  <p
+                    style={{ textDecoration: "underline" }}
+                    className="ant-upload-text"
+                  >
+                    {t("ChooseFromComputer")}
                   </p>
                 </Upload.Dragger>
               </Form.Item>
             </Form.Item>
             <Form.Item
-              label="Start Date"
+              label={t("StartDate")}
               name="DatePicker"
               style={{ textAlign: "left" }}
               rules={[
@@ -338,7 +341,7 @@ const AddWorkOrder: React.FC = () => {
                   type="primary"
                   htmlType="submit"
                 >
-                  Submit
+                  {t("Submit")}
                 </Button>
               </div>
             </Form.Item>

@@ -30,12 +30,13 @@ dotenv.config(); // Read .env File
 app.use(express.json());
 app.use(cookieParser());
 
-app.use(
-  cors({
-    origin: "*", //http://192.168.31.137:3000
-    methods: ["GET", "POST"],
-  })
-);
+let corsOptions = {
+  origin: (origin: any, callback: any) => {
+    callback(null, true);
+  },
+};
+
+app.use(cors(corsOptions));
 
 app.post("/sendEmail", async (req, res) => {
   const { InviteEmail, Role, selectedProject, token } = req.body;
@@ -99,7 +100,6 @@ app.post("/sendEmail", async (req, res) => {
       } else if (existChecker === undefined) {
         //if user does not exist in project
         if (existingUserList.length > 0) {
-          console.log(existChecker);
           //if user is in system but not in project
           const response = await pool.execute(
             `
@@ -114,7 +114,8 @@ app.post("/sendEmail", async (req, res) => {
               status: true,
             });
           }
-        } else if ((existingUserList.length = 0)) {
+        } else if (existingUserList.length == 0) {
+          console.log("TEST");
           //if user does not exist in system
           const response = await sendProjectInvitation({
             Deadline: dayjs(projectInfo[0].End).format("YYYY-MMM-DD"),
@@ -125,10 +126,18 @@ app.post("/sendEmail", async (req, res) => {
             URL: process.env.URL,
           });
           if (response) {
-            res.json({
-              message: "user has susccessfully invited to the project!",
-              status: true,
-            });
+            const response = await pool.execute(
+              `
+                  INSERT INTO projectpeople (Joined_User_Email,project_ID,Role) VALUES(?,?,?)
+                  `,
+              [InviteEmail, selectedProject, Role]
+            );
+            if (response) {
+              res.json({
+                message: "user has susccessfully invited to the project!",
+                status: true,
+              });
+            }
           }
         }
       }

@@ -8,6 +8,7 @@ import "../../../assets/project/projectAction.css";
 import DeleteModal from "./prjListDelModal";
 import MemberListModal from "./memberListModal";
 import { ProjectList } from "./prjProjectList";
+import { t } from "i18next";
 
 function UserProject() {
   const [openAddModal, setOpenAddModal] = useState(false);
@@ -36,7 +37,7 @@ function UserProject() {
         <Empty
           description={
             <span>
-              <p style={{ fontWeight: "bold" }}>Project Not Found</p>
+              <p style={{ fontWeight: "bold" }}>{t("ProjectNotFound")}</p>
               <Button
                 style={{
                   fontWeight: "bold",
@@ -45,7 +46,7 @@ function UserProject() {
                 }}
                 onClick={() => setOpenAddModal(true)}
               >
-                Create Now
+                {t("CreateNow")}
               </Button>
             </span>
           }

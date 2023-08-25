@@ -1,51 +1,52 @@
 import { ColumnsType } from "antd/es/table";
 import { DataType } from "../workOrderList";
-import { FileSearchOutlined } from "@ant-design/icons";
+
 import { Button, Tag } from "antd";
-import { Link } from "react-router-dom";
+
+import { t } from "i18next";
 
 export const columns: ColumnsType<DataType> = [
   {
-    title: "Company Name",
+    title: <>{t("CompanyName")}</>,
     dataIndex: "Company",
     align: "center",
   },
   {
-    title: "Orderer",
+    title: <>{t("Orderer")}</>,
     dataIndex: "Orderer",
     align: "center",
   },
   {
-    title: "Contact",
+    title: <>{t("Contact")}</>,
     dataIndex: "Contact",
     align: "center",
   },
   {
-    title: "Email",
+    title: <>{t("Email")}</>,
     dataIndex: "Email",
     align: "center",
   },
   {
-    title: "Work Order Summary",
+    title: <>{t("WorkOrderSummary")}</>,
     dataIndex: "OrderSummary",
     align: "center",
   },
   {
-    title: "Start Date",
+    title: <>{t("StartDate")}</>,
     dataIndex: "StartDate",
     align: "center",
     sorter: (a, b) =>
       new Date(a.StartDate).valueOf() - new Date(b.StartDate).valueOf(),
   },
   {
-    title: "End Date",
+    title: <>{t("DueDate")}</>,
     dataIndex: "EndDate",
     align: "center",
     sorter: (a, b) =>
       new Date(a.StartDate).valueOf() - new Date(b.StartDate).valueOf(),
   },
   {
-    title: "Status",
+    title: <>{t("Status")}</>,
     key: "Status",
     dataIndex: "Status",
     align: "center",

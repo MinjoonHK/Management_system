@@ -38,7 +38,6 @@ export function GanttChart({ selectedProject }) {
       const response = await axios.get("/dashboard/schedule", {
         params: { ProjectID: selectedProject },
       });
-      console.log(response);
       // const sortedResponse = response.data.sort(() => {
       //   return;
       // });

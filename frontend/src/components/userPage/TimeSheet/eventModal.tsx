@@ -1,4 +1,5 @@
 import { Card, Timeline, Modal, Button, Divider } from "antd";
+import { t } from "i18next";
 
 export default function EventModal({ open, onClose, evtTitle }) {
   return (
@@ -13,7 +14,7 @@ export default function EventModal({ open, onClose, evtTitle }) {
       bodyStyle={{ height: "100%" }}
       footer={[
         <Button type="default" key="Cancel" onClick={onClose}>
-          Close
+          {t("Close")}
         </Button>,
       ]}
     >
@@ -31,7 +32,7 @@ export default function EventModal({ open, onClose, evtTitle }) {
           </div>
         }
       >
-        <Divider>Time Slot</Divider>
+        <Divider>{t("TimeSlot")}</Divider>
         <div
           style={{
             display: "flex",

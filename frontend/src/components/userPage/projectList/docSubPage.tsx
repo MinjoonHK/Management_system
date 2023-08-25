@@ -42,7 +42,7 @@ export const DocumentSubmissionPage = ({ selectedProject }) => {
         <div>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <span>
-              <h2>Submission Tasks</h2>
+              <h2>{t("SubmissionTasks")}</h2>
             </span>
             {userMode === "Guest" || (
               <span>
@@ -54,7 +54,7 @@ export const DocumentSubmissionPage = ({ selectedProject }) => {
                   shape="round"
                 >
                   <PlusOutlined />
-                  <span style={{ fontSize: "15px" }}>Add Task</span>
+                  <span style={{ fontSize: "15px" }}>{t("AddTask")}</span>
                 </Button>
               </span>
             )}
@@ -81,20 +81,22 @@ export const DocumentSubmissionPage = ({ selectedProject }) => {
               }
             >
               <Descriptions layout="vertical" bordered={false} column={5}>
-                <Descriptions.Item label="Manager">
+                <Descriptions.Item label={t("Manager")}>
                   {e.CreatorName}
                 </Descriptions.Item>
-                <Descriptions.Item label="Status">{e.Status}</Descriptions.Item>
-                <Descriptions.Item label="Start Date">
+                <Descriptions.Item label={t("Status")}>
+                  {e.Status}
+                </Descriptions.Item>
+                <Descriptions.Item label={t("StartDate")}>
                   {e.CreateDate.substring(0, 10)}
                 </Descriptions.Item>
-                <Descriptions.Item label="Due Date">
+                <Descriptions.Item label={t("DueDate")}>
                   {e.DueDate.substring(0, 10)}
                 </Descriptions.Item>
                 {userMode === "Manager" && (
                   <Descriptions.Item
                     style={{ textAlign: "center" }}
-                    label="Drop Task"
+                    label={t("DropTask")}
                   >
                     <Button>
                       <DeleteOutlined
@@ -123,6 +125,7 @@ export const DocumentSubmissionPage = ({ selectedProject }) => {
         >
           {userMode === "Guest" ? (
             <div style={{ fontWeight: "bold", fontSize: "18px" }}>
+              {t("YouAreInvitedAsGuestAndNoTasksOngoingNow")}
               You are invited as Guest and no tasks ongoing now
             </div>
           ) : (

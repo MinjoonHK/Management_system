@@ -1,6 +1,7 @@
 import { Card, Col, Divider, Row } from "antd";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { t } from "i18next";
 
 const UserInformation: React.FC = () => {
   const [userInfo, setUserInfo] = useState(undefined);
@@ -32,7 +33,7 @@ const UserInformation: React.FC = () => {
       <Card
         title={
           <div style={{ fontSize: "25px", textAlign: "left" }}>
-            Basic Information
+            {t("BasicInformation")}
           </div>
         }
         bordered={false}
@@ -46,31 +47,31 @@ const UserInformation: React.FC = () => {
             <>
               <div>
                 <Row>
-                  <Col flex={"50%"}>Name</Col>
+                  <Col flex={"50%"}>{t("Name")}</Col>
                   <Col flex="auto">{`${userInfo.FirstName} ${userInfo.LastName}`}</Col>
                 </Row>
                 <Divider></Divider>
                 <Row>
-                  <Col flex={"50%"}>Role</Col>
+                  <Col flex={"50%"}>{t("Role")}</Col>
                   <Col flex="auto">{userInfo.Role}</Col>
                 </Row>
                 <Divider></Divider>
                 <Row>
-                  <Col flex={"50%"}>Company</Col>
+                  <Col flex={"50%"}>{t("Company")}</Col>
                   <Col flex="auto">{userInfo.Name}</Col>
                 </Row>
                 <Divider></Divider>
               </div>
             </>
           ) : (
-            <p>Loading...</p>
+            <p>{t("Loading...")}</p>
           )}
         </div>
       </Card>
       <Card
         title={
           <div style={{ fontSize: "25px", textAlign: "left" }}>
-            Contact Information
+            {t("ContactInformation")}
           </div>
         }
         bordered={false}
@@ -85,19 +86,19 @@ const UserInformation: React.FC = () => {
             <>
               <div>
                 <Row>
-                  <Col flex={"50%"}>Email</Col>
+                  <Col flex={"50%"}>{t("Email")}</Col>
                   <Col flex="auto">{userInfo.Email}</Col>
                 </Row>
                 <Divider></Divider>
                 <Row>
-                  <Col flex={"50%"}>Phone Number</Col>
+                  <Col flex={"50%"}>{t("PhoneNumber")}</Col>
                   <Col flex="auto">{userInfo.PhoneNumber}</Col>
                 </Row>
                 <Divider></Divider>
               </div>
             </>
           ) : (
-            <p>Loading...</p>
+            <p>{t("Loading...")}</p>
           )}
         </div>
       </Card>

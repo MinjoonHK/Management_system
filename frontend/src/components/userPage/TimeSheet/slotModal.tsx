@@ -14,6 +14,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import TextArea from "antd/es/input/TextArea";
+import { t } from "i18next";
 
 const { RangePicker } = DatePicker;
 const SlotModal = ({ open, onClose, calendarList, start, onChange }) => {
@@ -82,13 +83,13 @@ const SlotModal = ({ open, onClose, calendarList, start, onChange }) => {
         size={size}
         items={[
           {
-            label: <div style={{ color: "black" }}>Add Schedule</div>,
+            label: <div style={{ color: "black" }}>{t("AddSchedule")}</div>,
             key: "AddSchedule",
             children: (
               <Card
                 title={
                   <div style={{ fontWeight: "bold", fontSize: "25px" }}>
-                    Add New Schedule
+                    {t("AddNewSchedule")}
                   </div>
                 }
                 bordered={false}
@@ -116,7 +117,7 @@ const SlotModal = ({ open, onClose, calendarList, start, onChange }) => {
                   ]}
                 >
                   <Form.Item
-                    label="Name"
+                    label={t("Name")}
                     name="Title"
                     rules={[
                       {
@@ -129,7 +130,7 @@ const SlotModal = ({ open, onClose, calendarList, start, onChange }) => {
                   </Form.Item>
                   <Form.Item
                     name="SelectCalendar"
-                    label="Select Calendar"
+                    label={t("SelectCalendar")}
                     rules={[
                       {
                         required: true,
@@ -145,7 +146,7 @@ const SlotModal = ({ open, onClose, calendarList, start, onChange }) => {
                   </Form.Item>
                   <Form.Item
                     name="RangePicker"
-                    label="Select Date"
+                    label={t("SelectDate")}
                     rules={[
                       {
                         required: true,
@@ -155,14 +156,14 @@ const SlotModal = ({ open, onClose, calendarList, start, onChange }) => {
                   >
                     <RangePicker size="large" />
                   </Form.Item>
-                  <Form.Item name="SelectTime" label="Select Time">
+                  <Form.Item name="SelectTime" label={t("SelectTime")}>
                     <TimePicker.RangePicker
                       minuteStep={15}
                       format={"HH:mm"}
                       size={"large"}
                     />
                   </Form.Item>
-                  <Form.Item name="Description" label="Description">
+                  <Form.Item name="Description" label={t("Description")}>
                     <TextArea size="large" />
                   </Form.Item>
 
@@ -178,7 +179,7 @@ const SlotModal = ({ open, onClose, calendarList, start, onChange }) => {
                         type="primary"
                         htmlType="submit"
                       >
-                        Add Schedule
+                        {t("AddSchedule")}
                       </Button>
                     </div>
                   </Form.Item>

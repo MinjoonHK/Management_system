@@ -2,9 +2,9 @@ import { Button, Card, DatePicker, Form, Input, Modal, Select } from "antd";
 import { SizeType } from "antd/es/config-provider/SizeContext";
 import TextArea from "antd/es/input/TextArea";
 import axios from "axios";
-import dayjs, { Dayjs } from "dayjs";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
+import { t } from "i18next";
 
 const UpdateModal = ({
   open,
@@ -260,7 +260,7 @@ const UpdateModal = ({
               ]}
             >
               <Form.Item
-                label="Name"
+                label={t("Name")}
                 name="name"
                 style={{ display: "inline-block", width: "50%" }}
               >
@@ -268,7 +268,7 @@ const UpdateModal = ({
               </Form.Item>
 
               <div>
-                <Form.Item label="Select Milestone" name="Group">
+                <Form.Item label={t("SelectMileStone")} name="Group">
                   <Select
                     size="large"
                     onChange={handleMileStoneChanger}
@@ -280,7 +280,7 @@ const UpdateModal = ({
                   />
                 </Form.Item>
 
-                <Form.Item name="Manager" label="Joined Manager list">
+                <Form.Item name="Manager" label={t("JoinedManagerList")}>
                   <Select
                     mode="tags"
                     size="large"
@@ -295,7 +295,7 @@ const UpdateModal = ({
                     tokenSeparators={[","]}
                   />
                 </Form.Item>
-                <Form.Item name="Member" label="Joined Member List">
+                <Form.Item name="Member" label={t("JoinedMemberList")}>
                   <Select
                     mode="tags"
                     size="large"
@@ -310,7 +310,7 @@ const UpdateModal = ({
                     tokenSeparators={[","]}
                   />
                 </Form.Item>
-                <Form.Item name="Description" label="Description">
+                <Form.Item name="Description" label={t("Description")}>
                   <TextArea size="large" />
                 </Form.Item>
               </div>
@@ -327,7 +327,7 @@ const UpdateModal = ({
                     type="primary"
                     htmlType="submit"
                   >
-                    Update
+                    {t("Update")}
                   </Button>
                 </div>
               </Form.Item>

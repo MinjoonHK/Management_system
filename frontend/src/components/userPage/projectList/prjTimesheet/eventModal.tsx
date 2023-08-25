@@ -55,7 +55,7 @@ export default function TeamEventModal({
       bodyStyle={{ height: "100%" }}
       footer={[
         <Button type="default" key="Cancel" onClick={onClose}>
-          Close
+          {t("Close")}
         </Button>,
       ]}
     >

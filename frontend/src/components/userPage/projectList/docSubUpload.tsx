@@ -13,7 +13,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faX } from "@fortawesome/free-solid-svg-icons";
-import jwtDecode from "jwt-decode";
+import { t } from "i18next";
 
 const { Dragger } = Upload;
 
@@ -113,7 +113,7 @@ export default function DocumentUploadModal({
       keyboard={true}
       footer={[
         <Button key={"document-submission-modal-close-btn"} onClick={onClose}>
-          Cancel
+          {t("Cancel")}
         </Button>,
       ]}
     >
@@ -122,17 +122,17 @@ export default function DocumentUploadModal({
           <p className="ant-upload-drag-icon">
             <InboxOutlined />
           </p>
-          <p className="ant-upload-text">Drag and Drop file here</p>
-          <p>OR</p>
+          <p className="ant-upload-text">{t("DragAndDropFileHere")}</p>
+          <p>{t("OR")}</p>
           <p
             style={{ textDecoration: "underline" }}
             className="ant-upload-text"
           >
-            Choose from computer
+            {t("ChooseFromComputer")}
           </p>
         </Dragger>
       )}
-      <Divider orientation="left">Recent Uploads</Divider>
+      <Divider orientation="left">{t("RecentUploads")}</Divider>
       <List
         size="small"
         bordered
@@ -169,22 +169,22 @@ export default function DocumentUploadModal({
                           textAlign: "left",
                         }}
                       >
-                        <Button>download</Button>
+                        <Button>{t("download")}</Button>
                       </a>,
                     ]}
                   >
                     <Descriptions layout="vertical" column={5}>
-                      <Descriptions.Item label="Upload Date">
+                      <Descriptions.Item label={t("UploadDate")}>
                         {item.UploadDate.substring(0, 10)}
                       </Descriptions.Item>
-                      <Descriptions.Item label="Uploader">
+                      <Descriptions.Item label={t("Uploader")}>
                         {item.FirstName}
                       </Descriptions.Item>
-                      <Descriptions.Item label="Status">
+                      <Descriptions.Item label={t("Status")}>
                         {item.Status}
                       </Descriptions.Item>
 
-                      <Descriptions.Item label="File Name">
+                      <Descriptions.Item label={t("FileName")}>
                         <div
                           style={{
                             textOverflow: "ellipsis",
@@ -225,22 +225,22 @@ export default function DocumentUploadModal({
                         textDecoration: "underline",
                       }}
                     >
-                      <Button>download</Button>
+                      <Button>{t("download")}</Button>
                     </a>,
                   ]}
                 >
                   <Descriptions layout="vertical" column={5}>
-                    <Descriptions.Item label="Upload Date">
+                    <Descriptions.Item label={t("UploadDate")}>
                       {item.UploadDate.substring(0, 10)}
                     </Descriptions.Item>
-                    <Descriptions.Item label="Uploader">
+                    <Descriptions.Item label={t("Uploader")}>
                       {item.FirstName}
                     </Descriptions.Item>
-                    <Descriptions.Item label="Status">
+                    <Descriptions.Item label={t("Status")}>
                       {item.Status}
                     </Descriptions.Item>
                     {userMode === "Manager" && (
-                      <Descriptions.Item label="Approval">
+                      <Descriptions.Item label={t("Approval")}>
                         <div style={{ textAlign: "left", width: "100%" }}>
                           <Button
                             onClick={async () => {
@@ -278,7 +278,7 @@ export default function DocumentUploadModal({
                         </div>
                       </Descriptions.Item>
                     )}
-                    <Descriptions.Item label="File Name">
+                    <Descriptions.Item label={t("FileName")}>
                       <div
                         style={{
                           textOverflow: "ellipsis",

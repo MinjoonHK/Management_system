@@ -4,6 +4,7 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { t } from "i18next";
 
 export const DocumentSubmissionModal = ({ open, onClose, onChange }) => {
   const [userOption, setUserOption] = useState([]);
@@ -80,11 +81,13 @@ export const DocumentSubmissionModal = ({ open, onClose, onChange }) => {
       >
         <div>
           <Card
-            title={<h2 style={{ textAlign: "left" }}>Add Submission Task</h2>}
+            title={
+              <h2 style={{ textAlign: "left" }}>{t("AddSubmissionTask")}</h2>
+            }
           >
             <Form layout="vertical" onFinish={onFinish}>
               <Form.Item
-                label="Task Name"
+                label={t("Task Name")}
                 name="taskName"
                 rules={[
                   {
@@ -98,7 +101,7 @@ export const DocumentSubmissionModal = ({ open, onClose, onChange }) => {
 
               <Form.Item
                 name={"manager"}
-                label="Person in Charge"
+                label={t("PersonInCharge")}
                 rules={[
                   {
                     required: true,
@@ -119,7 +122,7 @@ export const DocumentSubmissionModal = ({ open, onClose, onChange }) => {
                   style={{ width: "100%" }}
                 />
               </Form.Item>
-              <Form.Item name={"member"} label="Required Member List">
+              <Form.Item name={"member"} label={t("RequiredMemberList")}>
                 <Select
                   mode="tags"
                   size="large"
@@ -136,12 +139,12 @@ export const DocumentSubmissionModal = ({ open, onClose, onChange }) => {
               </Form.Item>
               <Form.Item
                 style={{ textAlign: "left" }}
-                label="Due Date"
+                label={t("DueDate")}
                 name="dueDate"
               >
                 <DatePicker size="large" />
               </Form.Item>
-              <Form.Item label="Description" name="description">
+              <Form.Item label={t("Description")} name="description">
                 <TextArea />
               </Form.Item>
               <Form.Item style={{ textAlign: "center" }}>
@@ -156,7 +159,7 @@ export const DocumentSubmissionModal = ({ open, onClose, onChange }) => {
                     fontSize: "18px",
                   }}
                 >
-                  Create Task
+                  {t("CreateTask")}
                 </Button>
               </Form.Item>
             </Form>

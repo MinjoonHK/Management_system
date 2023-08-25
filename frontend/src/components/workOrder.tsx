@@ -7,6 +7,7 @@ import { DataType, data } from "../data/workOrderList";
 import { Link } from "react-router-dom";
 import { columns } from "../data/tableColumns/workOrderTable";
 import axios from "axios";
+import { t } from "i18next";
 
 const WorkOrder: React.FC = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
@@ -67,11 +68,11 @@ const WorkOrder: React.FC = () => {
       <div style={{ textAlign: "left", marginBottom: "20px" }}>
         <Link to="/addworkorder">
           <Button>
-            <b>Click to add Work Order +</b>
+            <b>{t("ClickToAddWorkOrder")}</b>
           </Button>
         </Link>
         <Button onClick={FinishOrder} style={{ marginLeft: "1%" }}>
-          <b>Click to Finish Work Order</b>
+          <b>{t("ClickToFinishWorkOrder")}</b>
         </Button>
         <span style={{ marginLeft: 8 }}>
           {hasSelected ? `Selected ${selectedRowKeys.length} items` : ""}

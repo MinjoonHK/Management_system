@@ -1,5 +1,6 @@
 import { Card, Modal, Button } from "antd";
 import axios from "axios";
+import { t } from "i18next";
 
 export default function DocSubDelModal({
   open,
@@ -32,7 +33,7 @@ export default function DocSubDelModal({
       bodyStyle={{ height: "100%" }}
       footer={[
         <Button type="default" key="Cancel" onClick={onClose}>
-          Cancel
+          {t("Cancel")}
         </Button>,
         <Button
           type="primary"
@@ -41,7 +42,7 @@ export default function DocSubDelModal({
           onClick={handleDelete}
           style={{ color: "white" }}
         >
-          Delete
+          {t("Delete")}
         </Button>,
       ]}
     >
@@ -53,7 +54,7 @@ export default function DocSubDelModal({
               fontSize: "20px",
             }}
           >
-            Confirmation
+            {t("Confirmation")}
           </div>
         }
       >

@@ -1,6 +1,7 @@
 import { Card, Modal, Button, Input, Form, Select } from "antd";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { t } from "i18next";
 
 const { Option } = Select;
 
@@ -47,7 +48,7 @@ export default function AddUserModal({
       bodyStyle={{ height: "100%" }}
       footer={[
         <Button type="default" key="Cancel" onClick={onClose}>
-          Cancel
+          {t("Cancel")}
         </Button>,
         <Button
           type="primary"
@@ -58,7 +59,7 @@ export default function AddUserModal({
             f.submit();
           }}
         >
-          Invite
+          {t("Invite")}
         </Button>,
       ]}
     >
@@ -70,7 +71,7 @@ export default function AddUserModal({
               fontSize: "20px",
             }}
           >
-            Add Member By Email
+            {t("AddMemberByEmail")}
           </div>
         }
       >
@@ -99,13 +100,13 @@ export default function AddUserModal({
           >
             <Select size="large" placeholder="Role">
               <Option key="manager" value="Manager">
-                Manager
+                {t("Manager")}
               </Option>
               <Option key="member" value="Member">
-                Member
+                {t("Member")}
               </Option>
               <Option key="guest" value="Guest">
-                Guest
+                {t("Guest")}
               </Option>
             </Select>
           </Form.Item>

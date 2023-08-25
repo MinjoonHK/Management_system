@@ -5,6 +5,7 @@ import axios from "axios";
 import dayjs, { Dayjs } from "dayjs";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
+import { t } from "i18next";
 
 const { RangePicker } = DatePicker;
 
@@ -24,7 +25,7 @@ const AddScheduleModal = ({
   const [dates, setDates] = useState<RangeValue>(null);
   const [selectedType, setSelectedType] = useState("project");
   const [dateValue, setDateValue] = useState<RangeValue>(null);
-  const [selectedMileStone, setSelectedMileStone] = useState(0);
+  const [selectedMileStone, setSelectedMileStone] = useState([]);
   const [selectedTask, setSelectedTask] = useState(0);
   const [managerList, setManagerList] = useState([]);
   const [memberList, setMemberList] = useState([]);
@@ -119,8 +120,10 @@ const AddScheduleModal = ({
   };
 
   const handleMileStoneChanger = async (value: number) => {
-    setSelectedMileStone(value);
-    console.log(selectedMileStone);
+    const mileStoneFilter = projectList.filter((items) => {
+      return items.ID == value;
+    });
+    setSelectedMileStone(mileStoneFilter);
   };
 
   const handleTaskChanger = async (value: number) => {
@@ -176,9 +179,11 @@ const AddScheduleModal = ({
           <Card
             title={
               <div style={{ fontWeight: "bold", fontSize: "25px" }}>
-                {projectList.length > 0
-                  ? "Add New Schedule"
-                  : "Please Make your first MileStone"}
+                {projectList.length > 0 ? (
+                  <>{t("AddNewSchedule")}</>
+                ) : (
+                  <>{t("PleaseMakeFirstMileStone")}</>
+                )}
               </div>
             }
             bordered={false}
@@ -194,7 +199,7 @@ const AddScheduleModal = ({
               onFinishFailed={onFinishFailed}
             >
               <Form.Item
-                label="Name"
+                label={t("Name")}
                 name="name"
                 style={{ display: "inline-block", width: "50%" }}
                 rules={[
@@ -207,7 +212,7 @@ const AddScheduleModal = ({
                 <Input placeholder="Name of the Schedule" size="large" />
               </Form.Item>
               <Form.Item
-                label="Task Type"
+                label={t("TaskType")}
                 name="Type"
                 style={{
                   display: "inline-block",
@@ -248,7 +253,7 @@ const AddScheduleModal = ({
               {selectedType === "project" || (
                 <div>
                   <Form.Item
-                    label="Select Milestone"
+                    label={t("SelectMilestone")}
                     name="Group"
                     rules={[
                       {
@@ -270,9 +275,10 @@ const AddScheduleModal = ({
 
                   {projectList &&
                     projectList.length &&
-                    projectList[0].tasks.length > 0 && (
+                    selectedMileStone[0] &&
+                    selectedMileStone[0].tasks.length > 0 && (
                       <Form.Item
-                        label="This task should be done after"
+                        label={t("ThisTaskShouldBeDoneAfter")}
                         name="Dependencies"
                         rules={[
                           {
@@ -285,21 +291,29 @@ const AddScheduleModal = ({
                           size="large"
                           onChange={handleTaskChanger}
                           placeholder="Please select the prior task"
-                          options={projectList
-                            .filter((d) => d.ID == selectedMileStone)
-                            .map((d) => d.tasks)
-                            .flat()
-                            .map((projectList) => ({
-                              label: projectList.Name,
-                              value: projectList.ID,
-                            }))}
+                          options={
+                            selectedMileStone
+                              .map((d) => d.tasks)
+                              .flat()
+                              .map((items) => ({
+                                label: items.Name,
+                                value: items.ID,
+                              }))
+                            // .filter((d) => d.ID == selectedMileStone)
+                            // .map((d) => d.tasks)
+                            // .flat()
+                            // .map((projectList) => ({
+                            //   label: projectList.Name,
+                            //   value: projectList.ID,
+                            // }))
+                          }
                         />
                       </Form.Item>
                     )}
 
                   <Form.Item
-                    name={"Manager"}
-                    label="Joined Manager list"
+                    name={t("Manager")}
+                    label={t("JoinedManagerList")}
                     rules={[
                       {
                         required: true,
@@ -322,8 +336,8 @@ const AddScheduleModal = ({
                     />
                   </Form.Item>
                   <Form.Item
-                    name={"Member"}
-                    label="Joined Member List"
+                    name={t("Member")}
+                    label={t("JoinedMemberList")}
                     rules={[
                       {
                         required: true,
@@ -347,7 +361,7 @@ const AddScheduleModal = ({
                   </Form.Item>
                   <Form.Item
                     name="Description"
-                    label="Description"
+                    label={t("Description")}
                     rules={[
                       {
                         required: true,
@@ -361,7 +375,7 @@ const AddScheduleModal = ({
               )}
 
               <Form.Item
-                label="Select Date"
+                label={t("SelectDate")}
                 name="RangePicker"
                 rules={[
                   { required: true, message: "Please selecte the Date!" },
@@ -400,7 +414,7 @@ const AddScheduleModal = ({
                     type="primary"
                     htmlType="submit"
                   >
-                    Add Schedule
+                    {t("AddSchedule")}
                   </Button>
                 </div>
               </Form.Item>
