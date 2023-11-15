@@ -9,10 +9,10 @@
 
 ### ⚙️ 개발 환경
 <ul>
-  <li>`React.js` `Node.js` `TypeScript` `Express.js`</li>
-  <li>`node.js 18.11.0`</li>
-  <li>**IDE** : VScode, MySQL Workbench</li>
-  <li>**Database** : MySQL</li>
+  <li>React.js, Node.js, TypeScript, Express.js</li>
+  <li>node.js 18.11.0</li>
+  <li>IDE : VScode, MySQL Workbench</li>
+  <li>Database : MySQL</li>
 </ul>
 
 
