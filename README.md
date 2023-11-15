@@ -8,7 +8,7 @@
 2023.06 - 2023.08
 
 ### ⚙️ 개발 환경
--`React.js` `Node.js` `TypeScript` `Express.js`
--`node.js 18.11.0`
--**IDE** : VScode, MySQL Workbench
--**Database** : MySQL
+-`React.js` `Node.js` `TypeScript` `Express.js`<br>
+-`node.js 18.11.0`<br>
+-**IDE** : VScode, MySQL Workbench<br>
+-**Database** : MySQL<br>
