@@ -15,8 +15,16 @@
   <li>Database : MySQL</li>
 </ul>
 
+### ✔️ERD
+<details>
+<summary>이미지</summary>
+
+![ERD](https://github.com/MinjoonHK/Management_system/assets/108560916/951ecf1d-37ce-489d-9fe7-cba417f3f132)
+</details>
+
 ## 📌주요 기능
 #### 로그인
+#### 회원가입
 #### 유저관리
 #### 파일교환
 #### 갠트차트
