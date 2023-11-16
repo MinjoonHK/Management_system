@@ -30,6 +30,7 @@
 
 ![Login](https://github.com/MinjoonHK/Management_system/assets/108560916/8752b515-cdc1-45cb-b5e6-71dbd2c3dd8d)
 </details>
+
 #### 회원가입
 #### 💻Code
 <details>
@@ -43,10 +44,13 @@
 
 #### 파일교환
 #### 💻Code
+
 #### 갠트차트
 #### 💻Code
+
 #### 달력
 #### 💻Code
+
 #### 언어지원
 #### 💻Code
 
