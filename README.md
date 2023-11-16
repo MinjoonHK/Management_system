@@ -45,8 +45,12 @@
 ### -파일교환
 #### 💻Code
 
+<a href="https://github.com/MinjoonHK/Management_system/wiki/Management-System-%EC%A3%BC%EC%9A%94%EA%B8%B0%EB%8A%A5-%E2%80%90-%ED%8C%8C%EC%9D%BC%EA%B5%90%ED%99%98">위키로 이동</a>
+
 ### -갠트차트
 #### 💻Code
+
+<a href="https://github.com/MinjoonHK/Management_system/wiki/Management-System-%EC%A3%BC%EC%9A%94%EA%B8%B0%EB%8A%A5-%E2%80%90-%EA%B0%A0%ED%8A%B8%EC%B0%A8%ED%8A%B8">위키로 이동</a>
 
 ### -달력
 #### 💻Code
