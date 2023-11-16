@@ -22,17 +22,21 @@
 ![ERD](https://github.com/MinjoonHK/Management_system/assets/108560916/951ecf1d-37ce-489d-9fe7-cba417f3f132)
 </details>
 
+### ✔️ 기본세팅
+#### 💻Code
+<a href="https://github.com/MinjoonHK/Management_system/wiki/Management-System-%EC%A3%BC%EC%9A%94%EA%B8%B0%EB%8A%A5-%E2%80%90-%EB%A1%9C%EA%B7%B8%EC%9D%B8">위키로 이동</a>
+
 ## 📌주요 기능
 ### -로그인
 #### 💻Code
-<a href="https://github.com/MinjoonHK/Personal_Blog/wiki/Management-System-%EC%A3%BC%EC%9A%94%EA%B8%B0%EB%8A%A5-%E2%80%90-%EB%A1%9C%EA%B7%B8%EC%9D%B8">위키로 이동</a>
+<a href="https://github.com/MinjoonHK/Management_system/wiki/Management-System-%EC%A3%BC%EC%9A%94%EA%B8%B0%EB%8A%A5-%E2%80%90-%EB%A1%9C%EA%B7%B8%EC%9D%B8">위키로 이동</a>
 
 ### -회원가입
 #### 💻Code
 
 <a href="https://github.com/MinjoonHK/Management_system/wiki/Management-System-%EC%A3%BC%EC%9A%94%EA%B8%B0%EB%8A%A5-%E2%80%90-%ED%9A%8C%EC%9B%90%EA%B0%80%EC%9E%85">위키로 이동</a>
 
-### -유저관리
+### -메일초대
 #### 💻Code
 
 ### -파일교환
@@ -47,6 +51,7 @@
 ### -언어지원
 #### 💻Code
 
+<a href="https://github.com/MinjoonHK/Management_system/wiki/Management-System-%EC%A3%BC%EC%9A%94%EA%B8%B0%EB%8A%A5-%E2%80%90-%EC%96%B8%EC%96%B4%EC%A7%80%EC%9B%90">위키로 이동</a>
 
 
 
