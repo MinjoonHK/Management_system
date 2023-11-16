@@ -39,11 +39,11 @@
 ### -메일초대
 #### 💻Code
 
-### -파일교환
-#### 💻Code
-
 <a href="https://github.com/MinjoonHK/Management_system/wiki/Management-System-%EC%A3%BC%EC%9A%94%EA%B8%B0%EB%8A%A5-%E2%80%90-%EB%A9%94%EC%9D%BC%EC%B4%88%EB%8C%80">
 위키로 이동</a>
+
+### -파일교환
+#### 💻Code
 
 ### -갠트차트
 #### 💻Code
