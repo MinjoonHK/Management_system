@@ -24,7 +24,7 @@
 
 ### ✔️ 기본세팅
 #### 💻Code
-<a href="https://github.com/MinjoonHK/Management_system/wiki/Management-System-%EC%A3%BC%EC%9A%94%EA%B8%B0%EB%8A%A5-%E2%80%90-%EB%A1%9C%EA%B7%B8%EC%9D%B8">위키로 이동</a>
+<a href="https://github.com/MinjoonHK/Management_system/wiki/Management-System-%EA%B8%B0%EB%B3%B8%EC%84%B8%ED%8C%85">위키로 이동</a>
 
 ## 📌주요 기능
 ### -로그인
