@@ -29,7 +29,8 @@
 <details>
 <summary>checkIsLoggedIn.ts</summary>
 
-`export function validationIsLogggedIn(
+```
+export function validationIsLogggedIn(
   req: Request | any,
   res: Response,
   next: NextFunction
@@ -48,7 +49,8 @@
     }
   }
   return next("UNAUTHORIZED ACTION");
-}`
+}
+```
 </details>
 <details>
 <summary>이미지</summary>
