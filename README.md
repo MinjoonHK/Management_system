@@ -34,7 +34,7 @@
 #### 회원가입
 #### 💻Code
 <details>
-##### <summary>이미지</summary>
+<summary>이미지</summary>
 
 ![SignUP](https://github.com/MinjoonHK/Management_system/assets/108560916/a044d103-aac4-42d3-a7ec-93c6984ab428)
 </details>
