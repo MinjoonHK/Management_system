@@ -24,29 +24,29 @@
 
 ## 📌주요 기능
 #### 로그인
-##### 💻Code
+#### 💻Code
 <details>
 <summary>이미지</summary>
 
 ![Login](https://github.com/MinjoonHK/Management_system/assets/108560916/8752b515-cdc1-45cb-b5e6-71dbd2c3dd8d)
 </details>
 #### 회원가입
-##### 💻Code
+#### 💻Code
 <details>
 ##### <summary>이미지</summary>
 
 ![SignUP](https://github.com/MinjoonHK/Management_system/assets/108560916/a044d103-aac4-42d3-a7ec-93c6984ab428)
 </details>
 #### 유저관리
-##### 💻Code
+#### 💻Code
 #### 파일교환
-##### 💻Code
+#### 💻Code
 #### 갠트차트
-##### 💻Code
+#### 💻Code
 #### 달력
-##### 💻Code
+#### 💻Code
 #### 언어지원
-##### 💻Code
+#### 💻Code
 
 
 
