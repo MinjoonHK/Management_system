@@ -27,7 +27,8 @@
 #### 💻Code
 
 <details>
-<summary>checkIsLoggedIn.ts</summary>
+<summary>checkIsLoggedIn.ts </summary>
+<summary>유저가 로그인 했는지 체크해주는 미들웨어</summary>
 
 ```
 export function validationIsLogggedIn(
