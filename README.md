@@ -55,7 +55,7 @@
 ### -달력
 #### 💻Code
 
-<a href="https://github.com/MinjoonHK/Management_system/wiki/Management-System-%EC%A3%BC%EC%9A%94%EA%B8%B0%EB%8A%A5-%E2%80%90-%EB%8B%AC%EB%A0%A5/_edit">위키로 이동</a>
+<a href="https://github.com/MinjoonHK/Management_system/wiki/Management-System-%EC%A3%BC%EC%9A%94%EA%B8%B0%EB%8A%A5-%E2%80%90-%EB%8B%AC%EB%A0%A5">위키로 이동</a>
 
 ### -언어지원
 #### 💻Code
